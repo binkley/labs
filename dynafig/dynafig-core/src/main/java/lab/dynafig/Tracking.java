@@ -1,0 +1,131 @@
+package lab.dynafig;
+
+import javax.annotation.Nonnull;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
+/**
+ * {@code Tracking} tracks string key-value pairs, tracking external updates
+ * to the boxed values.  Optionally tracks them as a type converted from
+ * string.  Example use: <pre>
+ * Tracking dynafig = ...;
+ * Optional&lt;AtomicReference&lt;String&gt;&gt; prop =
+ * dynafig.track("prop");
+ * boolean propDefined = prop.isPresent();
+ * AtomicReference&lt;String&gt; propRef = prop.get();
+ * String propValue = propRef.get();
+ * // External source updates key-value pair for "prop"
+ * String newPropValue = propRef.get();</pre>
+ * <p>
+ * In an injection context: <pre>
+ * class Wheel {
+ *     private final AtomicInteger rapidity;
+ * <p>
+ *     &#64;Inject
+ *     public Wheel(final Tracking dynafig) {
+ *         rapidity = dynafig.track("rapidity").
+ *                 orElseThrow(() -&gt; new IllegalStateException(
+ *                         "Missing 'rapidity' property));
+ *     }
+ * <p>
+ *     public void spin() {
+ *         spinAtRate(rapidity.get());
+ *     }
+ * }</pre>
+ *
+ * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
+ * @see Updating Updating key-value pairs
+ * @see Default Reference implementation
+ */
+public interface Tracking {
+    /**
+     * Tracks the given <var>key</var> value as a string.  Returns empty if
+     * <var>key</var> is undefined.  If <var>key</var> is defined, may stil
+     * return a {@code null} boxed value.
+     *
+     * @param key the key, never missing
+     *
+     * @return the optional atomic value string, never missing
+     *
+     * @todo Some way to work out <var>type</var> from <var>convert</var>
+     */
+    @Nonnull
+    default Optional<AtomicReference<String>> track(
+            @Nonnull final String key) {
+        return track(key, (k, type) -> {
+        });
+    }
+
+    @Nonnull
+    Optional<AtomicReference<String>> track(@Nonnull final String key,
+            @Nonnull final BiConsumer<String, Class<? super String>> notify);
+
+    /**
+     * Tracks the given <var>key</var> value as a boolean.  Returns empty if
+     * <var>key</var> is undefined.
+     *
+     * @param key the key, never missing
+     *
+     * @return the optional atomic value boolean, never missing
+     */
+    @Nonnull
+    default Optional<AtomicBoolean> trackBool(@Nonnull final String key) {
+        return trackBool(key, IGNORE);
+    }
+
+    @Nonnull
+    Optional<AtomicBoolean> trackBool(@Nonnull final String key,
+            @Nonnull final BiConsumer<String, Class<? super Boolean>> notify);
+
+    /**
+     * Tracks the given <var>key</var> value as an integer.  Returns empty if
+     * <var>key</var> is undefined.
+     *
+     * @param key the key, never missing
+     *
+     * @return the optional atomic value integer, never missing
+     */
+    @Nonnull
+    default Optional<AtomicInteger> trackInt(@Nonnull final String key) {
+        return trackInt(key, IGNORE);
+    }
+
+    @Nonnull
+    Optional<AtomicInteger> trackInt(@Nonnull final String key,
+            @Nonnull final BiConsumer<String, Class<? super Integer>> notify);
+
+    /**
+     * Tracks the given <var>key</var> value as <var>type</var>.  Returns
+     * empty if <var>key</var> is undefined.  If <var>key</var> is defined,
+     * may stil return a {@code null} boxed value.
+     *
+     * @param key the key, never missing
+     * @param type the value type token, never missing
+     * @param convert the value converter, never missing
+     * @param <T> the value type
+     *
+     * @return the optional atomic value reference, never missing
+     *
+     * @todo Some way to work out <var>type</var> from <var>convert</var>
+     */
+    @Nonnull
+    default <T> Optional<AtomicReference<T>> trackAs(
+            @Nonnull final String key, @Nonnull final Class<T> type,
+            // TODO: Can this be worked out?
+            @Nonnull final Function<String, T> convert) {
+        return trackAs(key, type, convert, IGNORE);
+    }
+
+    @Nonnull
+    <T> Optional<AtomicReference<T>> trackAs(@Nonnull final String key,
+            @Nonnull final Class<T> type, // TODO: Can this be worked out?
+            @Nonnull final Function<String, T> convert,
+            @Nonnull final BiConsumer<String, Class<? super T>> notify);
+
+    BiConsumer<String, Class<Object>> IGNORE = (key, type) -> {
+    };
+}
