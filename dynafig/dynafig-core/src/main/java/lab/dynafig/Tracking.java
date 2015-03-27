@@ -56,13 +56,13 @@ public interface Tracking {
     @Nonnull
     default Optional<AtomicReference<String>> track(
             @Nonnull final String key) {
-        return track(key, (k, type) -> {
-        });
+        return track(key, IGNORE);
     }
 
     @Nonnull
     Optional<AtomicReference<String>> track(@Nonnull final String key,
-            @Nonnull final BiConsumer<String, Class<? super String>> notify);
+            @Nonnull
+            final BiConsumer<String, ? extends Class<? super String>> notify);
 
     /**
      * Tracks the given <var>key</var> value as a boolean.  Returns empty if
@@ -78,8 +78,8 @@ public interface Tracking {
     }
 
     @Nonnull
-    Optional<AtomicBoolean> trackBool(@Nonnull final String key,
-            @Nonnull final BiConsumer<String, Class<? super Boolean>> notify);
+    Optional<AtomicBoolean> trackBool(@Nonnull final String key, @Nonnull
+    final BiConsumer<String, ? extends Class<? super Boolean>> notify);
 
     /**
      * Tracks the given <var>key</var> value as an integer.  Returns empty if
@@ -95,13 +95,13 @@ public interface Tracking {
     }
 
     @Nonnull
-    Optional<AtomicInteger> trackInt(@Nonnull final String key,
-            @Nonnull final BiConsumer<String, Class<? super Integer>> notify);
+    Optional<AtomicInteger> trackInt(@Nonnull final String key, @Nonnull
+    final BiConsumer<String, ? extends Class<? super Integer>> notify);
 
     /**
      * Tracks the given <var>key</var> value as <var>type</var>.  Returns
      * empty if <var>key</var> is undefined.  If <var>key</var> is defined,
-     * may stil return a {@code null} boxed value.
+     * may still return a {@code null} boxed value.
      *
      * @param key the key, never missing
      * @param type the value type token, never missing
@@ -123,8 +123,8 @@ public interface Tracking {
     @Nonnull
     <T> Optional<AtomicReference<T>> trackAs(@Nonnull final String key,
             @Nonnull final Class<T> type, // TODO: Can this be worked out?
-            @Nonnull final Function<String, T> convert,
-            @Nonnull final BiConsumer<String, Class<? super T>> notify);
+            @Nonnull final Function<String, T> convert, @Nonnull
+    final BiConsumer<String, ? extends Class<? super T>> notify);
 
     BiConsumer<String, Class<Object>> IGNORE = (key, type) -> {
     };

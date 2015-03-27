@@ -53,7 +53,8 @@ public final class Default
     @Nonnull
     @Override
     public Optional<AtomicReference<String>> track(@Nonnull final String key,
-            @Nonnull final BiConsumer<String, Class<?>> nofify) {
+            @Nonnull
+            final BiConsumer<String, ? extends Class<? super String>> nofify) {
         return Optional.ofNullable(pairs.get(key)).
                 map(Value::get);
     }
@@ -61,7 +62,8 @@ public final class Default
     @Nonnull
     @Override
     public Optional<AtomicBoolean> trackBool(@Nonnull final String key,
-            @Nonnull final BiConsumer<String, Class<?>> nofify) {
+            @Nonnull
+            final BiConsumer<String, ? extends Class<? super Boolean>> nofify) {
         return Optional.ofNullable(pairs.get(key)).
                 map(Value::getBool);
     }
@@ -69,7 +71,8 @@ public final class Default
     @Nonnull
     @Override
     public Optional<AtomicInteger> trackInt(@Nonnull final String key,
-            @Nonnull final BiConsumer<String, Class<?>> nofify) {
+            @Nonnull
+            final BiConsumer<String, ? extends Class<? super Integer>> nofify) {
         return Optional.ofNullable(pairs.get(key)).
                 map(Value::getInt);
     }
@@ -78,8 +81,8 @@ public final class Default
     @Override
     public <T> Optional<AtomicReference<T>> trackAs(@Nonnull final String key,
             @Nonnull final Class<T> type,
-            @Nonnull final Function<String, T> convert,
-            @Nonnull final BiConsumer<String, Class<?>> nofify) {
+            @Nonnull final Function<String, T> convert, @Nonnull
+    final BiConsumer<String, ? extends Class<? super T>> nofify) {
         return Optional.ofNullable(pairs.get(key)).
                 map(v -> v.getAs(type, convert));
     }
@@ -186,7 +189,7 @@ public final class Default
         public boolean equals(final Object o) {
             if (this == o)
                 return true;
-            if (o == null || getClass() != o.getClass())
+            if (null == o || getClass() != o.getClass())
                 return false;
             final Value that = (Value) o;
             return Objects.equals(value, that.value);
