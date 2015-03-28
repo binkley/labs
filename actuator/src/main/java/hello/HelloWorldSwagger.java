@@ -8,6 +8,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import javax.inject.Inject;
+
 /**
  * {@code HelloWorldSwagger} <strong>needs documentation</strong>.
  *
@@ -19,13 +21,11 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @EnableWebMvc
 @EnableSwagger
 public class HelloWorldSwagger {
-    @Bean
-    public SpringSwaggerConfig config() {
-        return new SpringSwaggerConfig();
-    }
+    @Inject
+    private SpringSwaggerConfig config;
 
     @Bean
-    public SwaggerSpringMvcPlugin custom(final SpringSwaggerConfig config) {
+    public SwaggerSpringMvcPlugin custom() {
         return new SwaggerSpringMvcPlugin(config);
     }
 }
