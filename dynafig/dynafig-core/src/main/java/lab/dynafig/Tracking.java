@@ -50,8 +50,6 @@ public interface Tracking {
      * @param key the key, never missing
      *
      * @return the optional atomic value string, never missing
-     *
-     * @todo Some way to work out <var>type</var> from <var>convert</var>
      */
     @Nonnull
     default Optional<AtomicReference<String>> track(
@@ -59,6 +57,17 @@ public interface Tracking {
         return track(key, IGNORE);
     }
 
+    /**
+     * Tracks the given <var>key</var> value as a string.  Returns empty if
+     * <var>key</var> is undefined.  If <var>key</var> is defined, may stil
+     * return a {@code null} boxed value.  Notifies <var>onUpdate</var> when
+     * the tracked value changes, including this call.
+     *
+     * @param key the key, never missing
+     * @param onUpdate the notification callback, never missing
+     *
+     * @return the optional atomic value string, never missing
+     */
     @Nonnull
     Optional<AtomicReference<String>> track(@Nonnull final String key,
             @Nonnull final BiConsumer<String, ? super String> onUpdate);
@@ -76,6 +85,16 @@ public interface Tracking {
         return trackBool(key, IGNORE);
     }
 
+    /**
+     * Tracks the given <var>key</var> value as a boolean.  Returns empty if
+     * <var>key</var> is undefined.  Notifies <var>onUpdate</var> when the
+     * tracked value changes, including this call.
+     *
+     * @param key the key, never missing
+     * @param onUpdate the notification callback, never missing
+     *
+     * @return the optional atomic value boolean, never missing
+     */
     @Nonnull
     Optional<AtomicBoolean> trackBool(@Nonnull final String key,
             @Nonnull final BiConsumer<String, ? super Boolean> onUpdate);
@@ -93,6 +112,16 @@ public interface Tracking {
         return trackInt(key, IGNORE);
     }
 
+    /**
+     * Tracks the given <var>key</var> value as an integer.  Returns empty if
+     * <var>key</var> is undefined.  Notifies <var>onUpdate</var> when the
+     * tracked value changes, including this call.
+     *
+     * @param key the key, never missing
+     * @param onUpdate the notification callback, never missing
+     *
+     * @return the optional atomic value integer, never missing
+     */
     @Nonnull
     Optional<AtomicInteger> trackInt(@Nonnull final String key,
             @Nonnull final BiConsumer<String, ? super Integer> onUpdate);
@@ -107,8 +136,6 @@ public interface Tracking {
      * @param <T> the value type
      *
      * @return the optional atomic value reference, never missing
-     *
-     * @todo Some way to work out <var>type</var> from <var>convert</var>
      */
     @Nonnull
     default <T> Optional<AtomicReference<T>> trackAs(
@@ -117,11 +144,26 @@ public interface Tracking {
         return trackAs(key, convert, IGNORE);
     }
 
+    /**
+     * Tracks the given <var>key</var> value as <var>type</var>.  Returns
+     * empty if <var>key</var> is undefined.  If <var>key</var> is defined,
+     * may still return a {@code null} boxed value.  Notifies
+     * <var>onUpdate</var> when the tracked value changes, including this
+     * call.
+     *
+     * @param key the key, never missing
+     * @param convert the value converter, never missing
+     * @param onUpdate the notification callback, never missing
+     * @param <T> the value type
+     *
+     * @return the optional atomic value reference, never missing
+     */
     @Nonnull
     <T> Optional<AtomicReference<T>> trackAs(@Nonnull final String key,
             @Nonnull final Function<String, T> convert,
             @Nonnull final BiConsumer<String, ? super T> onUpdate);
 
+    /** Ignores value changes. */
     BiConsumer<String, Object> IGNORE = (k, v) -> {
     };
 }
