@@ -3,6 +3,9 @@ Dynafig
 
 Example microproject demonstrating dynamically updated key-value pairs.
 
+The integrations with other libraries is not well-tested.  They are more
+explorations of those APIs, not battle-hardened code.
+
 (NB - this file is GitHub-flavored MarkDown.  The IntelliJ plugin does not
 correctly render though _class_ links in Preview do work, _method_ links do
 not.)
@@ -27,18 +30,20 @@ return a non-`null` `Optional<Atomic*>` (`*` depending on return type).  The
 optional is empty if the key is missing.
 
    This means typical use looks like, e.g.:
-   ```private final AtomicInteger rapidity;
-   
-   public MerryGoRound(@Nonnull final Dynafig settings) {
-       rapidity = settings.trackInt("app.rapidity").
-           orElseThrow(() -> new IllegalStateException(
-                   "No property for 'app.rapidity'"));
-   }
-   
-   public void spin() {
-       final int rapidity = this.rapidity.get();
-       // Use rapidity
-   }```
+```
+private final AtomicInteger rapidity;
+
+public MerryGoRound(@Nonnull final Tracking settings) {
+   rapidity = settings.trackInt("app.rapidity").
+       orElseThrow(() -> new IllegalStateException(
+               "No property for 'app.rapidity'"));
+}
+
+public void spin() {
+   final int rapidity = this.rapidity.get();
+   // Use rapidity
+}
+```
 
    The four tracking choices are:
   * [`track`](dynafig-core/src/main/java/lab/dynafig/Tracking.java#L55)
@@ -50,6 +55,16 @@ optional is empty if the key is missing.
   * [`trackAs`](dynafig-core/src/main/java/lab/dynafig/Tracking.java#L94)
   tracks values of type `T` given a conversion function, returning
   `Optional<AtomicReference<T>>`
+  
+  Along with each option is a variant taking a callback.  Dynafig invokes the
+  callback in the initial tracking call, and when the tracked value updates.
+  Example:
+```
+public MerryGoRound(@Nonnull final Tracking settings) {
+  // Spin at different rate when setting is updated
+  settings.trackInt("app.rapidity", (key, rapidity) -> spin(rapidity));
+}
+```
 
 * [`Updating`](dynafig-core/src/main/java/lab/dynafig/Updating.java) updates
 pair values
