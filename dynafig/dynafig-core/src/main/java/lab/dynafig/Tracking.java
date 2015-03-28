@@ -61,8 +61,7 @@ public interface Tracking {
 
     @Nonnull
     Optional<AtomicReference<String>> track(@Nonnull final String key,
-            @Nonnull
-            final BiConsumer<String, ? extends Class<? super String>> notify);
+            @Nonnull final BiConsumer<String, ? super String> onUpdate);
 
     /**
      * Tracks the given <var>key</var> value as a boolean.  Returns empty if
@@ -78,8 +77,8 @@ public interface Tracking {
     }
 
     @Nonnull
-    Optional<AtomicBoolean> trackBool(@Nonnull final String key, @Nonnull
-    final BiConsumer<String, ? extends Class<? super Boolean>> notify);
+    Optional<AtomicBoolean> trackBool(@Nonnull final String key,
+            @Nonnull final BiConsumer<String, ? super Boolean> onUpdate);
 
     /**
      * Tracks the given <var>key</var> value as an integer.  Returns empty if
@@ -95,8 +94,8 @@ public interface Tracking {
     }
 
     @Nonnull
-    Optional<AtomicInteger> trackInt(@Nonnull final String key, @Nonnull
-    final BiConsumer<String, ? extends Class<? super Integer>> notify);
+    Optional<AtomicInteger> trackInt(@Nonnull final String key,
+            @Nonnull final BiConsumer<String, ? super Integer> onUpdate);
 
     /**
      * Tracks the given <var>key</var> value as <var>type</var>.  Returns
@@ -104,7 +103,6 @@ public interface Tracking {
      * may still return a {@code null} boxed value.
      *
      * @param key the key, never missing
-     * @param type the value type token, never missing
      * @param convert the value converter, never missing
      * @param <T> the value type
      *
@@ -114,18 +112,16 @@ public interface Tracking {
      */
     @Nonnull
     default <T> Optional<AtomicReference<T>> trackAs(
-            @Nonnull final String key, @Nonnull final Class<T> type,
-            // TODO: Can this be worked out?
+            @Nonnull final String key,
             @Nonnull final Function<String, T> convert) {
-        return trackAs(key, type, convert, IGNORE);
+        return trackAs(key, convert, IGNORE);
     }
 
     @Nonnull
     <T> Optional<AtomicReference<T>> trackAs(@Nonnull final String key,
-            @Nonnull final Class<T> type, // TODO: Can this be worked out?
-            @Nonnull final Function<String, T> convert, @Nonnull
-    final BiConsumer<String, ? extends Class<? super T>> notify);
+            @Nonnull final Function<String, T> convert,
+            @Nonnull final BiConsumer<String, ? super T> onUpdate);
 
-    BiConsumer<String, Class<Object>> IGNORE = (key, type) -> {
+    BiConsumer<String, Object> IGNORE = (k, v) -> {
     };
 }

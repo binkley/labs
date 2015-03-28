@@ -122,8 +122,7 @@ public class DefaultTest {
         @Nonnull
         private static Optional<AtomicReference<File>> newFile(
                 final Tracking t, final String k) {
-            return t.trackAs(k, File.class,
-                    v -> null == v ? null : new File(v));
+            return t.trackAs(k, v -> null == v ? null : new File(v));
         }
 
         private static String getPath(final AtomicReference<File> a) {
