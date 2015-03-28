@@ -34,7 +34,7 @@ import java.util.function.Supplier;
  */
 public final class Default
         implements Tracking, Updating {
-    private final Map<String, V> vs = new ConcurrentHashMap<>();
+    private final Map<String, Value> values = new ConcurrentHashMap<>();
 
     public Default() {
     }
@@ -52,21 +52,21 @@ public final class Default
     @Override
     public Optional<AtomicReference<String>> track(@Nonnull final String key,
             @Nonnull final BiConsumer<String, ? super String> onUpdate) {
-        return track(key, V::track, onUpdate);
+        return track(key, Value::track, onUpdate);
     }
 
     @Nonnull
     @Override
     public Optional<AtomicBoolean> trackBool(@Nonnull final String key,
             @Nonnull final BiConsumer<String, ? super Boolean> onUpdate) {
-        return track(key, V::trackBool, onUpdate);
+        return track(key, Value::trackBool, onUpdate);
     }
 
     @Nonnull
     @Override
     public Optional<AtomicInteger> trackInt(@Nonnull final String key,
             @Nonnull final BiConsumer<String, ? super Integer> onUpdate) {
-        return track(key, V::trackInt, onUpdate);
+        return track(key, Value::trackInt, onUpdate);
     }
 
     @Nonnull
@@ -79,13 +79,13 @@ public final class Default
 
     @Override
     public void update(@Nonnull final String key, final String value) {
-        vs.merge(key, new V(value), (a, b) -> a.update(value));
+        values.merge(key, new Value(value), (a, b) -> a.update(value));
     }
 
     private <B, T> Optional<B> track(final String key,
-            final BiFunction<V, Consumer<T>, B> fn,
+            final BiFunction<Value, Consumer<T>, B> fn,
             final BiConsumer<String, ? super T> onUpdate) {
-        return Optional.ofNullable(vs.get(key)).
+        return Optional.ofNullable(values.get(key)).
                 map(v -> fn.apply(v, curry(key, onUpdate)));
     }
 
@@ -94,30 +94,30 @@ public final class Default
         return u -> onUpdate.accept(key, u);
     }
 
-    private static final class V {
+    private static final class Value {
         private final String value;
-        private final List<A<?, ?>> atomics;
+        private final List<Atomic<?, ?>> atomics;
 
-        private V(final String value) {
+        private Value(final String value) {
             this(value, new CopyOnWriteArrayList<>());
         }
 
-        private V(final String value, final List<A<?, ?>> atomics) {
+        private Value(final String value, final List<Atomic<?, ?>> atomics) {
             this.value = value;
             this.atomics = atomics;
             atomics.stream().
                     forEach(a -> a.accept(value));
         }
 
-        private V update(final String value) {
+        private Value update(final String value) {
             return Objects.equals(this.value, value) ? this
-                    : new V(value, atomics);
+                    : new Value(value, atomics);
         }
 
         private AtomicReference<String> track(
                 final Consumer<? super String> onUpdate) {
-            final A<AtomicReference<String>, String> s = new A<>(value,
-                    new AtomicReference<>(), AtomicReference::get,
+            final Atomic<AtomicReference<String>, String> s = new Atomic<>(
+                    value, new AtomicReference<>(), AtomicReference::get,
                     AtomicReference::set, onUpdate);
             atomics.add(s);
             return s.atomic;
@@ -125,7 +125,7 @@ public final class Default
 
         private AtomicBoolean trackBool(
                 final Consumer<? super Boolean> onUpdate) {
-            final A<AtomicBoolean, Boolean> b = new A<>(value,
+            final Atomic<AtomicBoolean, Boolean> b = new Atomic<>(value,
                     new AtomicBoolean(), AtomicBoolean::get,
                     (a, v) -> a.set(null == v ? false : Boolean.valueOf(v)),
                     onUpdate);
@@ -135,7 +135,7 @@ public final class Default
 
         private AtomicInteger trackInt(
                 final Consumer<? super Integer> onUpdate) {
-            final A<AtomicInteger, Integer> i = new A<>(value,
+            final Atomic<AtomicInteger, Integer> i = new Atomic<>(value,
                     new AtomicInteger(), AtomicInteger::get,
                     (a, v) -> a.set(null == v ? 0 : Integer.valueOf(v)),
                     onUpdate);
@@ -146,7 +146,7 @@ public final class Default
         private <T> AtomicReference<T> trackAs(
                 final Function<? super String, T> convert,
                 final Consumer<? super T> onUpdate) {
-            final A<AtomicReference<T>, T> t = new A<>(value,
+            final Atomic<AtomicReference<T>, T> t = new Atomic<>(value,
                     new AtomicReference<>(), AtomicReference::get,
                     (a, v) -> a.set(null == v ? null : convert.apply(v)),
                     onUpdate);
@@ -155,13 +155,13 @@ public final class Default
         }
     }
 
-    private static class A<T, U>
+    private static class Atomic<T, U>
             implements Consumer<String>, Supplier<U> {
         protected final T atomic;
         private final Function<T, U> get;
         private final BiConsumer<T, String> set;
 
-        protected A(final String value, final T atomic,
+        protected Atomic(final String value, final T atomic,
                 final Function<T, U> get, final BiConsumer<T, String> set,
                 final Consumer<? super U> onUpdate) {
             this.atomic = atomic;
