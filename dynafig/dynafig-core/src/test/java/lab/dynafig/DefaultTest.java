@@ -13,6 +13,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -29,7 +30,7 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Parameterized.class)
 public class DefaultTest {
-    @Parameter(value = 0)
+    @Parameter
     public Args args;
 
     @Parameters(name = "{index}: {0}")
@@ -82,16 +83,58 @@ public class DefaultTest {
         assertThat(args.unctor.apply(bob.get()), is(args.nullExpected));
     }
 
+    @Test
+    public void shouldNotifyAtFirstNull() {
+        final Default dynafig = new Default();
+        final AtomicReference<Object> updated = new AtomicReference<>();
+        dynafig.update("bob", null);
+        args.ctorObserver
+                .apply(dynafig, "bob", (key, value) -> updated.set(value));
+
+        assertThat(updated.get(), is(args.nullExpected));
+    }
+
+    @Test
+    public void shouldNotifyAtFirstNonNull() {
+        final Default dynafig = new Default();
+        final AtomicReference<Object> updated = new AtomicReference<>();
+        dynafig.update("bob", args.oldValue);
+        args.ctorObserver
+                .apply(dynafig, "bob", (key, value) -> updated.set(value));
+
+        assertThat(updated.get(), is(args.oldExpected));
+    }
+
+    @Test
+    public void shouldNotifyAfterUpdate() {
+        final Default dynafig = new Default();
+        final AtomicReference<Object> updated = new AtomicReference<>();
+        dynafig.update("bob", args.oldValue);
+        args.ctorObserver
+                .apply(dynafig, "bob", (key, value) -> updated.set(value));
+        dynafig.update("bob", args.newValue);
+
+        assertThat(updated.get(), is(args.newExpected));
+    }
+
+    @FunctionalInterface
+    private interface TriFunction<A, B, C, R> {
+        R apply(final A a, final B b, final C c);
+    }
+
     private enum Args {
-        track(Tracking::track, AtomicReference::get, "apple", "apple",
-                "banana", "banana", null),
-        trackBool(Tracking::trackBool, AtomicBoolean::get, "true", true,
-                "false", false, false),
-        trackInt(Tracking::trackInt, AtomicInteger::get, "3", 3, "4", 4, 0),
-        trackAs(Args::newFile, Args::getPath, "apple", "apple", "banana",
-                "banana", null);
+        track(Tracking::track, Tracking::track, AtomicReference::get, "apple",
+                "apple", "banana", "banana", null),
+        trackBool(Tracking::trackBool, Tracking::trackBool,
+                AtomicBoolean::get, "true", true, "false", false, false),
+        trackInt(Tracking::trackInt, Tracking::trackInt, AtomicInteger::get,
+                "3", 3, "4", 4, 0),
+        trackAs(Args::newFile, Args::newFile, AtomicReference::get, "apple",
+                new File("apple"), "banana", new File("banana"), null);
 
         private final BiFunction<Tracking, String, Optional<Object>> ctor;
+        private final TriFunction<Tracking, String, BiConsumer<String, Object>, Optional<Object>>
+                ctorObserver;
         private final Function<Object, Object> unctor;
         private final String oldValue;
         private final Object oldExpected;
@@ -100,13 +143,15 @@ public class DefaultTest {
         private final Object nullExpected;
 
         @SuppressWarnings("unchecked")
-        <T, U> Args(final BiFunction<Tracking, String, Optional<T>> ctor,
-                final Function<T, U> unctor, final String oldValue,
-                final U oldExpected, final String newValue,
-                final U newExpected, final Object nullExpected) {
-            this.nullExpected = nullExpected;
+        <T, U, V> Args(final BiFunction<Tracking, String, Optional<T>> ctor,
+                final TriFunction<Tracking, String, BiConsumer<String, ? super U>, Optional<T>> ctorObserver,
+                final Function<T, V> unctor, final String oldValue,
+                final V oldExpected, final String newValue,
+                final V newExpected, final Object nullExpected) {
             this.ctor = (BiFunction) ctor;
+            this.ctorObserver = (TriFunction) ctorObserver;
             this.unctor = (Function) unctor;
+            this.nullExpected = nullExpected;
             this.oldValue = oldValue;
             this.oldExpected = oldExpected;
             this.newValue = newValue;
@@ -123,6 +168,14 @@ public class DefaultTest {
         private static Optional<AtomicReference<File>> newFile(
                 final Tracking t, final String k) {
             return t.trackAs(k, v -> null == v ? null : new File(v));
+        }
+
+        @Nonnull
+        private static Optional<AtomicReference<File>> newFile(
+                final Tracking t, final String k,
+                final BiConsumer<String, ? super File> onUpdate) {
+            return t.trackAs(k, v -> null == v ? null : new File(v),
+                    onUpdate);
         }
 
         private static String getPath(final AtomicReference<File> a) {
