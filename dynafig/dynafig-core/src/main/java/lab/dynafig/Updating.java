@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiConsumer;
 
 /**
  * {@code Updating} updates key-value pairs.
@@ -13,7 +14,8 @@ import java.util.Map.Entry;
  * @see Default Reference implementation
  */
 @FunctionalInterface
-public interface Updating {
+public interface Updating
+        extends BiConsumer<String, String> {
     /**
      * Updates a key-value pair with a new value or adds the pair if
      * <var>key</var> is undefined.
@@ -49,5 +51,12 @@ public interface Updating {
     default void updateAll(@Nonnull final Map<String, String> values) {
         values.entrySet().stream().
                 forEach(this::update);
+    }
+
+    /** Alias for {@link #update(String, String)}. */
+    @Override
+    default void accept(@Nonnull final String key,
+            @Nullable final String value) {
+        update(key, value);
     }
 }

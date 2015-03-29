@@ -106,6 +106,15 @@ public class DefaultTest {
     }
 
     @Test
+    public void shouldBeBiConsumer() {
+        final Default dynafig = new Default();
+        singletonMap("bob", args.oldValue).forEach(dynafig);
+        final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
+
+        assertThat(args.unctor.apply(bob.get()), is(args.oldExpected));
+    }
+
+    @Test
     public void shouldNotifyAfterUpdate() {
         final Default dynafig = new Default();
         final AtomicReference<Object> updated = new AtomicReference<>();
