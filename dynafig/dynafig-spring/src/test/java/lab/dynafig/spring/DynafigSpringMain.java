@@ -26,7 +26,7 @@ public class DynafigSpringMain {
 
         @Inject
         public Foo(final Tracking dynafig) {
-            this.x = dynafig.trackInt("foo").get();
+            x = dynafig.trackInt("foo").get();
         }
     }
 }
