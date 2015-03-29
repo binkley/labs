@@ -19,16 +19,6 @@ import java.util.function.Supplier;
 
 /**
  * {@code Default} is a simple implementation of {@link Tracking}.
- * <p>
- * <strong>NB</strong> &mdash; {@link #trackAs(String, Function) trackAs}
- * requires an additional type token parameter.  This seems
- * redundant&mdash;the type should be captured by the converter function
- * parameter&mdash;but is required as Java does not support generic type
- * parameter reification, and there is not extant a hack which works with all
- * possible ways to pass in a function (i.e., method reference).  A solution
- * would eliminate the type token parameter needed as a caching key in {@link
- * Default}.  Alternatively, give up on memoizing and recompute conversion
- * from string each call.
  *
  * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
  */
