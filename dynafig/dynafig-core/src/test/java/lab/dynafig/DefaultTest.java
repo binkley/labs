@@ -177,11 +177,5 @@ public class DefaultTest {
             return t.trackAs(k, v -> null == v ? null : new File(v),
                     onUpdate);
         }
-
-        private static String getPath(final AtomicReference<File> a) {
-            return Optional.ofNullable(a.get()).
-                    map(File::getPath).
-                    orElse(null);
-        }
     }
 }
