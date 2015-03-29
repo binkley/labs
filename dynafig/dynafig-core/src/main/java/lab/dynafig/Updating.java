@@ -3,6 +3,7 @@ package lab.dynafig;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * {@code Updating} updates key-value pairs.
@@ -33,7 +34,7 @@ public interface Updating {
      *
      * @see #update(String, String)
      */
-    default void update(@Nonnull final Map.Entry<String, String> entry) {
+    default void update(@Nonnull final Entry<String, String> entry) {
         update(entry.getKey(), entry.getValue());
     }
 
