@@ -30,19 +30,19 @@ public class HelloWorldController {
     }
 
     @GET
-    @RequestMapping("/hello-world")
-    public Greeting sayHello(@RequestParam("name") final String name) {
+    @RequestMapping("/hello-world/{name}")
+    public Greeting sayHello(@PathVariable final String name) {
+        return remote.greet(name);
+    }
+
+    @GET
+    @RequestMapping("/remote-hello")
+    public Greeting remoteHello(@RequestParam("name") final String name) {
         // TODO: How to do with with @Valid and ilk?
         return new Greeting(counter.incrementAndGet(),
                 format("Hello, %s!", Optional.ofNullable(name).
                         filter(s -> !s.isEmpty()).
                         orElseThrow(HelloWorldController::badName)));
-    }
-
-    @GET
-    @RequestMapping("/remote-hello/{name}")
-    public Greeting remoteHello(@PathVariable final String name) {
-        return remote.greet(name);
     }
 
     @ExceptionHandler

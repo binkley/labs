@@ -14,6 +14,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
  */
 @FeignClient(url = "http://localhost:8080")
 public interface RemoteHello {
-    @RequestMapping(value = "/hello-world", method = GET)
+    @RequestMapping(value = "/remote-hello", method = GET)
     Greeting greet(@RequestParam("name") final String name);
 }
