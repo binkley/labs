@@ -1,0 +1,27 @@
+server:
+  port: 8761
+
+eureka:
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+    server:
+      waitTimeInMsWhenSyncEmpty: 0
+
+info:
+  app:
+    name: @project.name@
+    description: @project.description@
+    version: @project.version@
+  build:
+    artifact: @project.artifactId@
+    name: @project.name@
+    description: @project.description@
+    version: @project.version@
+
+security:
+  basic:
+    enabled: false
+  user:
+    name: user
+    password: secret
