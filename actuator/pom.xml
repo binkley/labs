@@ -8,9 +8,14 @@
     <groupId>hm.binkley.labs</groupId>
     <artifactId>actuator</artifactId>
     <version>0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-    <name>HelloWorld</name>
-    <description>Greetings, Earth!</description>
+    <modules>
+        <module>remote</module>
+        <module>local</module>
+    </modules>
+
+    <name>Parent</name>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -117,7 +122,7 @@
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
                 <configuration>
-                    <dotGitDirectory>${project.basedir}/../.git
+                    <dotGitDirectory>${project.parent.basedir}/../.git
                     </dotGitDirectory>
                 </configuration>
             </plugin>

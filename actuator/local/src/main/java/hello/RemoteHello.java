@@ -12,7 +12,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
  * @author <a href="mailto:binkley@alumni.rice.edu">B. K. Oxley (binkley)</a>
  * @todo Needs documentation.
  */
-@FeignClient(url = "http://localhost:8080")
+@FeignClient(url = "http://localhost:8081")
 public interface RemoteHello {
     @RequestMapping(value = "/remote-hello", method = GET)
     Greeting greet(@RequestParam("name") final String name);

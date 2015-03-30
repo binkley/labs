@@ -1,6 +1,9 @@
+server:
+  port: 8081
+
 info:
   app:
-    name: HelloWorld
+    name: @project.name@
     description: @project.description@
     version: @project.version@
   build:
@@ -8,8 +11,6 @@ info:
     name: @project.name@
     description: @project.description@
     version: @project.version@
-  j-random:
-    extra-data: Frodo lives!
 
 security:
   basic:
@@ -17,13 +18,3 @@ security:
   user:
     name: user
     password: secret
-
-#management:
-#  context-path: /manage
-#endpoints:
-#  health:
-#    id: healthcheck
-
-spring:
-  datasource:
-    url: jdbc:derby:memory:helloWorld;create=true
