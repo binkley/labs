@@ -1,7 +1,6 @@
 package hello;
 
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,17 +15,18 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.String.format;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @EnableFeignClients
 @RestController
 public class HelloWorldController {
     private final AtomicLong counter = new AtomicLong();
 
-    private final RemoteHello gazer;
+    private final RemoteHello remote;
 
     @Inject
-    public HelloWorldController(final RemoteHello gazer) {
-        this.gazer = gazer;
+    public HelloWorldController(final RemoteHello remote) {
+        this.remote = remote;
     }
 
     @GET
@@ -39,21 +39,21 @@ public class HelloWorldController {
                         orElseThrow(HelloWorldController::badName)));
     }
 
-    private static IllegalArgumentException badName() {
-        return new IllegalArgumentException(
-                "Required String parameter 'name' is empty");
-    }
-
     @GET
-    @RequestMapping("/navel-gaze/{name}")
-    public Greeting gazeAtNavel(@PathVariable final String name) {
-        return gazer.greet(name);
+    @RequestMapping("/remote-hello/{name}")
+    public Greeting remoteHello(@PathVariable final String name) {
+        return remote.greet(name);
     }
 
     @ExceptionHandler
     public void badArgs(final IllegalArgumentException e,
             final HttpServletResponse response)
             throws IOException {
-        response.sendError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        response.sendError(BAD_REQUEST.value(), e.getMessage());
+    }
+
+    private static IllegalArgumentException badName() {
+        return new IllegalArgumentException(
+                "Required String parameter 'name' is empty");
     }
 }
