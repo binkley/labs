@@ -29,13 +29,13 @@ public class HelloWorldMetrics {
     }
 
     @AfterReturning(
-            value = "execution(* hello.HelloWorld.sayHello(String)) && args(name)",
+            value = "execution(* hello.HelloWorldController.sayHello(String)) && args(name)",
             argNames = "name")
     public void afterPass(final String name) {
         counter.increment("helloWorld.calls.sayHello");
     }
 
-    @AfterThrowing(value = "execution(* hello.HelloWorld.sayHello(String))",
+    @AfterThrowing(value = "execution(* hello.HelloWorldController.sayHello(String))",
             throwing = "e")
     public void afterFail(final Throwable e) {
         counter.increment("helloWorld.errors.sayHello");

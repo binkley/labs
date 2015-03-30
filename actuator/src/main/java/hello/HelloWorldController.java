@@ -14,13 +14,13 @@ import static java.lang.String.format;
 
 @EnableFeignClients
 @RestController
-public class HelloWorld {
+public class HelloWorldController {
     private final AtomicLong counter = new AtomicLong();
 
-    private final NavelGazing gazer;
+    private final RemoteHello gazer;
 
     @Inject
-    public HelloWorld(final NavelGazing gazer) {
+    public HelloWorldController(final RemoteHello gazer) {
         this.gazer = gazer;
     }
 
