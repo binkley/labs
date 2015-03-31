@@ -1,6 +1,5 @@
 package hello;
 
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,7 +14,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
-@EnableFeignClients
 @RestController
 public class RemoteHelloController {
     private final AtomicLong counter = new AtomicLong();
