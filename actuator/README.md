@@ -19,6 +19,10 @@ How to get dependency health to show?
 
 Not using.
 
+## Spring HATEOAS
+
+TODO.
+
 ## Netflix Feign
 
 ## Netflix Hysterix
@@ -34,5 +38,3 @@ TODO.
 TODO.
 
 ## Swagger
-
-Endpoints, but no web page.
