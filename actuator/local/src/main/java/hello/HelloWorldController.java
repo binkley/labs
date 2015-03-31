@@ -1,7 +1,6 @@
 package hello;
 
 import hello.RemoteHello.HystrixHello;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -9,7 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 
-@EnableFeignClients
 @RestController
 public class HelloWorldController {
     private final HystrixHello remote;
