@@ -1,5 +1,6 @@
 package hello;
 
+import hello.RemoteHello.HystrixHello;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,16 +12,18 @@ import javax.ws.rs.GET;
 @EnableFeignClients
 @RestController
 public class HelloWorldController {
-    private final RemoteHello remote;
+    private final HystrixHello remote;
 
     @Inject
-    public HelloWorldController(final RemoteHello remote) {
+    public HelloWorldController(final HystrixHello remote) {
         this.remote = remote;
     }
 
     @GET
     @RequestMapping("/hello-world/{name}")
     public Greeting sayHello(@PathVariable final String name) {
-        return remote.greet(name);
+        // Fake enrich the data
+        final Greeting greeting = remote.greet(name);
+        return new Greeting(greeting.getId() * 2, greeting.getMessage());
     }
 }

@@ -1,29 +1,58 @@
 package hello;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import lombok.Data;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import javax.inject.Inject;
+import java.util.Random;
+
+import static java.lang.String.format;
 
 /**
- * {@code GitHubClient} <b>needs documentation</b>.
+ * {@code RemoteHello} <strong>needs documentation</strong>.
  *
- * @author <a href="mailto:binkley@alumni.rice.edu">B. K. Oxley (binkley)</a>
- * @todo Needs documentation.
+ * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
+ * @todo Needs documentation
  */
 @FeignClient("remote-hello")
 public interface RemoteHello {
-    @RequestMapping(value = "/remote-hello", method = GET)
+    @RequestMapping(value = "/remote-hello", method = RequestMethod.GET)
     Greeting greet(@RequestParam("name") final String name);
 
-    @RequestMapping(value = "/health", method = GET)
+    @RequestMapping(value = "/health", method = RequestMethod.GET)
     Health health();
 
     @Data
     final class Health {
         private Status status;
+    }
+
+    @Component
+    class HystrixHello {
+        private final RemoteHello remote;
+
+        @Inject
+        public HystrixHello(final RemoteHello remote) {
+            this.remote = remote;
+        }
+
+        @HystrixCommand(fallbackMethod = "goAway")
+        public Greeting greet(final String name) {
+            if (new Random().nextBoolean())
+                return remote.greet(name);
+            else
+                throw new IllegalStateException("Bleh!");
+        }
+
+        public Greeting goAway(final String name) {
+            return new Greeting(0,
+                    format("You're not welcome, %s.", name));
+        }
     }
 }
