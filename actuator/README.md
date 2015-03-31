@@ -1,26 +1,28 @@
-Actuator
-========
+# Actuator
 
 Explore [Spring Boot Actuator](https://spring.io/guides/gs/actuator-service/)
 and friends.
 
-Spring Boot
------------
+## Spring Boot
 
-Spring Actuator
----------------
+## Spring Actuator
 
-- Rename provided endpoints
-- Custom health check
-- Custom metrics
+## Spring Security
 
-Spring Security
----------------
+## Netflix Feign
 
-Netflix Feign
--------------
+## Spring Config
 
-Use Feign REST client to call back into self as demonstration.
+Not using.
 
-Spring Config
--------------
+## Validation
+
+Not working yet.
+
+## Hysterix
+
+Circuit breakers not showing in /health, working?
+
+## Swagger
+
+Endpoints, but no web page.
