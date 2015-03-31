@@ -4,13 +4,13 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.inject.Inject;
 import java.util.Random;
 
 import static java.lang.String.format;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 /**
  * {@code RemoteHello} <strong>needs documentation</strong>.
@@ -20,7 +20,7 @@ import static java.lang.String.format;
  */
 @FeignClient("remote-hello")
 public interface RemoteHello {
-    @RequestMapping(value = "/remote-hello", method = RequestMethod.GET)
+    @RequestMapping(value = "/remote-hello", method = GET)
     Greeting greet(@RequestParam("name") final String name);
 
     @Component
