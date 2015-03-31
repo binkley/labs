@@ -3,6 +3,10 @@
 Explore [Spring Boot Actuator](https://spring.io/guides/gs/actuator-service/)
 and friends.
 
+## General
+
+- [Versioned API](http://stackoverflow.com/questions/20198275/how-to-manage-rest-api-versioning-with-spring)
+
 ## Spring Boot
 
 ## Spring Actuator
