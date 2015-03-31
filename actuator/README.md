@@ -9,19 +9,23 @@ and friends.
 
 ## Spring Security
 
-## Netflix Feign
-
 ## Spring Config
 
 Not using.
 
-## Validation
+## Netflix Feign
 
-Not working yet.
-
-## Hysterix
+## Netflix Hysterix
 
 Circuit breakers not showing in /health, working?
+
+## Netflix Ribbon
+
+TODO.
+
+## Validation
+
+TODO.
 
 ## Swagger
 
