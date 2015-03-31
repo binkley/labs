@@ -11,6 +11,8 @@ and friends.
 
 ## Spring Actuator
 
+How to get dependency health to show?
+
 ## Spring Security
 
 ## Spring Config

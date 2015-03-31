@@ -1,8 +1,6 @@
 package hello;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import lombok.Data;
-import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,14 +23,6 @@ public interface RemoteHello {
     @RequestMapping(value = "/remote-hello", method = RequestMethod.GET)
     Greeting greet(@RequestParam("name") final String name);
 
-    @RequestMapping(value = "/health", method = RequestMethod.GET)
-    Health health();
-
-    @Data
-    final class Health {
-        private Status status;
-    }
-
     @Component
     class HystrixHello {
         private final RemoteHello remote;
@@ -51,8 +41,7 @@ public interface RemoteHello {
         }
 
         public Greeting goAway(final String name) {
-            return new Greeting(0,
-                    format("You're not welcome, %s.", name));
+            return new Greeting(0, format("You're not welcome, %s.", name));
         }
     }
 }

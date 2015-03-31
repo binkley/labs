@@ -4,8 +4,6 @@ import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health.Builder;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
-
 /**
  * {@code HelloWorldHealth} <strong>needs documentation</strong>.
  *
@@ -15,13 +13,6 @@ import javax.inject.Inject;
 @Component
 public class HelloWorldHealth
         extends AbstractHealthIndicator {
-    private final RemoteHello remote;
-
-    @Inject
-    public HelloWorldHealth(final RemoteHello remote) {
-        this.remote = remote;
-    }
-
     @Override
     protected void doHealthCheck(final Builder builder)
             throws Exception {
