@@ -31,7 +31,7 @@ Circuit breakers not showing in /health, working?
 
 ## Netflix Ribbon
 
-TODO.
+Automatic with Spring feign clients.
 
 ## Validation
 
