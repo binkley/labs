@@ -27,7 +27,8 @@ TODO.
 
 ## Netflix Hysterix
 
-Circuit breakers not showing in /health, working?
+- Circuit breakers not showing in /health, working?
+- Add dashboard
 
 ## Netflix Ribbon
 
