@@ -6,6 +6,7 @@ and friends.
 ## General
 
 - [Versioned API](http://stackoverflow.com/questions/20198275/how-to-manage-rest-api-versioning-with-spring)
+- Auditing
 
 ## Spring Boot
 
