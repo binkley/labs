@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: hello-world
+  cloud:
+    config:
+      enabled: false

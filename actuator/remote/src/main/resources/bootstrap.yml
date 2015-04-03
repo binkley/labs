@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: remote-hello
+  cloud:
+    config:
+      enabled: false
