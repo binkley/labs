@@ -16,4 +16,18 @@
     </modules>
 
     <name>Grandparent</name>
+
+    <properties>
+        <jgitflow-maven-plugin.version>1.0-m4.3</jgitflow-maven-plugin.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>external.atlassian.jgitflow</groupId>
+                <artifactId>jgitflow-maven-plugin</artifactId>
+                <version>${jgitflow-maven-plugin.version}</version>
+            </plugin>
+        </plugins>
+    </build>
 </project>
