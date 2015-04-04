@@ -6,6 +6,7 @@ and friends.
 ## General
 
 - [Versioned API](http://stackoverflow.com/questions/20198275/how-to-manage-rest-api-versioning-with-spring)
+    and [related gists](https://gist.github.com/warmuuh/67797f5910a64954c7df)
 - Auditing
 
 ## Spring Boot
@@ -32,8 +33,6 @@ TODO.
 - Add dashboard
 
 ## Netflix Ribbon
-
-Automatic with Spring feign clients.
 
 ## Validation
 
