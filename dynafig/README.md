@@ -18,8 +18,9 @@ Cassandra.
   * Factory for `Optional<Atomic*>`
   * Connect `@Inject @Named(key)` to `track*`
 4. Cloud environment source for non-git.
+5. Update Spring `@Configuration` with constraints.sk
 
-## Interfaces
+## Interfaces˚
 
 ### Tracking
 
