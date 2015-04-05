@@ -20,6 +20,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
  */
 @FeignClient("remote-hello")
 public interface RemoteHello {
+    /** @todo Why does &#64;GET not work here? */
     @RequestMapping(value = "/remote-hello", method = GET)
     Greeting greet(@RequestParam("name") final String name);
 
