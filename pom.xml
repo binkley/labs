@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>hm.binkley.labs</groupId>
-    <artifactId>parent</artifactId>
+    <artifactId>labs-parent</artifactId>
     <version>1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -14,8 +14,6 @@
         <module>actuator</module>
         <module>dynafig</module>
     </modules>
-
-    <name>Grandparent</name>
 
     <licenses>
         <license>
