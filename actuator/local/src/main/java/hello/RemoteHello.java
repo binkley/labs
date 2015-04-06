@@ -34,6 +34,7 @@ public interface RemoteHello {
 
         @HystrixCommand(fallbackMethod = "goAway")
         public Greeting greet(final String name) {
+            // 3-in-4 chance of success
             final Random random = new Random();
             if (random.nextBoolean() || random.nextBoolean())
                 return remote.greet(name);
