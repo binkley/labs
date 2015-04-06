@@ -18,8 +18,8 @@ security:
     name: user
     password: secret
 
-#management:
-#  context-path: /manage
+management:
+  context-path: /manage
 #endpoints:
 #  health:
 #    id: healthcheck

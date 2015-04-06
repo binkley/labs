@@ -1,6 +1,4 @@
-server:
-  port: 8761
-
+# Disable Eureka server looking for its cluster
 eureka:
   client:
     registerWithEureka: false
@@ -19,9 +17,18 @@ info:
     description: @project.description@
     version: @project.version@
 
+management:
+  context-path: /manage
+#endpoints:
+#  health:
+#    id: healthcheck
+
 security:
   basic:
     enabled: false
   user:
     name: user
     password: secret
+
+server:
+  port: 8761
