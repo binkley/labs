@@ -6,20 +6,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.GET;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 @RestController
 public class RemoteHelloController {
     private final AtomicLong counter = new AtomicLong();
 
-    @GET
-    @RequestMapping("/remote-hello")
+    @RequestMapping(value = "/remote-hello", method = GET)
     public Greeting remoteHello(@RequestParam("name") final String name) {
         // TODO: How to do with with @Valid and ilk?
         return new Greeting(counter.incrementAndGet(),
