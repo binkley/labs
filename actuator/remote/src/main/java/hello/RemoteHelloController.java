@@ -19,10 +19,11 @@ public class RemoteHelloController {
     private final AtomicLong counter = new AtomicLong();
 
     @RequestMapping(value = "/remote-hello", method = GET)
-    public Greeting remoteHello(@RequestParam("name") final String name) {
+    public Greeting remoteHello(
+            @RequestParam("name") final Optional<String> name) {
         // TODO: How to do with with @Valid and ilk?
         return new Greeting(counter.incrementAndGet(),
-                format("Hello, %s!", Optional.ofNullable(name).
+                format("Hello, %s!", name.
                         filter(s -> !s.isEmpty()).
                         orElseThrow(RemoteHelloController::badName)));
     }
@@ -36,6 +37,6 @@ public class RemoteHelloController {
 
     private static IllegalArgumentException badName() {
         return new IllegalArgumentException(
-                "Required String parameter 'name' is empty");
+                "Required String parameter 'name' is missing or empty");
     }
 }
