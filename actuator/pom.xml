@@ -30,6 +30,7 @@
         <javanica.version>1.4.3</javanica.version>
         <lombok.version>1.14.8</lombok.version>
         <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
+        <metrics.version>3.1.0</metrics.version>
         <spring-cloud.version>1.0.0.RELEASE</spring-cloud.version>
         <swagger-springmvc.version>1.0.1</swagger-springmvc.version>
         <swagger-spring-mvc-ui.version>0.4</swagger-spring-mvc-ui.version>

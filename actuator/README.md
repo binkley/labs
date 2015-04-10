@@ -34,6 +34,10 @@ TODO.
 
 ## Netflix Ribbon
 
+## Dropwizard Metrics
+
+`@Timed` not respected in [`HelloWorldController`](local/src/main/java/hello/HelloWorldController.java)
+
 ## Validation
 
 TODO.

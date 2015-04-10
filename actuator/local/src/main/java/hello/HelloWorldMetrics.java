@@ -1,9 +1,11 @@
 package hello;
 
-import org.aspectj.lang.annotation.AfterReturning;
-import org.aspectj.lang.annotation.AfterThrowing;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.codahale.metrics.Timer.Context;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.boot.actuate.metrics.CounterService;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -21,23 +23,21 @@ import javax.inject.Inject;
 @Aspect
 @Component
 public class HelloWorldMetrics {
-    private final CounterService counter;
+    private final Timer callTime;
 
     @Inject
-    public HelloWorldMetrics(final CounterService counter) {
-        this.counter = counter;
+    public HelloWorldMetrics(final MetricRegistry metrics) {
+        callTime = metrics.timer("helloWorld.calls.sayHello");
     }
 
-    @AfterReturning(
-            value = "execution(* hello.HelloWorldController.sayHello(String)) && args(name)",
-            argNames = "name")
-    public void afterPass(final String name) {
-        counter.increment("helloWorld.calls.sayHello");
-    }
-
-    @AfterThrowing(value = "execution(* hello.HelloWorldController.sayHello(String))",
-            throwing = "e")
-    public void afterFail(final Throwable e) {
-        counter.increment("helloWorld.errors.sayHello");
+    @Around("execution(* hello.HelloWorldController.sayHello(String))")
+    public Object aroundCall(final ProceedingJoinPoint cut)
+            throws Throwable {
+        final Context time = callTime.time();
+        try {
+            return cut.proceed();
+        } finally {
+            time.stop();
+        }
     }
 }

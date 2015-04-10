@@ -1,5 +1,6 @@
 package hello;
 
+import com.codahale.metrics.annotation.Timed;
 import hello.RemoteHello.HystrixHello;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ public class HelloWorldController {
     }
 
     @RequestMapping(value = "/hello-world/{name}", method = GET)
+    @Timed
     public Greeting sayHello(@PathVariable final String name) {
         // Fake enrich the data
         final Greeting greeting = remote.greet(name);
