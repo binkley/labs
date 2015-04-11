@@ -13,6 +13,7 @@
     <modules>
         <module>actuator</module>
         <module>dynafig</module>
+        <module>tomcaty</module>
     </modules>
 
     <licenses>
