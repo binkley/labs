@@ -17,6 +17,8 @@ How to get dependency health to show?
 
 ## Spring Security
 
+- Make example of custom/external auth
+
 ## Spring Config
 
 Not using.
@@ -29,7 +31,7 @@ TODO.
 
 ## Netflix Hysterix
 
-- Circuit breakers not showing in /health, working?
+- Circuit breakers not showing in `/health`, working?
 - Add dashboard
 
 ## Netflix Ribbon
