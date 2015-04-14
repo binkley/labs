@@ -4,8 +4,9 @@
         <Connector port="8080"/>
         <Engine name="Catalina" defaultHost="localhost">
             <Host name="localhost">
-                <Valve className="org.apache.catalina.valves.ErrorReportValve"/>
-                <Valve className="org.apache.catalina.valves.ExtendedAccessLogValve"/>
+                <!-- Buffered would be "true" (default" in production -->
+                <Valve className="org.apache.catalina.valves.ExtendedAccessLogValve"
+                       buffered="false" encoding="UTF-8" locale="UTC"/>
             </Host>
         </Engine>
     </Service>
