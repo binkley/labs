@@ -9,6 +9,10 @@ info:
     description: @project.description@
     version: @project.version@
 
+logging:
+  level:
+    org.springframework: WARN
+
 management:
   context-path: /manage
 #endpoints:

@@ -11,6 +11,10 @@ info:
   j-random:
     extra-data: Frodo lives!
 
+logging:
+  level:
+    org.springframework: WARN
+
 security:
   basic:
     enabled: false
