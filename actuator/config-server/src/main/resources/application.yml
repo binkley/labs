@@ -1,0 +1,38 @@
+info:
+  app:
+    name: @project.name@
+    description: @project.description@
+    version: @project.version@
+  build:
+    artifact: @project.artifactId@
+    name: @project.name@
+    description: @project.description@
+    version: @project.version@
+
+logging:
+  level:
+    io.undertow: WARN
+    org.springframework: INFO
+
+management:
+  context-path: /manage
+#endpoints:
+#  health:
+#    id: healthcheck
+
+security:
+  basic:
+    enabled: false
+  user:
+    name: user
+    password: secret
+
+server:
+  port: 8888
+
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: file://
