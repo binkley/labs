@@ -3,4 +3,4 @@ spring:
     name: hello-world
   cloud:
     config:
-      enabled: false
+      enabled: true

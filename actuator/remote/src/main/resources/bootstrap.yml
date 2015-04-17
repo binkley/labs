@@ -3,4 +3,4 @@ spring:
     name: remote-hello
   cloud:
     config:
-      enabled: false
+      enabled: true
