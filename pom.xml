@@ -7,7 +7,7 @@
 
     <groupId>hm.binkley.labs</groupId>
     <artifactId>labs-parent</artifactId>
-    <version>1-SNAPSHOT</version>
+    <version>1</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -67,7 +67,16 @@
     </developers>
 
     <properties>
+        <java.charset>UTF-8</java.charset>
         <jgitflow-maven-plugin.version>1.0-m4.3</jgitflow-maven-plugin.version>
+        <project.build.outputEncoding>${java.charset}
+        </project.build.outputEncoding>
+        <project.build.sourceEncoding>${java.charset}
+        </project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${java.charset}
+        </project.reporting.outputEncoding>
+        <project.reporting.sourceEncoding>${java.charset}
+        </project.reporting.sourceEncoding>
     </properties>
 
     <build>

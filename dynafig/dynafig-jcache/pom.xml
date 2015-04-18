@@ -7,7 +7,7 @@
     <parent>
         <groupId>hm.binkley.labs</groupId>
         <artifactId>dynafig-parent</artifactId>
-        <version>1-SNAPSHOT</version>
+        <version>1</version>
     </parent>
 
     <artifactId>dynafig-jcache</artifactId>
