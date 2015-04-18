@@ -11,8 +11,9 @@ info:
 
 logging:
   level:
+    com.mangofactory: WARN
     io.undertow: WARN
-    org.springframework: INFO
+    org.springframework: WARN
 
 management:
   context-path: /manage
@@ -26,12 +27,3 @@ security:
   user:
     name: user
     password: secret
-
-server:
-  port: 8888
-
-spring:
-  application:
-    name: config-server
-  profiles:
-    active: native

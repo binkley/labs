@@ -21,7 +21,8 @@ How to get dependency health to show?
 
 ## Spring Config
 
-Not using.
+- How do source priorities interact? Eg, info
+- Git repo, not native profile
 
 ## Spring HATEOAS
 
@@ -35,6 +36,10 @@ TODO.
 - Add dashboard
 
 ## Netflix Ribbon
+
+## Netflix Zuul
+
+TODO.
 
 ## Dropwizard Metrics
 
