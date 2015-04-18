@@ -6,6 +6,7 @@ and friends.
 ## General
 
 - [Versioned API](http://stackoverflow.com/questions/20198275/how-to-manage-rest-api-versioning-with-spring)
+    and [related gists](https://gist.github.com/warmuuh/67797f5910a64954c7df)
 - Auditing
 
 ## Spring Boot
@@ -16,9 +17,12 @@ How to get dependency health to show?
 
 ## Spring Security
 
+- Make example of custom/external auth
+
 ## Spring Config
 
-Not using.
+- How do source priorities interact? Eg, info
+- Git repo, not native profile
 
 ## Spring HATEOAS
 
@@ -28,12 +32,18 @@ TODO.
 
 ## Netflix Hysterix
 
-- Circuit breakers not showing in /health, working?
+- Circuit breakers not showing in `/health`, working?
 - Add dashboard
 
 ## Netflix Ribbon
 
-Automatic with Spring feign clients.
+## Netflix Zuul
+
+TODO.
+
+## Dropwizard Metrics
+
+`@Timed` not respected in [`HelloWorldController`](local/src/main/java/hello/HelloWorldController.java)
 
 ## Validation
 

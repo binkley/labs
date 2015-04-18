@@ -1,4 +1,4 @@
-package hello;
+package hello.health;
 
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health.Builder;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * @todo Needs documentation
  */
 @Component
-public class HelloWorldHealth
+public class HelloWorld
         extends AbstractHealthIndicator {
     @Override
     protected void doHealthCheck(final Builder builder)

@@ -11,19 +11,6 @@ info:
   j-random:
     extra-data: Frodo lives!
 
-security:
-  basic:
-    enabled: false
-  user:
-    name: user
-    password: secret
-
-#management:
-#  context-path: /manage
-#endpoints:
-#  health:
-#    id: healthcheck
-
 spring:
   datasource:
     url: jdbc:derby:memory:helloWorld;create=true
