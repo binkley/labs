@@ -1,6 +1,9 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: hello-world
   cloud:
     config:
-      enabled: false
+      enabled: true
