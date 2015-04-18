@@ -9,4 +9,3 @@ spring:
       enabled: false
   profiles:
     active: native
-

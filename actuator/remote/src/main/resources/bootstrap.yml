@@ -4,6 +4,3 @@ server:
 spring:
   application:
     name: remote-hello
-  cloud:
-    config:
-      enabled: true
