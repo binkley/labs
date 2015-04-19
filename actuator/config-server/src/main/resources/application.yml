@@ -1,13 +1,6 @@
-info:
-  app:
-    name: @project.name@
-    description: @project.description@
-    version: @project.version@
-  build:
-    artifact: @project.artifactId@
-    name: @project.name@
-    description: @project.description@
-    version: @project.version@
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
 
 logging:
   level:
@@ -28,3 +21,9 @@ security:
   user:
     name: user
     password: secret
+
+spring:
+  cloud:
+    config:
+    username: ${security.user.name}
+    password: ${security.user.password}

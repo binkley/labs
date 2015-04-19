@@ -11,6 +11,8 @@ and friends.
 
 ## Spring Boot
 
+- Auditing, event, listener and friends
+
 ## Spring Actuator
 
 How to get dependency health to show?
@@ -23,6 +25,7 @@ How to get dependency health to show?
 
 - How do source priorities interact? Eg, info
 - Git repo, not native profile
+- `/info` for config-server without interfering with other apps
 
 ## Spring Cloud Bus
 
