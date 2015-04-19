@@ -19,10 +19,14 @@ How to get dependency health to show?
 
 - Make example of custom/external auth
 
-## Spring Config
+## Spring Cloud Config
 
 - How do source priorities interact? Eg, info
 - Git repo, not native profile
+
+## Spring Cloud Bus
+
+TODO.
 
 ## Spring HATEOAS
 
