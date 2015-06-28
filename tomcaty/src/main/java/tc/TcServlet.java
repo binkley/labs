@@ -20,6 +20,6 @@ public class TcServlet
     protected void doGet(final HttpServletRequest req,
             final HttpServletResponse resp)
             throws ServletException, IOException {
-        resp.getWriter().println("Hello, world!");
+        resp.getWriter().println("Howdy, world!");
     }
 }
