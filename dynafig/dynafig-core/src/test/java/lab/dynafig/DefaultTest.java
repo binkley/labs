@@ -34,7 +34,7 @@ public class DefaultTest {
     public Args args;
 
     @Parameters(name = "{index}: {0}")
-    public static Collection<Object[]> data() {
+    public static Collection<Object[]> testCases() {
         return Args.parameters();
     }
 
@@ -132,15 +132,19 @@ public class DefaultTest {
     }
 
     private enum Args {
-        track(Tracking::track, Tracking::track, AtomicReference::get, "apple",
-                "apple", "banana", "banana", null),
-        trackBool(Tracking::trackBool, Tracking::trackBool,
-                AtomicBoolean::get, "true", true, "false", false, false),
-        trackInt(Tracking::trackInt, Tracking::trackInt, AtomicInteger::get,
-                "3", 3, "4", 4, 0),
-        trackAs(Args::newFile, Args::newFile, AtomicReference::get, "apple",
-                new File("apple"), "banana", new File("banana"), null);
+        track("String reference", Tracking::track, Tracking::track,
+                AtomicReference::get, "apple", "apple", "banana", "banana",
+                null),
+        trackBool("Primitive boolean value", Tracking::trackBool,
+                Tracking::trackBool, AtomicBoolean::get, "true", true,
+                "false", false, false),
+        trackInt("Primitive int value", Tracking::trackInt,
+                Tracking::trackInt, AtomicInteger::get, "3", 3, "4", 4, 0),
+        trackAs("java.io.File reference", Args::newFile, Args::newFile,
+                AtomicReference::get, "apple", new File("apple"), "banana",
+                new File("banana"), null);
 
+        private final String description;
         private final BiFunction<Tracking, String, Optional<Object>> ctor;
         private final TriFunction<Tracking, String, BiConsumer<String, Object>, Optional<Object>>
                 ctorObserver;
@@ -152,11 +156,13 @@ public class DefaultTest {
         private final Object nullExpected;
 
         @SuppressWarnings("unchecked")
-        <T, U, V> Args(final BiFunction<Tracking, String, Optional<T>> ctor,
+        <T, U, V> Args(final String description,
+                final BiFunction<Tracking, String, Optional<T>> ctor,
                 final TriFunction<Tracking, String, BiConsumer<String, ? super U>, Optional<T>> ctorObserver,
                 final Function<T, V> unctor, final String oldValue,
                 final V oldExpected, final String newValue,
                 final V newExpected, final Object nullExpected) {
+            this.description = description;
             this.ctor = (BiFunction) ctor;
             this.ctorObserver = (TriFunction) ctorObserver;
             this.unctor = (Function) unctor;
@@ -185,6 +191,11 @@ public class DefaultTest {
                 final BiConsumer<String, ? super File> onUpdate) {
             return t.trackAs(k, v -> null == v ? null : new File(v),
                     onUpdate);
+        }
+
+        @Override
+        public String toString() {
+            return description;
         }
     }
 }
