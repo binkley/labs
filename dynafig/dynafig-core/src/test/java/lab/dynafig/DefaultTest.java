@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -36,6 +37,26 @@ public class DefaultTest {
     @Parameters(name = "{index}: {0}")
     public static Collection<Object[]> testCases() {
         return Args.parameters();
+    }
+
+    @Test
+    public void shouldConstructWithStream() {
+        final Tracking dynafig = new Default(
+                singletonMap("bob", args.oldValue).entrySet().stream());
+        final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
+
+        assertThat(args.unctor.apply(bob.get()), is(args.oldExpected));
+    }
+
+    @Test
+    public void shouldConstructWithProperties() {
+        final Properties properties = new Properties();
+        singletonMap("bob", args.oldValue).entrySet().stream().
+                forEach(e -> properties.put(e.getKey(), e.getValue()));
+        final Tracking dynafig = new Default(properties);
+        final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
+
+        assertThat(args.unctor.apply(bob.get()), is(args.oldExpected));
     }
 
     @Test
