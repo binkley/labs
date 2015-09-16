@@ -14,7 +14,7 @@ import java.util.function.Function;
  * string.  Example use: <pre>
  * Tracking dynafig = ...;
  * Optional&lt;AtomicReference&lt;String&gt;&gt; prop =
- * dynafig.track("prop");
+ *         dynafig.track("prop");
  * boolean propDefined = prop.isPresent();
  * AtomicReference&lt;String&gt; propRef = prop.get();
  * String propValue = propRef.get();
