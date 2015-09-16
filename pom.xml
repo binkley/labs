@@ -12,7 +12,6 @@
 
     <modules>
         <module>dynafig</module>
-        <module>tomcaty</module>
     </modules>
 
     <licenses>
