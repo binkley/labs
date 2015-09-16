@@ -16,6 +16,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * {@code Default} is a simple implementation of {@link Tracking}.
@@ -33,9 +34,12 @@ public final class Default
         updateAll(pairs);
     }
 
+    public Default(@Nonnull final Stream<Map.Entry<String, String>> pairs) {
+        pairs.forEach(pair -> update(pair.getKey(), pair.getValue()));
+    }
+
     public Default(@Nonnull final Properties properties) {
-        properties.
-                forEach((k, v) -> update((String) k, (String) v));
+        properties.forEach((k, v) -> update((String) k, (String) v));
     }
 
     @Nonnull
