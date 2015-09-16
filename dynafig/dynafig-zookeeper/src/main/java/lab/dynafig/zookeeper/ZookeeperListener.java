@@ -17,19 +17,19 @@ import static com.google.common.base.Charsets.UTF_8;
 import static org.apache.curator.framework.recipes.cache.PathChildrenCache.StartMode.POST_INITIALIZED_EVENT;
 
 /**
- * {@code ZookeeperListener} <strong>needs documentation</strong>.
+ * {@code ZooKeeperListener} <strong>needs documentation</strong>.
  *
  * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
  * @todo Needs documentation
  * @todo PathChildrenCache redundant to Default's cache
  */
-public class ZookeeperListener
+public class ZooKeeperListener
         implements Closeable, PathChildrenCacheListener {
     private final Updating updating;
     private final PathChildrenCache cache;
 
     @Inject
-    public ZookeeperListener(@Nonnull final Updating updating,
+    public ZooKeeperListener(@Nonnull final Updating updating,
             @Nonnull final CuratorFramework client,
             @Nonnull final String zpath) {
         this.updating = updating;
