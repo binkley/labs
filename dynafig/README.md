@@ -86,3 +86,10 @@ pair values:
 default implementation of `Tracking` and `Updating`,
 [`DefaultTest`](dynafig-core/src/test/java/lab/dynafig/DefaultTest.java)
 tests it
+
+## Integrations
+
+* [Apache ZooKeeper](dynafig-zookeeper/src/main/java/lab/dynafig/zookeeper/ZookeeperListener)
+* TODO: Netflix Archaius2
+* [JCache](dynafig-jcache/src/main/java/lab/dynafig/jcache/JCacheListener)
+* [Spring Boot](dynafig-spring/src/main/java/lab/dynafig/spring/DynafixAutoConfiguration)
