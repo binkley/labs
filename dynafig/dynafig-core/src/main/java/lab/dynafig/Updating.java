@@ -11,7 +11,7 @@ import java.util.function.BiConsumer;
  *
  * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
  * @see Tracking Tracking key-value pairs
- * @see Default Reference implementation
+ * @see DefaultDynafig Reference implementation
  */
 @FunctionalInterface
 public interface Updating

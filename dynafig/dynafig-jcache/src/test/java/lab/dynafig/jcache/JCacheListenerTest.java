@@ -1,6 +1,6 @@
 package lab.dynafig.jcache;
 
-import lab.dynafig.Default;
+import lab.dynafig.DefaultDynafig;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -26,7 +26,7 @@ import static org.junit.Assert.assertThat;
 public class JCacheListenerTest {
     private static CachingProvider cachingProvider;
 
-    private Default dynafig;
+    private DefaultDynafig dynafig;
     private Cache<String, String> cache;
 
     @BeforeClass
@@ -36,7 +36,7 @@ public class JCacheListenerTest {
 
     @Before
     public void setUp() {
-        dynafig = new Default();
+        dynafig = new DefaultDynafig();
 
         final SingletonFactory<CacheEntryListener<? super String, ? super String>>
                 listenerFactory = new SingletonFactory<>(

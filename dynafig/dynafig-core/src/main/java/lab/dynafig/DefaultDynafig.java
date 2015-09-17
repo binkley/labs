@@ -3,6 +3,7 @@ package lab.dynafig;
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -19,26 +20,26 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
- * {@code Default} is a simple implementation of {@link Tracking}.
+ * {@code DefaultDynafig} is a simple implementation of {@link Tracking}.
  *
  * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
  */
-public final class Default
+public class DefaultDynafig
         implements Tracking, Updating {
     private final Map<String, Value> values = new ConcurrentHashMap<>();
 
-    public Default() {
+    public DefaultDynafig() {
     }
 
-    public Default(@Nonnull final Map<String, String> pairs) {
+    public DefaultDynafig(@Nonnull final Map<String, String> pairs) {
         updateAll(pairs);
     }
 
-    public Default(@Nonnull final Stream<Map.Entry<String, String>> pairs) {
+    public DefaultDynafig(@Nonnull final Stream<Entry<String, String>> pairs) {
         pairs.forEach(pair -> update(pair.getKey(), pair.getValue()));
     }
 
-    public Default(@Nonnull final Properties properties) {
+    public DefaultDynafig(@Nonnull final Properties properties) {
         properties.forEach((k, v) -> update((String) k, (String) v));
     }
 

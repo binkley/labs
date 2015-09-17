@@ -1,12 +1,15 @@
 package lab.dynafig.spring;
 
 import lab.dynafig.Tracking;
-import org.springframework.boot.SpringApplication;
+import lombok.ToString;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.lang.System.out;
+import static org.springframework.boot.SpringApplication.run;
 
 /**
  * {@code DynafigSpringMain} <strong>needs documentation</strong>.
@@ -17,10 +20,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 @EnableAutoConfiguration
 public class DynafigSpringMain {
     public static void main(final String... args) {
-        SpringApplication.run(DynafigSpringMain.class, args);
+        out.println(run(DynafigSpringMain.class, args).
+                getBean(Foo.class));
     }
 
     @Component
+    @ToString
     public static class Foo {
         private final AtomicInteger x;
 

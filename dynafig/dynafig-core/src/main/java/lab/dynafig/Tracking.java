@@ -39,7 +39,7 @@ import java.util.function.Function;
  *
  * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
  * @see Updating Updating key-value pairs
- * @see Default Reference implementation
+ * @see DefaultDynafig Reference implementation
  */
 public interface Tracking {
     /**

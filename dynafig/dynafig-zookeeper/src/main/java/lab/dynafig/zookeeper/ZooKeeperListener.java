@@ -21,7 +21,7 @@ import static org.apache.curator.framework.recipes.cache.PathChildrenCache.Start
  *
  * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
  * @todo Needs documentation
- * @todo PathChildrenCache redundant to Default's cache
+ * @todo PathChildrenCache redundant to DefaultDynafig's cache
  */
 public class ZooKeeperListener
         implements Closeable, PathChildrenCacheListener {

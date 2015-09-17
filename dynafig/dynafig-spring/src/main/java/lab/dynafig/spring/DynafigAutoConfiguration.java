@@ -1,10 +1,14 @@
 package lab.dynafig.spring;
 
-import lab.dynafig.Default;
+import lab.dynafig.DefaultDynafig;
 import lab.dynafig.Tracking;
 import lab.dynafig.Updating;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+
+import javax.inject.Inject;
 
 /**
  * {@code DynafigAutoConfiguration} <strong>needs documentation</strong>.
@@ -13,8 +17,13 @@ import org.springframework.context.annotation.Configuration;
  * @todo Needs documentation
  */
 @Configuration
+@ConditionalOnClass({Tracking.class, Updating.class})
 public class DynafigAutoConfiguration {
-    private final Default dynafig = new Default();
+    private final DefaultDynafig dynafig = new SpringDynafig();
+
+    @Inject
+    public DynafigAutoConfiguration(final Environment env) {
+    }
 
     @Bean
     public Tracking tracking() {
@@ -25,4 +34,7 @@ public class DynafigAutoConfiguration {
     public Updating updating() {
         return dynafig;
     }
+
+    private static class SpringDynafig
+            extends DefaultDynafig {}
 }

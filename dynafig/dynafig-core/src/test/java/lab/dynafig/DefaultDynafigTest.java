@@ -25,12 +25,12 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
- * {@code DefaultTest} tests {@link Default}.
+ * {@code DefaultDynafigTest} tests {@link DefaultDynafig}.
  *
  * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
  */
 @RunWith(Parameterized.class)
-public class DefaultTest {
+public class DefaultDynafigTest {
     @Parameter
     public Args args;
 
@@ -41,7 +41,7 @@ public class DefaultTest {
 
     @Test
     public void shouldConstructWithStream() {
-        final Tracking dynafig = new Default(
+        final Tracking dynafig = new DefaultDynafig(
                 singletonMap("bob", args.oldValue).entrySet().stream());
         final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
 
@@ -53,7 +53,7 @@ public class DefaultTest {
         final Properties properties = new Properties();
         singletonMap("bob", args.oldValue).entrySet().stream().
                 forEach(e -> properties.put(e.getKey(), e.getValue()));
-        final Tracking dynafig = new Default(properties);
+        final Tracking dynafig = new DefaultDynafig(properties);
         final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
 
         assertThat(args.unctor.apply(bob.get()), is(args.oldExpected));
@@ -61,7 +61,7 @@ public class DefaultTest {
 
     @Test
     public void shouldFindNone() {
-        final Tracking dynafig = new Default();
+        final Tracking dynafig = new DefaultDynafig();
         final Optional<?> bob = args.ctor.apply(dynafig, "bob");
 
         assertThat(bob.isPresent(), is(false));
@@ -69,7 +69,7 @@ public class DefaultTest {
 
     @Test
     public void shouldFindPrevious() {
-        final Tracking dynafig = new Default(
+        final Tracking dynafig = new DefaultDynafig(
                 singletonMap("bob", args.oldValue));
         final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
 
@@ -78,7 +78,7 @@ public class DefaultTest {
 
     @Test
     public void shouldFindUpdate() {
-        final Default dynafig = new Default(
+        final DefaultDynafig dynafig = new DefaultDynafig(
                 singletonMap("bob", args.oldValue));
         final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
         bob.get(); // Force lazy eval
@@ -89,7 +89,7 @@ public class DefaultTest {
 
     @Test
     public void shouldCreateOnUpdateIfMissing() {
-        final Default dynafig = new Default();
+        final DefaultDynafig dynafig = new DefaultDynafig();
         dynafig.update("bob", args.oldValue);
         final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
 
@@ -98,7 +98,8 @@ public class DefaultTest {
 
     @Test
     public void shouldHandleNullValue() {
-        final Tracking dynafig = new Default(singletonMap("bob", null));
+        final Tracking dynafig = new DefaultDynafig(
+                singletonMap("bob", null));
         final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
 
         assertThat(args.unctor.apply(bob.get()), is(args.nullExpected));
@@ -106,7 +107,7 @@ public class DefaultTest {
 
     @Test
     public void shouldNotifyAtFirstNull() {
-        final Default dynafig = new Default();
+        final DefaultDynafig dynafig = new DefaultDynafig();
         final AtomicReference<Object> updated = new AtomicReference<>();
         dynafig.update("bob", null);
         args.ctorObserver
@@ -117,7 +118,7 @@ public class DefaultTest {
 
     @Test
     public void shouldNotifyAtFirstNonNull() {
-        final Default dynafig = new Default();
+        final DefaultDynafig dynafig = new DefaultDynafig();
         final AtomicReference<Object> updated = new AtomicReference<>();
         dynafig.update("bob", args.oldValue);
         args.ctorObserver
@@ -128,7 +129,7 @@ public class DefaultTest {
 
     @Test
     public void shouldBeBiConsumer() {
-        final Default dynafig = new Default();
+        final DefaultDynafig dynafig = new DefaultDynafig();
         singletonMap("bob", args.oldValue).forEach(dynafig);
         final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
 
@@ -137,7 +138,7 @@ public class DefaultTest {
 
     @Test
     public void shouldNotifyAfterUpdate() {
-        final Default dynafig = new Default();
+        final DefaultDynafig dynafig = new DefaultDynafig();
         final AtomicReference<Object> updated = new AtomicReference<>();
         dynafig.update("bob", args.oldValue);
         args.ctorObserver
