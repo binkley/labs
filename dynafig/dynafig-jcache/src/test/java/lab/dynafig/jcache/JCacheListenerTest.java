@@ -1,13 +1,12 @@
 package lab.dynafig.jcache;
 
 import lab.dynafig.Default;
-import lab.dynafig.Tracking;
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.cache.Cache;
-import javax.cache.CacheManager;
 import javax.cache.configuration.FactoryBuilder.SingletonFactory;
 import javax.cache.configuration.MutableCacheEntryListenerConfiguration;
 import javax.cache.configuration.MutableConfiguration;
@@ -25,16 +24,20 @@ import static org.junit.Assert.assertThat;
  * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
  */
 public class JCacheListenerTest {
-    private Tracking tracking;
 
-    private CachingProvider cachingProvider;
-    private CacheManager cacheManager;
+    private static CachingProvider cachingProvider;
+
+    private Default dynafig;
     private Cache<String, String> cache;
+
+    @BeforeClass
+    public static void setUpCachingProvider() {
+        cachingProvider = getCachingProvider();
+    }
 
     @Before
     public void setUp() {
-        final Default dynafig = new Default();
-        tracking = dynafig;
+        dynafig = new Default();
 
         final SingletonFactory<CacheEntryListener<? super String, ? super String>>
                 listenerFactory = new SingletonFactory<>(
@@ -48,22 +51,20 @@ public class JCacheListenerTest {
                 setTypes(String.class, String.class).
                 addCacheEntryListenerConfiguration(listenerConfiguration);
 
-        cachingProvider = getCachingProvider();
-        cacheManager = cachingProvider.getCacheManager();
-        cache = cacheManager.createCache("test", configuration);
+        cache = cachingProvider.
+                getCacheManager().
+                createCache("test", configuration);
     }
 
     @Test
     public void shouldTrackUpdate() {
         cache.put("bob", "pretzel");
 
-        assertThat(tracking.track("bob").get().get(), is(equalTo("pretzel")));
+        assertThat(dynafig.track("bob").get().get(), is(equalTo("pretzel")));
     }
 
-    @After
-    public void tearDown() {
-        cache.close();
-        cacheManager.close();
+    @AfterClass
+    public static void tearDownCaching() {
         cachingProvider.close();
     }
 }
