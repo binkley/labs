@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static java.lang.System.out;
 import static org.springframework.boot.SpringApplication.run;
@@ -27,11 +27,11 @@ public class DynafigSpringMain {
     @Component
     @ToString
     public static class Foo {
-        private final AtomicInteger x;
+        private final AtomicReference<String> x;
 
         @Inject
         public Foo(final Tracking dynafig) {
-            x = dynafig.trackInt("foo").get();
+            x = dynafig.track("foo").get();
         }
     }
 }

@@ -1,6 +1,5 @@
 package lab.dynafig.spring;
 
-import lab.dynafig.DefaultDynafig;
 import lab.dynafig.Tracking;
 import lab.dynafig.Updating;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -19,10 +18,11 @@ import javax.inject.Inject;
 @Configuration
 @ConditionalOnClass({Tracking.class, Updating.class})
 public class DynafigAutoConfiguration {
-    private final DefaultDynafig dynafig = new SpringDynafig();
+    private SpringDynafig dynafig;
 
     @Inject
-    public DynafigAutoConfiguration(final Environment env) {
+    public void setDynafig(final Environment env) {
+        dynafig = new SpringDynafig(env);
     }
 
     @Bean
@@ -34,7 +34,4 @@ public class DynafigAutoConfiguration {
     public Updating updating() {
         return dynafig;
     }
-
-    private static class SpringDynafig
-            extends DefaultDynafig {}
 }
