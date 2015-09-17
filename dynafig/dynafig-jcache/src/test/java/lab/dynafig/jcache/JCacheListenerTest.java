@@ -26,9 +26,10 @@ import static org.junit.Assert.assertThat;
  */
 public class JCacheListenerTest {
     private Tracking tracking;
-    private Cache<String, String> cache;
-    private CacheManager cacheManager;
+
     private CachingProvider cachingProvider;
+    private CacheManager cacheManager;
+    private Cache<String, String> cache;
 
     @Before
     public void setUp() {
