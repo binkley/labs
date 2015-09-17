@@ -24,7 +24,6 @@ import static org.junit.Assert.assertThat;
  * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
  */
 public class JCacheListenerTest {
-
     private static CachingProvider cachingProvider;
 
     private Default dynafig;
