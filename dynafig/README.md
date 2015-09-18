@@ -65,8 +65,8 @@ The four tracking choices are:
 * [`trackInt`](dynafig-core/src/main/java/lab/dynafig/Tracking.java#L111)
   tracks int values returning `Optional<AtomicInteger>`
 * [`trackAs`](dynafig-core/src/main/java/lab/dynafig/Tracking.java#L141)
-  tracks values of type `T` given a conversion function, returning
-  `Optional<AtomicReference<T>>`
+  tracks values of type `R` given a conversion function, returning
+  `Optional<AtomicReference<R>>`
 
 ### Updating
 
