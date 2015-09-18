@@ -36,13 +36,11 @@ public class SpringDynafig
         final Optional<R> tracked = tracker.apply(dynafig, key, onUpdate);
         if (tracked.isPresent())
             return tracked;
-        try {
-            final String value = env.getRequiredProperty(key);
-            dynafig.update(key, value);
-            return tracker.apply(dynafig, key, onUpdate);
-        } catch (final IllegalStateException e) {
+        if (!env.containsProperty(key))
             return empty();
-        }
+        final String value = env.getProperty(key);
+        dynafig.update(key, value);
+        return tracker.apply(dynafig, key, onUpdate);
     }
 
     @Nonnull
