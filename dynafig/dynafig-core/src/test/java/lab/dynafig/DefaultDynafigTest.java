@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static java.util.Arrays.asList;
@@ -52,7 +51,8 @@ public class DefaultDynafigTest {
     public void shouldConstructWithProperties() {
         final Properties properties = new Properties();
         singletonMap("bob", args.oldValue).entrySet().stream().
-                forEach(e -> properties.put(e.getKey(), e.getValue()));
+                forEach(e -> properties
+                        .setProperty(e.getKey(), e.getValue()));
         final Tracking dynafig = new DefaultDynafig(properties);
         final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
 
@@ -148,28 +148,24 @@ public class DefaultDynafigTest {
         assertThat(updated.get(), is(args.newExpected));
     }
 
-    @FunctionalInterface
-    private interface TriFunction<A, B, C, R> {
-        R apply(final A a, final B b, final C c);
-    }
-
     private enum Args {
-        track("String reference", Tracking::track, Tracking::track,
-                AtomicReference::get, "apple", "apple", "banana", "banana",
-                null),
+        track("String reference",
+                (Tracker<AtomicReference<String>>) Tracking::track,
+                Tracking::track, AtomicReference::get, "apple", "apple",
+                "banana", "banana", null),
         trackBool("Primitive boolean value", Tracking::trackBool,
                 Tracking::trackBool, AtomicBoolean::get, "true", true,
                 "false", false, false),
         trackInt("Primitive int value", Tracking::trackInt,
                 Tracking::trackInt, AtomicInteger::get, "3", 3, "4", 4, 0),
-        trackAs("java.io.File reference", Args::newFile, Args::newFile,
+        trackAs("java.io.File reference",
+                (Tracker<AtomicReference<File>>) Args::newFile, Args::newFile,
                 AtomicReference::get, "apple", new File("apple"), "banana",
                 new File("banana"), null);
 
         private final String description;
-        private final BiFunction<Tracking, String, Optional<Object>> ctor;
-        private final TriFunction<Tracking, String, BiConsumer<String, Object>, Optional<Object>>
-                ctorObserver;
+        private final Tracker<Object> ctor;
+        private final CtorObserver<Object, Object> ctorObserver;
         private final Function<Object, Object> unctor;
         private final String oldValue;
         private final Object oldExpected;
@@ -178,15 +174,14 @@ public class DefaultDynafigTest {
         private final Object nullExpected;
 
         @SuppressWarnings("unchecked")
-        <T, U, V> Args(final String description,
-                final BiFunction<Tracking, String, Optional<T>> ctor,
-                final TriFunction<Tracking, String, BiConsumer<String, ? super U>, Optional<T>> ctorObserver,
-                final Function<T, V> unctor, final String oldValue,
+        <R, U, V> Args(final String description, final Tracker<R> ctor,
+                final CtorObserver<R, U> ctorObserver,
+                final Function<R, V> unctor, final String oldValue,
                 final V oldExpected, final String newValue,
                 final V newExpected, final Object nullExpected) {
             this.description = description;
-            this.ctor = (BiFunction) ctor;
-            this.ctorObserver = (TriFunction) ctorObserver;
+            this.ctor = (Tracker) ctor;
+            this.ctorObserver = (CtorObserver) ctorObserver;
             this.unctor = (Function) unctor;
             this.nullExpected = nullExpected;
             this.oldValue = oldValue;
@@ -218,6 +213,17 @@ public class DefaultDynafigTest {
         @Override
         public String toString() {
             return description;
+        }
+
+        @FunctionalInterface
+        private interface Tracker<R> {
+            Optional<R> apply(final Tracking dynafig, final String key);
+        }
+
+        @FunctionalInterface
+        private interface CtorObserver<R, T> {
+            Optional<R> apply(final Tracking dynafig, final String b,
+                    final BiConsumer<String, ? super T> t);
         }
     }
 }
