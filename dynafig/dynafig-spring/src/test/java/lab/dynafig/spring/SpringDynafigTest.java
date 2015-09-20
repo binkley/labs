@@ -28,6 +28,7 @@ public class SpringDynafigTest {
     private Environment env;
 
     private SpringDynafig dynafig;
+    public static final String KEY = "bob";
 
     @Before
     public void setUpFixture() {
@@ -36,112 +37,100 @@ public class SpringDynafigTest {
 
     @Test
     public void shouldNotFindMissingEnvKeyForString() {
-        final String key = "bob";
-        when(env.containsProperty(eq(key))).thenReturn(false);
+        when(env.containsProperty(eq(KEY))).thenReturn(false);
 
-        assertThat(dynafig.track(key).isPresent(), is(false));
+        assertThat(dynafig.track(KEY).isPresent(), is(false));
     }
 
     @Test
     public void shouldNotFindMissingEnvKeyForBool() {
-        final String key = "bob";
-        when(env.containsProperty(eq(key))).thenReturn(false);
+        when(env.containsProperty(eq(KEY))).thenReturn(false);
 
-        assertThat(dynafig.trackBool(key).isPresent(), is(false));
+        assertThat(dynafig.trackBool(KEY).isPresent(), is(false));
     }
 
     @Test
     public void shouldNotFindMissingEnvKeyForInt() {
-        final String key = "bob";
-        when(env.containsProperty(eq(key))).thenReturn(false);
+        when(env.containsProperty(eq(KEY))).thenReturn(false);
 
-        assertThat(dynafig.trackInt(key).isPresent(), is(false));
+        assertThat(dynafig.trackInt(KEY).isPresent(), is(false));
     }
 
     @Test
     public void shouldNotFindMissingEnvKeyForRefType() {
-        final String key = "bob";
-        when(env.containsProperty(eq(key))).thenReturn(false);
+        when(env.containsProperty(eq(KEY))).thenReturn(false);
 
-        assertThat(dynafig.trackAs(key, File::new).isPresent(), is(false));
+        assertThat(dynafig.trackAs(KEY, File::new).isPresent(), is(false));
     }
 
     @Test
     public void shouldFindEnvKeyWithStringNullValue() {
-        final String key = "bob";
         final String value = null;
-        when(env.containsProperty(eq(key))).thenReturn(true);
-        when(env.getProperty(eq(key))).thenReturn(value);
+        when(env.containsProperty(eq(KEY))).thenReturn(true);
+        when(env.getProperty(eq(KEY))).thenReturn(value);
 
-        assertThat(dynafig.track(key).get().get(), is(nullValue()));
+        assertThat(dynafig.track(KEY).get().get(), is(nullValue()));
     }
 
     @Test
     public void shouldFindEnvKeyWithBoolNullValueAsFalse() {
-        final String key = "bob";
-        when(env.containsProperty(eq(key))).thenReturn(true);
-        when(env.getProperty(eq(key))).thenReturn(null);
+        when(env.containsProperty(eq(KEY))).thenReturn(true);
+        when(env.getProperty(eq(KEY))).thenReturn(null);
 
-        assertThat(dynafig.trackBool(key).get().get(), is(false));
+        assertThat(dynafig.trackBool(KEY).get().get(), is(false));
     }
 
     @Test
     public void shouldFindEnvKeyWithIntNullValueAsZero() {
-        final String key = "bob";
-        when(env.containsProperty(eq(key))).thenReturn(true);
-        when(env.getProperty(eq(key))).thenReturn(null);
+        when(env.containsProperty(eq(KEY))).thenReturn(true);
+        when(env.getProperty(eq(KEY))).thenReturn(null);
 
-        assertThat(dynafig.trackInt(key).get().get(), is(equalTo(0)));
+        assertThat(dynafig.trackInt(KEY).get().get(), is(equalTo(0)));
     }
 
     @Test
     public void shouldFindEnvKeyWithRefTypeNullValue() {
-        final String key = "bob";
         final String value = null;
-        when(env.containsProperty(eq(key))).thenReturn(true);
-        when(env.getProperty(eq(key))).thenReturn(value);
+        when(env.containsProperty(eq(KEY))).thenReturn(true);
+        when(env.getProperty(eq(KEY))).thenReturn(value);
 
-        assertThat(dynafig.trackAs(key, File::new).get().get(),
+        assertThat(dynafig.trackAs(KEY, File::new).get().get(),
                 is(nullValue()));
     }
 
     @Test
     public void shouldFindEnvKeyWithStringValue() {
-        final String key = "bob";
         final String value = "sally";
-        when(env.containsProperty(eq(key))).thenReturn(true);
-        when(env.getProperty(eq(key))).thenReturn(value);
+        when(env.containsProperty(eq(KEY))).thenReturn(true);
+        when(env.getProperty(eq(KEY))).thenReturn(value);
 
-        assertThat(dynafig.track(key).get().get(), is(value));
+        assertThat(dynafig.track(KEY).get().get(), is(value));
     }
 
     @Test
     public void shouldFindEnvKeyWithBoolValue() {
-        final String key = "bob";
         final boolean value = true;
-        when(env.containsProperty(eq(key))).thenReturn(true);
-        when(env.getProperty(eq(key))).thenReturn(String.valueOf(value));
+        when(env.containsProperty(eq(KEY))).thenReturn(true);
+        when(env.getProperty(eq(KEY))).thenReturn(String.valueOf(value));
 
-        assertThat(dynafig.trackBool(key).get().get(), is(value));
+        assertThat(dynafig.trackBool(KEY).get().get(), is(value));
     }
 
     @Test
     public void shouldFindEnvKeyWithIntValue() {
-        final String key = "bob";
         final int value = 3;
-        when(env.containsProperty(eq(key))).thenReturn(true);
-        when(env.getProperty(eq(key))).thenReturn(String.valueOf(value));
+        when(env.containsProperty(eq(KEY))).thenReturn(true);
+        when(env.getProperty(eq(KEY))).thenReturn(String.valueOf(value));
 
-        assertThat(dynafig.trackInt(key).get().get(), is(value));
+        assertThat(dynafig.trackInt(KEY).get().get(), is(value));
     }
 
     @Test
     public void shouldFindEnvKeyWithRefTypeValue() {
-        final String key = "bob";
-        final File value = new File(".");
-        when(env.containsProperty(eq(key))).thenReturn(true);
-        when(env.getProperty(eq(key))).thenReturn(String.valueOf(value));
+        final File value = new File("sally");
+        when(env.containsProperty(eq(KEY))).thenReturn(true);
+        when(env.getProperty(eq(KEY))).thenReturn(String.valueOf(value));
 
-        assertThat(dynafig.trackAs(key, File::new).get().get(), is(value));
+        assertThat(dynafig.trackAs(KEY, File::new).get().get(), is(value));
     }
 }

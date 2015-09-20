@@ -40,7 +40,7 @@ public class DefaultDynafigTest {
 
     @Test
     public void shouldConstructWithStream() {
-        final Tracking dynafig = new DefaultDynafig(
+        final DefaultDynafig dynafig = new DefaultDynafig(
                 singletonMap("bob", args.oldValue).entrySet().stream());
         final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
 
@@ -53,7 +53,7 @@ public class DefaultDynafigTest {
         singletonMap("bob", args.oldValue).entrySet().stream().
                 forEach(e -> properties
                         .setProperty(e.getKey(), e.getValue()));
-        final Tracking dynafig = new DefaultDynafig(properties);
+        final DefaultDynafig dynafig = new DefaultDynafig(properties);
         final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
 
         assertThat(args.unctor.apply(bob.get()), is(args.oldExpected));
@@ -61,7 +61,7 @@ public class DefaultDynafigTest {
 
     @Test
     public void shouldFindNone() {
-        final Tracking dynafig = new DefaultDynafig();
+        final DefaultDynafig dynafig = new DefaultDynafig();
         final Optional<?> bob = args.ctor.apply(dynafig, "bob");
 
         assertThat(bob.isPresent(), is(false));
@@ -69,7 +69,7 @@ public class DefaultDynafigTest {
 
     @Test
     public void shouldFindPrevious() {
-        final Tracking dynafig = new DefaultDynafig(
+        final DefaultDynafig dynafig = new DefaultDynafig(
                 singletonMap("bob", args.oldValue));
         final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
 
@@ -98,7 +98,7 @@ public class DefaultDynafigTest {
 
     @Test
     public void shouldHandleNullValue() {
-        final Tracking dynafig = new DefaultDynafig(
+        final DefaultDynafig dynafig = new DefaultDynafig(
                 singletonMap("bob", null));
         final Optional<Object> bob = args.ctor.apply(dynafig, "bob");
 
@@ -150,14 +150,15 @@ public class DefaultDynafigTest {
 
     private enum Args {
         track("String reference",
-                (Tracker<AtomicReference<String>>) Tracking::track,
-                Tracking::track, AtomicReference::get, "apple", "apple",
+                (Tracker<AtomicReference<String>>) DefaultDynafig::track,
+                DefaultDynafig::track, AtomicReference::get, "apple", "apple",
                 "banana", "banana", null),
-        trackBool("Primitive boolean value", Tracking::trackBool,
-                Tracking::trackBool, AtomicBoolean::get, "true", true,
+        trackBool("Primitive boolean value", DefaultDynafig::trackBool,
+                DefaultDynafig::trackBool, AtomicBoolean::get, "true", true,
                 "false", false, false),
-        trackInt("Primitive int value", Tracking::trackInt,
-                Tracking::trackInt, AtomicInteger::get, "3", 3, "4", 4, 0),
+        trackInt("Primitive int value", DefaultDynafig::trackInt,
+                DefaultDynafig::trackInt, AtomicInteger::get, "3", 3, "4", 4,
+                0),
         trackAs("java.io.File reference",
                 (Tracker<AtomicReference<File>>) Args::newFile, Args::newFile,
                 AtomicReference::get, "apple", new File("apple"), "banana",
@@ -198,13 +199,13 @@ public class DefaultDynafigTest {
 
         @Nonnull
         private static Optional<AtomicReference<File>> newFile(
-                final Tracking t, final String k) {
+                final DefaultDynafig t, final String k) {
             return t.trackAs(k, v -> null == v ? null : new File(v));
         }
 
         @Nonnull
         private static Optional<AtomicReference<File>> newFile(
-                final Tracking t, final String k,
+                final DefaultDynafig t, final String k,
                 final BiConsumer<String, ? super File> onUpdate) {
             return t.trackAs(k, v -> null == v ? null : new File(v),
                     onUpdate);
@@ -217,12 +218,12 @@ public class DefaultDynafigTest {
 
         @FunctionalInterface
         private interface Tracker<R> {
-            Optional<R> apply(final Tracking dynafig, final String key);
+            Optional<R> apply(final DefaultDynafig dynafig, final String key);
         }
 
         @FunctionalInterface
         private interface CtorObserver<R, T> {
-            Optional<R> apply(final Tracking dynafig, final String b,
+            Optional<R> apply(final DefaultDynafig dynafig, final String b,
                     final BiConsumer<String, ? super T> t);
         }
     }
