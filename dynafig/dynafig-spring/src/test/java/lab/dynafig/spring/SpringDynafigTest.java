@@ -67,7 +67,7 @@ public class SpringDynafigTest {
     public void shouldNotFindMissingKey() {
         when(env.containsProperty(eq(KEY))).thenReturn(false);
 
-        assertThat(getOptional().isPresent(), is(false));
+        assertThat(track().isPresent(), is(false));
     }
 
     @Test
@@ -75,7 +75,7 @@ public class SpringDynafigTest {
         when(env.containsProperty(eq(KEY))).thenReturn(true);
         when(env.getProperty(eq(KEY))).thenReturn(null);
 
-        assertThat(getValue(), is(equalTo(args.nullValue)));
+        assertThat(value(), is(equalTo(args.nullValue)));
     }
 
     @Test
@@ -83,7 +83,7 @@ public class SpringDynafigTest {
         when(env.containsProperty(eq(KEY))).thenReturn(true);
         when(env.getProperty(eq(KEY))).thenReturn(args.oldValue);
 
-        assertThat(getValue(), is(equalTo(args.oldExepcted)));
+        assertThat(value(), is(equalTo(args.oldExepcted)));
     }
 
     @Test
@@ -92,7 +92,7 @@ public class SpringDynafigTest {
 
         dynafig.update(KEY, args.oldValue);
 
-        assertThat(getValue(), is(equalTo(args.oldExepcted)));
+        assertThat(value(), is(equalTo(args.oldExepcted)));
     }
 
     @Test
@@ -102,28 +102,30 @@ public class SpringDynafigTest {
 
         dynafig.update(KEY, args.newValue);
 
-        assertThat(getValue(), is(equalTo(args.newExepcted)));
+        assertThat(value(), is(equalTo(args.newExepcted)));
+    }
+
+    private <T, R> Optional<R> track() {
+        return this.<T, R>args().track(dynafig);
+    }
+
+    private <T, R> T value() {
+        return this.<T, R>args().value(dynafig);
     }
 
     @SuppressWarnings("unchecked")
-    private <T, R> Optional<R> getOptional() {
-        return ((Tracker<T, R>) args.tracker).trackAnonymously(dynafig, KEY);
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T, R> T getValue() {
-        return ((Getter<T, R>) args.getter).get(this.<T, R>getOptional().get());
+    private <T, R> Args<T, R> args() {
+        return (Args<T, R>) args;
     }
 
     @FunctionalInterface
     private interface Tracker<T, R> {
-        default Optional<R> trackAnonymously(final SpringDynafig dynafig,
+        default Optional<R> track(final SpringDynafig dynafig,
                 final String key) {
-            return trackAndObserve(dynafig, key, IGNORE);
+            return track(dynafig, key, IGNORE);
         }
 
-        Optional<R> trackAndObserve(final SpringDynafig dynafig,
-                final String key,
+        Optional<R> track(final SpringDynafig dynafig, final String key,
                 final BiConsumer<String, ? super T> onUpdate);
     }
 
@@ -156,12 +158,16 @@ public class SpringDynafigTest {
         }
 
         private Optional<R> track(final SpringDynafig dynafig) {
-            return tracker.trackAnonymously(dynafig, KEY);
+            return tracker.track(dynafig, KEY);
         }
 
         private Optional<R> track(final SpringDynafig dynafig,
                 final BiConsumer<String, ? super T> onUpdate) {
-            return tracker.trackAndObserve(dynafig, KEY, onUpdate);
+            return tracker.track(dynafig, KEY, onUpdate);
+        }
+
+        private T value(final SpringDynafig dynafig) {
+            return getter.get(track(dynafig).get());
         }
     }
 }
