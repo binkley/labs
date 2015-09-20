@@ -24,14 +24,14 @@ import java.util.function.Function;
  * In an injection context: <pre>
  * class Wheel {
  *     private final AtomicInteger rapidity;
- * <p>
+ *
  *     &#64;Inject
  *     public Wheel(final Tracking dynafig) {
  *         rapidity = dynafig.track("rapidity").
  *                 orElseThrow(() -&gt; new IllegalStateException(
  *                         "Missing 'rapidity' property));
  *     }
- * <p>
+ *
  *     public void spin() {
  *         spinAtRate(rapidity.get());
  *     }
