@@ -1,17 +1,27 @@
 package lab.dynafig.spring;
 
-import org.junit.Before;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import org.mockito.Mockito;
 import org.springframework.core.env.Environment;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 
+import static java.util.Arrays.asList;
+import static lab.dynafig.spring.SpringDynafigTest.Args.params;
+import static lombok.AccessLevel.PRIVATE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
@@ -22,115 +32,88 @@ import static org.mockito.Mockito.when;
  * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
  * @todo Needs documentation
  */
-@RunWith(MockitoJUnitRunner.class)
+@RequiredArgsConstructor
+@RunWith(Parameterized.class)
 public class SpringDynafigTest {
-    @Mock
-    private Environment env;
+    private static final String KEY = "bob";
 
-    private SpringDynafig dynafig;
-    public static final String KEY = "bob";
+    private final Environment env = Mockito.mock(Environment.class);
+    private final SpringDynafig dynafig = new SpringDynafig(env);
 
-    @Before
-    public void setUpFixture() {
-        dynafig = new SpringDynafig(env);
+    public final Args args;
+
+    @Parameters(name = "{index}: {0}")
+    public static Collection<Object[]> parameters() {
+        return asList(
+                params("env key with string values", SpringDynafig::track,
+                        AtomicReference::get, "sally", "sally", null),
+                params("env key with boolean values",
+                        SpringDynafig::trackBool, AtomicBoolean::get, "true",
+                        true, false),
+                params("env key with integer values", SpringDynafig::trackInt,
+                        AtomicInteger::get, "3", 3, 0),
+                params("env key with reference type values",
+                        (d, k) -> d.trackAs(k, File::new),
+                        AtomicReference::get, "sally", new File("sally"),
+                        null));
+    }
+
+    @FunctionalInterface
+    private interface Getter<V, T> {
+        V get(final T atomic);
+    }
+
+    @RequiredArgsConstructor(access = PRIVATE)
+    @ToString(of = "description")
+    static final class Args<V, T> {
+        private final String description;
+        private final boolean keyPresent;
+        private final BiFunction<SpringDynafig, String, Optional<T>> tracker;
+        private final Getter<V, T> getter;
+        private final String stringValue;
+        private final V value;
+        private final V nullValue;
+
+        static <V, T> Object[] params(final String description,
+                final BiFunction<SpringDynafig, String, Optional<T>> tracker,
+                final Getter<V, T> getter, final String stringValue,
+                final V value, final V nullValue) {
+            return new Object[]{new Args<>(description, true, tracker, getter,
+                    stringValue, value, nullValue)};
+        }
     }
 
     @Test
-    public void shouldNotFindMissingEnvKeyForString() {
+    public void shouldNotFindMissingKey() {
         when(env.containsProperty(eq(KEY))).thenReturn(false);
 
-        assertThat(dynafig.track(KEY).isPresent(), is(false));
+        assertThat(getOptional().isPresent(), is(false));
     }
 
     @Test
-    public void shouldNotFindMissingEnvKeyForBool() {
-        when(env.containsProperty(eq(KEY))).thenReturn(false);
-
-        assertThat(dynafig.trackBool(KEY).isPresent(), is(false));
-    }
-
-    @Test
-    public void shouldNotFindMissingEnvKeyForInt() {
-        when(env.containsProperty(eq(KEY))).thenReturn(false);
-
-        assertThat(dynafig.trackInt(KEY).isPresent(), is(false));
-    }
-
-    @Test
-    public void shouldNotFindMissingEnvKeyForRefType() {
-        when(env.containsProperty(eq(KEY))).thenReturn(false);
-
-        assertThat(dynafig.trackAs(KEY, File::new).isPresent(), is(false));
-    }
-
-    @Test
-    public void shouldFindEnvKeyWithStringNullValue() {
-        final String value = null;
-        when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(value);
-
-        assertThat(dynafig.track(KEY).get().get(), is(nullValue()));
-    }
-
-    @Test
-    public void shouldFindEnvKeyWithBoolNullValueAsFalse() {
+    public void shouldFindKeyWithNullValue() {
         when(env.containsProperty(eq(KEY))).thenReturn(true);
         when(env.getProperty(eq(KEY))).thenReturn(null);
 
-        assertThat(dynafig.trackBool(KEY).get().get(), is(false));
+        assertThat(getValue(), is(equalTo(args.nullValue)));
     }
 
     @Test
-    public void shouldFindEnvKeyWithIntNullValueAsZero() {
+    public void shouldFindKeywithNonNullValue() {
         when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(null);
+        when(env.getProperty(eq(KEY))).thenReturn(args.stringValue);
 
-        assertThat(dynafig.trackInt(KEY).get().get(), is(equalTo(0)));
+        assertThat(getValue(), is(equalTo(args.value)));
     }
 
-    @Test
-    public void shouldFindEnvKeyWithRefTypeNullValue() {
-        final String value = null;
-        when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(value);
-
-        assertThat(dynafig.trackAs(KEY, File::new).get().get(),
-                is(nullValue()));
+    @SuppressWarnings("unchecked")
+    private <T> Optional<T> getOptional() {
+        return ((BiFunction<SpringDynafig, String, Optional<T>>) args.tracker)
+                .apply(dynafig, KEY);
     }
 
-    @Test
-    public void shouldFindEnvKeyWithStringValue() {
-        final String value = "sally";
-        when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(value);
-
-        assertThat(dynafig.track(KEY).get().get(), is(value));
-    }
-
-    @Test
-    public void shouldFindEnvKeyWithBoolValue() {
-        final boolean value = true;
-        when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(String.valueOf(value));
-
-        assertThat(dynafig.trackBool(KEY).get().get(), is(value));
-    }
-
-    @Test
-    public void shouldFindEnvKeyWithIntValue() {
-        final int value = 3;
-        when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(String.valueOf(value));
-
-        assertThat(dynafig.trackInt(KEY).get().get(), is(value));
-    }
-
-    @Test
-    public void shouldFindEnvKeyWithRefTypeValue() {
-        final File value = new File("sally");
-        when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(String.valueOf(value));
-
-        assertThat(dynafig.trackAs(KEY, File::new).get().get(), is(value));
+    @SuppressWarnings("unchecked")
+    private <V, T> V getValue() {
+        return ((Getter<V, T>) args.getter).get(this.<T>getOptional().get());
     }
 }
