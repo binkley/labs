@@ -15,9 +15,10 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiFunction;
+import java.util.function.BiConsumer;
 
 import static java.util.Arrays.asList;
+import static lab.dynafig.Tracking.IGNORE;
 import static lab.dynafig.spring.SpringDynafigTest.Args.params;
 import static lombok.AccessLevel.PRIVATE;
 import static org.hamcrest.Matchers.equalTo;
@@ -44,43 +45,22 @@ public class SpringDynafigTest {
 
     @Parameters(name = "{index}: {0}")
     public static Collection<Object[]> parameters() {
-        return asList(
-                params("env key with string values", SpringDynafig::track,
-                        AtomicReference::get, "sally", "sally", null),
+        return asList(Args.<String, AtomicReference<String>>params(
+                "env key with string values", SpringDynafig::track,
+                AtomicReference::get, "sally", "sally", "bill", "bill", null),
+
                 params("env key with boolean values",
                         SpringDynafig::trackBool, AtomicBoolean::get, "true",
-                        true, false),
+                        true, "false", false, false),
+
                 params("env key with integer values", SpringDynafig::trackInt,
-                        AtomicInteger::get, "3", 3, 0),
-                params("env key with reference type values",
-                        (d, k) -> d.trackAs(k, File::new),
+                        AtomicInteger::get, "3", 3, "4", 4, 0),
+
+                Args.<File, AtomicReference<File>>params(
+                        "env key with reference type values",
+                        (d, k, o) -> d.trackAs(k, File::new, o),
                         AtomicReference::get, "sally", new File("sally"),
-                        null));
-    }
-
-    @FunctionalInterface
-    private interface Getter<V, T> {
-        V get(final T atomic);
-    }
-
-    @RequiredArgsConstructor(access = PRIVATE)
-    @ToString(of = "description")
-    static final class Args<V, T> {
-        private final String description;
-        private final boolean keyPresent;
-        private final BiFunction<SpringDynafig, String, Optional<T>> tracker;
-        private final Getter<V, T> getter;
-        private final String stringValue;
-        private final V value;
-        private final V nullValue;
-
-        static <V, T> Object[] params(final String description,
-                final BiFunction<SpringDynafig, String, Optional<T>> tracker,
-                final Getter<V, T> getter, final String stringValue,
-                final V value, final V nullValue) {
-            return new Object[]{new Args<>(description, true, tracker, getter,
-                    stringValue, value, nullValue)};
-        }
+                        "bill", new File("bill"), null));
     }
 
     @Test
@@ -91,7 +71,7 @@ public class SpringDynafigTest {
     }
 
     @Test
-    public void shouldFindKeyWithNullValue() {
+    public void shouldHandleNullValue() {
         when(env.containsProperty(eq(KEY))).thenReturn(true);
         when(env.getProperty(eq(KEY))).thenReturn(null);
 
@@ -99,21 +79,89 @@ public class SpringDynafigTest {
     }
 
     @Test
-    public void shouldFindKeywithNonNullValue() {
+    public void shouldHandleNonNullValue() {
         when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(args.stringValue);
+        when(env.getProperty(eq(KEY))).thenReturn(args.oldValue);
 
-        assertThat(getValue(), is(equalTo(args.value)));
+        assertThat(getValue(), is(equalTo(args.oldExepcted)));
+    }
+
+    @Test
+    public void shouldUpdateWhenKeyMissing() {
+        when(env.containsProperty(eq(KEY))).thenReturn(false);
+
+        dynafig.update(KEY, args.oldValue);
+
+        assertThat(getValue(), is(equalTo(args.oldExepcted)));
+    }
+
+    @Test
+    public void shouldUpdateWhenKeyPresent() {
+        when(env.containsProperty(eq(KEY))).thenReturn(true);
+        when(env.getProperty(eq(KEY))).thenReturn(args.oldValue);
+
+        dynafig.update(KEY, args.newValue);
+
+        assertThat(getValue(), is(equalTo(args.newExepcted)));
     }
 
     @SuppressWarnings("unchecked")
-    private <T> Optional<T> getOptional() {
-        return ((BiFunction<SpringDynafig, String, Optional<T>>) args.tracker)
-                .apply(dynafig, KEY);
+    private <T, R> Optional<R> getOptional() {
+        return ((Tracker<T, R>) args.tracker).trackAnonymously(dynafig, KEY);
     }
 
     @SuppressWarnings("unchecked")
-    private <V, T> V getValue() {
-        return ((Getter<V, T>) args.getter).get(this.<T>getOptional().get());
+    private <T, R> T getValue() {
+        return ((Getter<T, R>) args.getter).get(this.<T, R>getOptional().get());
+    }
+
+    @FunctionalInterface
+    private interface Tracker<T, R> {
+        default Optional<R> trackAnonymously(final SpringDynafig dynafig,
+                final String key) {
+            return trackAndObserve(dynafig, key, IGNORE);
+        }
+
+        Optional<R> trackAndObserve(final SpringDynafig dynafig,
+                final String key,
+                final BiConsumer<String, ? super T> onUpdate);
+    }
+
+    @FunctionalInterface
+    private interface Getter<T, R> {
+        T get(final R atomic);
+    }
+
+    @RequiredArgsConstructor(access = PRIVATE)
+    @ToString(of = "description")
+    static final class Args<T, R> {
+        private final String description;
+        private final boolean keyPresent;
+        private final Tracker<T, R> tracker;
+        private final Getter<T, R> getter;
+        private final String oldValue;
+        private final T oldExepcted;
+        private final String newValue;
+        private final T newExepcted;
+        private final T nullValue;
+
+        static <T, R> Object[] params(final String description,
+                final Tracker<T, R> tracker, final Getter<T, R> getter,
+                final String oldValue, final T oldExpected,
+                final String newValue, final T newExpected,
+                final T nullValue) {
+            return new Object[]{
+                    new Args<>(description, true, tracker, getter, oldValue,
+                            oldExpected, newValue, newExpected, nullValue)};
+        }
+
+        private Optional<R> track(final SpringDynafig dynafig) {
+            return tracker.trackAnonymously(dynafig, KEY);
+        }
+
+        private Optional<R> track(final SpringDynafig dynafig,
+                final BiConsumer<String, ? super T> onUpdate) {
+            return tracker.trackAndObserve(dynafig, KEY, onUpdate);
+        }
     }
 }
