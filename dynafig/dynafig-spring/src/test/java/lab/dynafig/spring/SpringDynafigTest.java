@@ -1,30 +1,10 @@
 package lab.dynafig.spring;
 
-import lab.dynafig.Tracking;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import lab.dynafig.DynafigTesting;
+import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.core.env.Environment;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
-
-import static java.util.Arrays.asList;
-import static lab.dynafig.Tracking.IGNORE;
-import static lab.dynafig.spring.SpringDynafigTest.Args.params;
-import static lombok.AccessLevel.PRIVATE;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -34,173 +14,55 @@ import static org.mockito.Mockito.when;
  * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
  * @todo Needs documentation
  */
-@RequiredArgsConstructor
-@RunWith(Parameterized.class)
-public class SpringDynafigTest {
-    private static final String KEY = "bob";
-
+public class SpringDynafigTest
+        extends DynafigTesting {
     private final Environment env = Mockito.mock(Environment.class);
-    private final SpringDynafig dynafig = new SpringDynafig(env);
 
-    public final Args args;
-
-    @Parameters(name = "{index}: {0}")
-    public static Collection<Object[]> parameters() {
-        return asList(Args.<String, AtomicReference<String>>params(
-                "env key with string values", Tracking::track,
-                AtomicReference::get, "sally", "sally", "bill", "bill", null),
-
-                params("env key with boolean values", Tracking::trackBool,
-                        AtomicBoolean::get, "true", true, "false", false,
-                        false),
-
-                params("env key with integer values", Tracking::trackInt,
-                        AtomicInteger::get, "3", 3, "4", 4, 0),
-
-                Args.<File, AtomicReference<File>>params(
-                        "env key with reference type values",
-                        (d, k, o) -> d.trackAs(k, File::new, o),
-                        AtomicReference::get, "sally", new File("sally"),
-                        "bill", new File("bill"), null));
+    public SpringDynafigTest(final Args args) {
+        super(args);
     }
 
-    @Test
-    public void shouldNotFindMissingKey() {
+    @Before
+    public void setUpFixture() {
+        dynafig(new SpringDynafig(env));
+    }
+
+    @Override
+    protected void beforeShouldNotFindMissingKey() {
         when(env.containsProperty(eq(KEY))).thenReturn(false);
-
-        assertThat(track().isPresent(), is(false));
     }
 
-    @Test
-    public void shouldHandleNullValue() {
+    @Override
+    protected void beforeShouldHandleNullValue() {
         when(env.containsProperty(eq(KEY))).thenReturn(true);
         when(env.getProperty(eq(KEY))).thenReturn(null);
-
-        assertThat(value(), is(equalTo(args.nullValue)));
     }
 
-    @Test
-    public void shouldHandleNonNullValue() {
+    @Override
+    protected void beforeShouldHandleNoNullValue() {
         when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(args.oldValue);
-
-        assertThat(value(), is(equalTo(args.oldExepcted)));
+        when(env.getProperty(eq(KEY))).thenReturn(args().oldValue);
     }
 
-    @Test
-    public void shouldUpdateWhenKeyMissing() {
+    @Override
+    protected void beforeShouldUpdateWhenKeyMissing() {
         when(env.containsProperty(eq(KEY))).thenReturn(false);
-
-        dynafig.update(KEY, args.newValue);
-
-        assertThat(value(), is(equalTo(args.newExepcted)));
     }
 
-    @Test
-    public void shouldUpdateWhenKeyPresent() {
+    @Override
+    protected void beforeShouldUpdateWhenKeyPresent() {
         when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(args.oldValue);
-
-        dynafig.update(KEY, args.newValue);
-
-        assertThat(value(), is(equalTo(args.newExepcted)));
+        when(env.getProperty(eq(KEY))).thenReturn(args().oldValue);
     }
 
-    @Test
-    public void shouldObserveWhenUpdatedAndKeyMissing() {
+    @Override
+    protected void beforeShouldObserveWhenUpdatedAndKeyMissing() {
         when(env.containsProperty(eq(KEY))).thenReturn(false);
-
-        final AtomicReference<Object> key = new AtomicReference<>();
-        final AtomicReference<Object> value = new AtomicReference<>();
-        args.track(dynafig, (k, v) -> {
-            key.set(k);
-            value.set(v);
-        });
-        dynafig.update(KEY, args.newValue);
-
-        assertThat("key", key.get(), is(equalTo(KEY)));
-        assertThat("value", value.get(), is(equalTo(args.newExepcted)));
     }
 
-    @Test
-    public void shouldObserveWhenUpdatedAndKeyPresent() {
+    @Override
+    protected void beforeShouldObserveWhenUpdatedAndKeyPresent() {
         when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(args.oldValue);
-
-        final AtomicReference<Object> key = new AtomicReference<>();
-        final AtomicReference<Object> value = new AtomicReference<>();
-        args.track(dynafig, (k, v) -> {
-            key.set(k);
-            value.set(v);
-        });
-        dynafig.update(KEY, args.newValue);
-
-        assertThat("key", key.get(), is(equalTo(KEY)));
-        assertThat("value", value.get(), is(equalTo(args.newExepcted)));
-    }
-
-    private <T, R> Optional<R> track() {
-        return this.<T, R>args().track(dynafig);
-    }
-
-    private <T, R> T value() {
-        return this.<T, R>args().value(dynafig);
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T, R> Args<T, R> args() {
-        return (Args<T, R>) args;
-    }
-
-    @FunctionalInterface
-    private interface Tracker<T, R> {
-        default Optional<R> track(final Tracking dynafig, final String key) {
-            return track(dynafig, key, IGNORE);
-        }
-
-        Optional<R> track(final Tracking dynafig, final String key,
-                final BiConsumer<String, ? super T> onUpdate);
-    }
-
-    @FunctionalInterface
-    private interface Getter<T, R> {
-        T get(final R atomic);
-    }
-
-    @RequiredArgsConstructor(access = PRIVATE)
-    @ToString(of = "description")
-    static final class Args<T, R> {
-        private final String description;
-        private final boolean keyPresent;
-        private final Tracker<T, R> tracker;
-        private final Getter<T, R> getter;
-        private final String oldValue;
-        private final T oldExepcted;
-        private final String newValue;
-        private final T newExepcted;
-        private final T nullValue;
-
-        static <T, R> Object[] params(final String description,
-                final Tracker<T, R> tracker, final Getter<T, R> getter,
-                final String oldValue, final T oldExpected,
-                final String newValue, final T newExpected,
-                final T nullValue) {
-            return new Object[]{
-                    new Args<>(description, true, tracker, getter, oldValue,
-                            oldExpected, newValue, newExpected, nullValue)};
-        }
-
-        private Optional<R> track(final Tracking dynafig) {
-            return tracker.track(dynafig, KEY);
-        }
-
-        private Optional<R> track(final Tracking dynafig,
-                final BiConsumer<String, ? super T> onUpdate) {
-            return tracker.track(dynafig, KEY, onUpdate);
-        }
-
-        private T value(final Tracking dynafig) {
-            return getter.get(track(dynafig).get());
-        }
+        when(env.getProperty(eq(KEY))).thenReturn(args().oldValue);
     }
 }
