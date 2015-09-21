@@ -14,11 +14,11 @@ import static org.mockito.Mockito.when;
  * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
  * @todo Needs documentation
  */
-public class SpringDynafigTest
-        extends DynafigTesting {
+public class SpringDynafigTest<T, R>
+        extends DynafigTesting<T, R> {
     private final Environment env = Mockito.mock(Environment.class);
 
-    public SpringDynafigTest(final Args args) {
+    public SpringDynafigTest(final Args<T, R> args) {
         super(args);
     }
 
@@ -28,41 +28,8 @@ public class SpringDynafigTest
     }
 
     @Override
-    protected void beforeShouldNotFindMissingKey() {
-        when(env.containsProperty(eq(KEY))).thenReturn(false);
-    }
-
-    @Override
-    protected void beforeShouldHandleNullValue() {
+    protected void presetValue(final String value) {
         when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(null);
-    }
-
-    @Override
-    protected void beforeShouldHandleNoNullValue() {
-        when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(args().oldValue);
-    }
-
-    @Override
-    protected void beforeShouldUpdateWhenKeyMissing() {
-        when(env.containsProperty(eq(KEY))).thenReturn(false);
-    }
-
-    @Override
-    protected void beforeShouldUpdateWhenKeyPresent() {
-        when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(args().oldValue);
-    }
-
-    @Override
-    protected void beforeShouldObserveWhenUpdatedAndKeyMissing() {
-        when(env.containsProperty(eq(KEY))).thenReturn(false);
-    }
-
-    @Override
-    protected void beforeShouldObserveWhenUpdatedAndKeyPresent() {
-        when(env.containsProperty(eq(KEY))).thenReturn(true);
-        when(env.getProperty(eq(KEY))).thenReturn(args().oldValue);
+        when(env.getProperty(eq(KEY))).thenReturn(value);
     }
 }

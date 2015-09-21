@@ -31,10 +31,10 @@ import static org.junit.Assert.assertThat;
  */
 @RequiredArgsConstructor
 @RunWith(Parameterized.class)
-public abstract class DynafigTesting {
+public abstract class DynafigTesting<T, R> {
     protected static final String KEY = "bob";
 
-    private final Args args;
+    protected final Args<T, R> args;
 
     private Object dynafig;
 
@@ -67,64 +67,45 @@ public abstract class DynafigTesting {
         return (D) dynafig;
     }
 
+    protected abstract void presetValue(final String value);
+
     @Test
     public final void shouldNotFindMissingKey() {
-        beforeShouldNotFindMissingKey();
-
         assertThat(track().isPresent(), is(false));
-    }
-
-    protected void beforeShouldNotFindMissingKey() {
     }
 
     @Test
     public final void shouldHandleNullValue() {
-        beforeShouldHandleNullValue();
+        presetValue(null);
 
         assertThat(value(), is(equalTo(args.nullValue)));
     }
 
-    protected void beforeShouldHandleNullValue() {
-    }
-
     @Test
     public final void shouldHandleNonNullValue() {
-        beforeShouldHandleNoNullValue();
+        presetValue(args.oldValue);
 
         assertThat(value(), is(equalTo(args.oldExepcted)));
     }
 
-    protected void beforeShouldHandleNoNullValue() {
-    }
-
     @Test
     public final void shouldUpdateWhenKeyMissing() {
-        beforeShouldUpdateWhenKeyMissing();
-
         dynafig().update(KEY, args.newValue);
 
         assertThat(value(), is(equalTo(args.newExepcted)));
-    }
-
-    protected void beforeShouldUpdateWhenKeyMissing() {
     }
 
     @Test
     public final void shouldUpdateWhenKeyPresent() {
-        beforeShouldUpdateWhenKeyPresent();
+        presetValue(args.oldValue);
 
         dynafig().update(KEY, args.newValue);
 
         assertThat(value(), is(equalTo(args.newExepcted)));
     }
 
-    protected void beforeShouldUpdateWhenKeyPresent() {
-    }
-
     @Test
     public final void shouldObserveWhenUpdatedAndKeyMissing() {
-        beforeShouldObserveWhenUpdatedAndKeyMissing();
-
         final AtomicReference<Object> key = new AtomicReference<>();
         final AtomicReference<Object> value = new AtomicReference<>();
         args.track(dynafig(), (k, v) -> {
@@ -135,14 +116,11 @@ public abstract class DynafigTesting {
 
         assertThat("key", key.get(), is(equalTo(KEY)));
         assertThat("value", value.get(), is(equalTo(args.newExepcted)));
-    }
-
-    protected void beforeShouldObserveWhenUpdatedAndKeyMissing() {
     }
 
     @Test
     public final void shouldObserveWhenUpdatedAndKeyPresent() {
-        beforeShouldObserveWhenUpdatedAndKeyPresent();
+        presetValue(args.oldValue);
 
         final AtomicReference<Object> key = new AtomicReference<>();
         final AtomicReference<Object> value = new AtomicReference<>();
@@ -156,20 +134,12 @@ public abstract class DynafigTesting {
         assertThat("value", value.get(), is(equalTo(args.newExepcted)));
     }
 
-    protected void beforeShouldObserveWhenUpdatedAndKeyPresent() {
+    protected final T value() {
+        return args.value(dynafig());
     }
 
-    protected final <T, R> T value() {
-        return this.<T, R>args().value(dynafig());
-    }
-
-    @SuppressWarnings("unchecked")
-    protected final <T, R> Args<T, R> args() {
-        return (Args<T, R>) args;
-    }
-
-    private <T, R> Optional<R> track() {
-        return this.<T, R>args().track(dynafig());
+    private Optional<R> track() {
+        return args.track(dynafig());
     }
 
     @FunctionalInterface
