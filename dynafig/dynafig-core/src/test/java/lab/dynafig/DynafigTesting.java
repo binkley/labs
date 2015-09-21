@@ -1,5 +1,6 @@
 package lab.dynafig;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.junit.Test;
@@ -18,7 +19,6 @@ import java.util.function.BiConsumer;
 import static java.util.Arrays.asList;
 import static lab.dynafig.DynafigTesting.Args.params;
 import static lab.dynafig.Tracking.IGNORE;
-import static lombok.AccessLevel.PRIVATE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -187,7 +187,7 @@ public abstract class DynafigTesting {
         T get(final R atomic);
     }
 
-    @RequiredArgsConstructor(access = PRIVATE)
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @ToString(of = "description")
     protected static final class Args<T, R> {
         public final String description;
