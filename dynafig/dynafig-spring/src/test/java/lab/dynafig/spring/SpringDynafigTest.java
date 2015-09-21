@@ -9,13 +9,12 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 /**
- * {@code SpringDynafigTest} <strong>needs documentation</strong>.
+ * {@code SpringDynafigTest} tests {@link SpringDynafig}.
  *
  * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
- * @todo Needs documentation
  */
 public class SpringDynafigTest<T, R>
-        extends DynafigTesting<T, R> {
+        extends DynafigTesting<T, R, SpringDynafig> {
     private final Environment env = Mockito.mock(Environment.class);
 
     public SpringDynafigTest(final Args<T, R> args) {

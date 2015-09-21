@@ -34,16 +34,18 @@ public class DefaultDynafig
     }
 
     public DefaultDynafig(@Nonnull final Map<String, String> pairs) {
-        updateAll(pairs);
+        pairs.forEach((k, v) -> values.put(k, new Value(v)));
     }
 
     public DefaultDynafig(
             @Nonnull final Stream<Entry<String, String>> pairs) {
-        pairs.forEach(pair -> update(pair.getKey(), pair.getValue()));
+        pairs.forEach(pair -> values.
+                put(pair.getKey(), new Value(pair.getValue())));
     }
 
     public DefaultDynafig(@Nonnull final Properties properties) {
-        properties.forEach((k, v) -> update((String) k, (String) v));
+        properties.forEach(
+                (k, v) -> values.put((String) k, new Value((String) v)));
     }
 
     @Nonnull

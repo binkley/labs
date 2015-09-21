@@ -17,7 +17,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 import static java.util.Arrays.asList;
-import static lab.dynafig.DynafigTesting.Args.params;
+import static lab.dynafig.DynafigTesting.Args.primitiveTypeParams;
+import static lab.dynafig.DynafigTesting.Args.refTypeParams;
 import static lab.dynafig.Tracking.IGNORE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -31,40 +32,38 @@ import static org.junit.Assert.assertThat;
  */
 @RequiredArgsConstructor
 @RunWith(Parameterized.class)
-public abstract class DynafigTesting<T, R> {
+public abstract class DynafigTesting<T, R, D extends Tracking & Updating> {
     protected static final String KEY = "bob";
 
     protected final Args<T, R> args;
 
-    private Object dynafig;
+    private D dynafig;
 
     @Parameters(name = "{index}: {0}")
     public static Collection<Object[]> parameters() {
-        return asList(Args.<String, AtomicReference<String>>params(
-                "env key with string values", Tracking::track,
-                AtomicReference::get, "sally", "sally", "bill", "bill", null),
+        return asList(
+                refTypeParams("env key with string values", Tracking::track,
+                        "sally", "sally", "bill", "bill"),
 
-                params("env key with boolean values", Tracking::trackBool,
-                        AtomicBoolean::get, "true", true, "false", false,
-                        false),
+                primitiveTypeParams("env key with boolean values",
+                        Tracking::trackBool, AtomicBoolean::get, "true", true,
+                        "false", false, false),
 
-                params("env key with integer values", Tracking::trackInt,
-                        AtomicInteger::get, "3", 3, "4", 4, 0),
+                primitiveTypeParams("env key with integer values",
+                        Tracking::trackInt, AtomicInteger::get, "3", 3, "4",
+                        4, 0),
 
-                Args.<File, AtomicReference<File>>params(
-                        "env key with reference type values",
-                        (d, k, o) -> d.trackAs(k, File::new, o),
-                        AtomicReference::get, "sally", new File("sally"),
-                        "bill", new File("bill"), null));
+                refTypeParams("env key with reference type values",
+                        (d, k, o) -> d.trackAs(k, File::new, o), "sally",
+                        new File("sally"), "bill", new File("bill")));
     }
 
-    protected <D extends Tracking & Updating> void dynafig(final D dynafig) {
+    protected void dynafig(final D dynafig) {
         this.dynafig = dynafig;
     }
 
-    @SuppressWarnings("unchecked")
-    private <D extends Tracking & Updating> D dynafig() {
-        return (D) dynafig;
+    private D dynafig() {
+        return dynafig;
     }
 
     protected abstract void presetValue(final String value);
@@ -89,14 +88,7 @@ public abstract class DynafigTesting<T, R> {
     }
 
     @Test
-    public final void shouldUpdateWhenKeyMissing() {
-        dynafig().update(KEY, args.newValue);
-
-        assertThat(value(), is(equalTo(args.newExepcted)));
-    }
-
-    @Test
-    public final void shouldUpdateWhenKeyPresent() {
+    public final void shouldUpdateExistingKey() {
         presetValue(args.oldValue);
 
         dynafig().update(KEY, args.newValue);
@@ -105,21 +97,7 @@ public abstract class DynafigTesting<T, R> {
     }
 
     @Test
-    public final void shouldObserveWhenUpdatedAndKeyMissing() {
-        final AtomicReference<Object> key = new AtomicReference<>();
-        final AtomicReference<Object> value = new AtomicReference<>();
-        args.track(dynafig(), (k, v) -> {
-            key.set(k);
-            value.set(v);
-        });
-        dynafig().update(KEY, args.newValue);
-
-        assertThat("key", key.get(), is(equalTo(KEY)));
-        assertThat("value", value.get(), is(equalTo(args.newExepcted)));
-    }
-
-    @Test
-    public final void shouldObserveWhenUpdatedAndKeyPresent() {
+    public final void shouldObserveExistingKey() {
         presetValue(args.oldValue);
 
         final AtomicReference<Object> key = new AtomicReference<>();
@@ -161,7 +139,6 @@ public abstract class DynafigTesting<T, R> {
     @ToString(of = "description")
     protected static final class Args<T, R> {
         public final String description;
-        public final boolean keyPresent;
         public final Tracker<T, R> tracker;
         public final Getter<T, R> getter;
         public final String oldValue;
@@ -170,13 +147,23 @@ public abstract class DynafigTesting<T, R> {
         public final T newExepcted;
         public final T nullValue;
 
-        static <T, R> Object[] params(final String description,
+        static <T> Object[] refTypeParams(final String description,
+                final Tracker<T, AtomicReference<T>> tracker,
+                final String oldValue, final T oldExpected,
+                final String newValue, final T newExpected) {
+            return new Object[]{
+                    new Args<>(description, tracker, AtomicReference::get,
+                            oldValue, oldExpected, newValue, newExpected,
+                            null)};
+        }
+
+        static <T, R> Object[] primitiveTypeParams(final String description,
                 final Tracker<T, R> tracker, final Getter<T, R> getter,
                 final String oldValue, final T oldExpected,
                 final String newValue, final T newExpected,
                 final T nullValue) {
             return new Object[]{
-                    new Args<>(description, true, tracker, getter, oldValue,
+                    new Args<>(description, tracker, getter, oldValue,
                             oldExpected, newValue, newExpected, nullValue)};
         }
 
