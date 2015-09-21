@@ -58,7 +58,7 @@ public abstract class DynafigTesting<T, R, D extends Tracking & Updating> {
                         new File("sally"), "bill", new File("bill")));
     }
 
-    protected void dynafig(final D dynafig) {
+    protected final void dynafig(final D dynafig) {
         this.dynafig = dynafig;
     }
 

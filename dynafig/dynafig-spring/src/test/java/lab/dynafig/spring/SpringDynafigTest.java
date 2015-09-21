@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
  *
  * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
  */
-public class SpringDynafigTest<T, R>
+public final class SpringDynafigTest<T, R>
         extends DynafigTesting<T, R, SpringDynafig> {
     private final Environment env = Mockito.mock(Environment.class);
 

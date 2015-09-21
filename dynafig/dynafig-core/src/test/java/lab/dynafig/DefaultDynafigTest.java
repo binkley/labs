@@ -1,5 +1,6 @@
 package lab.dynafig;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -13,10 +14,15 @@ import static org.junit.Assert.assertThat;
  *
  * @author <a href="mailto:binkley@alumni.rice.edu">B. K. Oxley</a>
  */
-public class DefaultDynafigTest<T, R>
+public final class DefaultDynafigTest<T, R>
         extends DynafigTesting<T, R, DefaultDynafig> {
     public DefaultDynafigTest(final Args<T, R> args) {
         super(args);
+    }
+
+    @Before
+    public void setUpFixture() {
+        dynafig(new DefaultDynafig());
     }
 
     @Override
