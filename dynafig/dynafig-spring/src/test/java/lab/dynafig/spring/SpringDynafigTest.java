@@ -90,9 +90,9 @@ public class SpringDynafigTest {
     public void shouldUpdateWhenKeyMissing() {
         when(env.containsProperty(eq(KEY))).thenReturn(false);
 
-        dynafig.update(KEY, args.oldValue);
+        dynafig.update(KEY, args.newValue);
 
-        assertThat(value(), is(equalTo(args.oldExepcted)));
+        assertThat(value(), is(equalTo(args.newExepcted)));
     }
 
     @Test
@@ -103,6 +103,39 @@ public class SpringDynafigTest {
         dynafig.update(KEY, args.newValue);
 
         assertThat(value(), is(equalTo(args.newExepcted)));
+    }
+
+    @Test
+    public void shouldObserverWhenUpdatedAndKeyMissing() {
+        when(env.containsProperty(eq(KEY))).thenReturn(false);
+
+        final AtomicReference<Object> key = new AtomicReference<>();
+        final AtomicReference<Object> value = new AtomicReference<>();
+        args.track(dynafig, (k, v) -> {
+            key.set(k);
+            value.set(v);
+        });
+        dynafig.update(KEY, args.newValue);
+
+        assertThat(key.get(), is(equalTo(KEY)));
+        assertThat(value.get(), is(equalTo(args.newExepcted)));
+    }
+
+    @Test
+    public void shouldObserverWhenUpdatedAndKeyPresent() {
+        when(env.containsProperty(eq(KEY))).thenReturn(true);
+        when(env.getProperty(eq(KEY))).thenReturn(args.oldValue);
+
+        final AtomicReference<Object> key = new AtomicReference<>();
+        final AtomicReference<Object> value = new AtomicReference<>();
+        args.track(dynafig, (k, v) -> {
+            key.set(k);
+            value.set(v);
+        });
+        dynafig.update(KEY, args.newValue);
+
+        assertThat(key.get(), is(equalTo(KEY)));
+        assertThat(value.get(), is(equalTo(args.newExepcted)));
     }
 
     private <T, R> Optional<R> track() {
