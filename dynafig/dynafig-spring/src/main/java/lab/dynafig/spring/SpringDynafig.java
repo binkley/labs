@@ -30,19 +30,6 @@ public class SpringDynafig
     private final DefaultDynafig dynafig = new DefaultDynafig();
     private final Environment env;
 
-    private <R, T> Optional<R> track(final String key,
-            final BiConsumer<String, ? super T> onUpdate,
-            final Tracker<R, T> tracker) {
-        final Optional<R> tracked = tracker.apply(dynafig, key, onUpdate);
-        if (tracked.isPresent())
-            return tracked;
-        if (!env.containsProperty(key))
-            return empty();
-        final String value = env.getProperty(key);
-        dynafig.update(key, value);
-        return tracker.apply(dynafig, key, onUpdate);
-    }
-
     @Nonnull
     @Override
     public Optional<AtomicReference<String>> track(@Nonnull final String key,
@@ -78,6 +65,19 @@ public class SpringDynafig
         dynafig.update(key, value);
     }
 
+    private <R, T> Optional<R> track(final String key,
+            final BiConsumer<String, ? super T> onUpdate,
+            final Tracker<R, T> tracker) {
+        final Optional<R> tracked = tracker.track(dynafig, key, onUpdate);
+        if (tracked.isPresent())
+            return tracked;
+        if (!env.containsProperty(key))
+            return empty();
+        final String value = env.getProperty(key);
+        dynafig.update(key, value);
+        return tracker.track(dynafig, key, onUpdate);
+    }
+
     @FunctionalInterface
     interface Tracker<R, T> {
         static <T> Tracker<AtomicReference<T>, T> asTracker(
@@ -85,7 +85,7 @@ public class SpringDynafig
             return (t, k, o) -> t.trackAs(k, convert, o);
         }
 
-        Optional<R> apply(final Tracking tracking, final String key,
+        Optional<R> track(final Tracking tracking, final String key,
                 final BiConsumer<String, ? super T> onUpdate);
     }
 }

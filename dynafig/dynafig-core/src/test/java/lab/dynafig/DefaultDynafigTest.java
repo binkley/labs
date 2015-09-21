@@ -150,15 +150,14 @@ public class DefaultDynafigTest {
 
     private enum Args {
         track("String reference",
-                (Tracker<AtomicReference<String>>) DefaultDynafig::track,
-                DefaultDynafig::track, AtomicReference::get, "apple", "apple",
+                (Tracker<AtomicReference<String>>) Tracking::track,
+                Tracking::track, AtomicReference::get, "apple", "apple",
                 "banana", "banana", null),
-        trackBool("Primitive boolean value", DefaultDynafig::trackBool,
-                DefaultDynafig::trackBool, AtomicBoolean::get, "true", true,
+        trackBool("Primitive boolean value", Tracking::trackBool,
+                Tracking::trackBool, AtomicBoolean::get, "true", true,
                 "false", false, false),
-        trackInt("Primitive int value", DefaultDynafig::trackInt,
-                DefaultDynafig::trackInt, AtomicInteger::get, "3", 3, "4", 4,
-                0),
+        trackInt("Primitive int value", Tracking::trackInt,
+                Tracking::trackInt, AtomicInteger::get, "3", 3, "4", 4, 0),
         trackAs("java.io.File reference",
                 (Tracker<AtomicReference<File>>) Args::newFile, Args::newFile,
                 AtomicReference::get, "apple", new File("apple"), "banana",
@@ -199,15 +198,15 @@ public class DefaultDynafigTest {
 
         @Nonnull
         private static Optional<AtomicReference<File>> newFile(
-                final DefaultDynafig t, final String k) {
-            return t.trackAs(k, v -> null == v ? null : new File(v));
+                final Tracking dynafig, final String key) {
+            return dynafig.trackAs(key, v -> null == v ? null : new File(v));
         }
 
         @Nonnull
         private static Optional<AtomicReference<File>> newFile(
-                final DefaultDynafig t, final String k,
+                final Tracking dynafig, final String key,
                 final BiConsumer<String, ? super File> onUpdate) {
-            return t.trackAs(k, v -> null == v ? null : new File(v),
+            return dynafig.trackAs(key, v -> null == v ? null : new File(v),
                     onUpdate);
         }
 
@@ -218,12 +217,12 @@ public class DefaultDynafigTest {
 
         @FunctionalInterface
         private interface Tracker<R> {
-            Optional<R> apply(final DefaultDynafig dynafig, final String key);
+            Optional<R> apply(final Tracking dynafig, final String key);
         }
 
         @FunctionalInterface
         private interface CtorObserver<R, T> {
-            Optional<R> apply(final DefaultDynafig dynafig, final String b,
+            Optional<R> apply(final Tracking dynafig, final String b,
                     final BiConsumer<String, ? super T> t);
         }
     }

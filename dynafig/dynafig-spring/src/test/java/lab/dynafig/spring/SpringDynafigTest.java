@@ -1,5 +1,6 @@
 package lab.dynafig.spring;
 
+import lab.dynafig.Tracking;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.junit.Test;
@@ -46,14 +47,14 @@ public class SpringDynafigTest {
     @Parameters(name = "{index}: {0}")
     public static Collection<Object[]> parameters() {
         return asList(Args.<String, AtomicReference<String>>params(
-                "env key with string values", SpringDynafig::track,
+                "env key with string values", Tracking::track,
                 AtomicReference::get, "sally", "sally", "bill", "bill", null),
 
-                params("env key with boolean values",
-                        SpringDynafig::trackBool, AtomicBoolean::get, "true",
-                        true, "false", false, false),
+                params("env key with boolean values", Tracking::trackBool,
+                        AtomicBoolean::get, "true", true, "false", false,
+                        false),
 
-                params("env key with integer values", SpringDynafig::trackInt,
+                params("env key with integer values", Tracking::trackInt,
                         AtomicInteger::get, "3", 3, "4", 4, 0),
 
                 Args.<File, AtomicReference<File>>params(
@@ -106,7 +107,7 @@ public class SpringDynafigTest {
     }
 
     @Test
-    public void shouldObserverWhenUpdatedAndKeyMissing() {
+    public void shouldObserveWhenUpdatedAndKeyMissing() {
         when(env.containsProperty(eq(KEY))).thenReturn(false);
 
         final AtomicReference<Object> key = new AtomicReference<>();
@@ -117,12 +118,12 @@ public class SpringDynafigTest {
         });
         dynafig.update(KEY, args.newValue);
 
-        assertThat(key.get(), is(equalTo(KEY)));
-        assertThat(value.get(), is(equalTo(args.newExepcted)));
+        assertThat("key", key.get(), is(equalTo(KEY)));
+        assertThat("value", value.get(), is(equalTo(args.newExepcted)));
     }
 
     @Test
-    public void shouldObserverWhenUpdatedAndKeyPresent() {
+    public void shouldObserveWhenUpdatedAndKeyPresent() {
         when(env.containsProperty(eq(KEY))).thenReturn(true);
         when(env.getProperty(eq(KEY))).thenReturn(args.oldValue);
 
@@ -134,8 +135,8 @@ public class SpringDynafigTest {
         });
         dynafig.update(KEY, args.newValue);
 
-        assertThat(key.get(), is(equalTo(KEY)));
-        assertThat(value.get(), is(equalTo(args.newExepcted)));
+        assertThat("key", key.get(), is(equalTo(KEY)));
+        assertThat("value", value.get(), is(equalTo(args.newExepcted)));
     }
 
     private <T, R> Optional<R> track() {
@@ -153,12 +154,11 @@ public class SpringDynafigTest {
 
     @FunctionalInterface
     private interface Tracker<T, R> {
-        default Optional<R> track(final SpringDynafig dynafig,
-                final String key) {
+        default Optional<R> track(final Tracking dynafig, final String key) {
             return track(dynafig, key, IGNORE);
         }
 
-        Optional<R> track(final SpringDynafig dynafig, final String key,
+        Optional<R> track(final Tracking dynafig, final String key,
                 final BiConsumer<String, ? super T> onUpdate);
     }
 
@@ -190,16 +190,16 @@ public class SpringDynafigTest {
                             oldExpected, newValue, newExpected, nullValue)};
         }
 
-        private Optional<R> track(final SpringDynafig dynafig) {
+        private Optional<R> track(final Tracking dynafig) {
             return tracker.track(dynafig, KEY);
         }
 
-        private Optional<R> track(final SpringDynafig dynafig,
+        private Optional<R> track(final Tracking dynafig,
                 final BiConsumer<String, ? super T> onUpdate) {
             return tracker.track(dynafig, KEY, onUpdate);
         }
 
-        private T value(final SpringDynafig dynafig) {
+        private T value(final Tracking dynafig) {
             return getter.get(track(dynafig).get());
         }
     }
