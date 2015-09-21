@@ -1,6 +1,12 @@
 package lab.dynafig;
 
-import java.util.Collections;
+import org.junit.Test;
+
+import java.util.Properties;
+
+import static java.util.Collections.singletonMap;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * {@code DefaultDynafigTest} tests {@link DefaultDynafig}.
@@ -15,6 +21,29 @@ public class DefaultDynafigTest<T, R>
 
     @Override
     protected void presetValue(final String value) {
-        dynafig(new DefaultDynafig(Collections.singletonMap(KEY, value)));
+        dynafig(new DefaultDynafig(singletonMap(KEY, value)));
+    }
+
+    public static final class CtorTest {
+        @Test
+        public void shouldConstructFromMap() {
+            assertThat(new DefaultDynafig(singletonMap(KEY, "")).
+                    track(KEY).isPresent(), is(true));
+        }
+
+        @Test
+        public void shouldConstructFromEntryStream() {
+            assertThat(new DefaultDynafig(singletonMap(KEY, "").
+                    entrySet().stream()).
+                    track(KEY).isPresent(), is(true));
+        }
+
+        @Test
+        public void shouldConstructFromProperties() {
+            final Properties properties = new Properties();
+            properties.put(KEY, "");
+            assertThat(new DefaultDynafig(properties).
+                    track(KEY).isPresent(), is(true));
+        }
     }
 }
