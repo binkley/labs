@@ -21,7 +21,7 @@ import static org.junit.Assert.assertThat;
 /**
  * {@code JCacheListenerTest} tests {@link JCacheListener}.
  *
- * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
+ * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
  */
 public class JCacheListenerTest {
     private static CachingProvider cachingProvider;

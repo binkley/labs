@@ -14,7 +14,7 @@ import static org.springframework.boot.SpringApplication.run;
 /**
  * {@code DynafigSpringMain} <strong>needs documentation</strong>.
  *
- * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
+ * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
  * @todo Needs documentation
  */
 @EnableAutoConfiguration

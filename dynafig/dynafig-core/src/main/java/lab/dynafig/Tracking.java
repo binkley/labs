@@ -37,7 +37,7 @@ import java.util.function.Function;
  *     }
  * }</pre>
  *
- * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
+ * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
  * @see Updating Updating key-value pairs
  * @see DefaultDynafig Reference implementation
  */

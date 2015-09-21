@@ -19,7 +19,7 @@ import static org.apache.curator.framework.recipes.cache.PathChildrenCache.Start
 /**
  * {@code ZooKeeperListener} <strong>needs documentation</strong>.
  *
- * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
+ * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
  * @todo Needs documentation
  * @todo PathChildrenCache redundant to DefaultDynafig's cache
  */

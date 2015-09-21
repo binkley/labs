@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 /**
  * {@code SpringDynafigTest} <strong>needs documentation</strong>.
  *
- * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
+ * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
  * @todo Needs documentation
  */
 @RequiredArgsConstructor

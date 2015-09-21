@@ -26,7 +26,7 @@ import static org.junit.Assert.assertThat;
 /**
  * {@code DefaultDynafigTest} tests {@link DefaultDynafig}.
  *
- * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
+ * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
  */
 @RunWith(Parameterized.class)
 public class DefaultDynafigTest {

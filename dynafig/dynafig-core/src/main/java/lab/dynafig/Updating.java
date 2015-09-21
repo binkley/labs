@@ -9,7 +9,7 @@ import java.util.function.BiConsumer;
 /**
  * {@code Updating} updates key-value pairs.
  *
- * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
+ * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
  * @see Tracking Tracking key-value pairs
  * @see DefaultDynafig Reference implementation
  */

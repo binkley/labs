@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 /**
  * {@code DefaultDynafig} is a simple implementation of {@link Tracking}.
  *
- * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
+ * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
  */
 public class DefaultDynafig
         implements Tracking, Updating {
