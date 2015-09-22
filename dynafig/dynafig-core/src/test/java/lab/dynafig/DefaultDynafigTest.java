@@ -1,11 +1,14 @@
 package lab.dynafig;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.Properties;
 
 import static java.util.Collections.singletonMap;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -30,7 +33,10 @@ public final class DefaultDynafigTest<T, R>
         dynafig(new DefaultDynafig(singletonMap(KEY, value)));
     }
 
-    public static final class CtorTest {
+    public static final class CustomTest {
+        @Rule
+        public final ExpectedException thrown = ExpectedException.none();
+
         @Test
         public void shouldConstructFromMap() {
             assertThat(new DefaultDynafig(singletonMap(KEY, "")).
@@ -48,8 +54,24 @@ public final class DefaultDynafigTest<T, R>
         public void shouldConstructFromProperties() {
             final Properties properties = new Properties();
             properties.put(KEY, "");
+
             assertThat(new DefaultDynafig(properties).
                     track(KEY).isPresent(), is(true));
+        }
+
+        @Test
+        public void shouldInsertKeyValuesFromTheSide() {
+            final DefaultDynafig dynafig = new DefaultDynafig();
+            dynafig.insert(KEY, "");
+
+            assertThat(dynafig.track(KEY).get().get(), is(equalTo("")));
+        }
+
+        @Test
+        public void shouldComplainWhenInsertingPreesitingKey() {
+            thrown.expect(IllegalArgumentException.class);
+
+            new DefaultDynafig(singletonMap(KEY, "")).insert(KEY, "");
         }
     }
 }
