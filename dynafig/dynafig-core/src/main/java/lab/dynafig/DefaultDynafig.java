@@ -1,5 +1,7 @@
 package lab.dynafig;
 
+import lombok.ToString;
+
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +81,11 @@ public class DefaultDynafig
 
     @Override
     public void update(@Nonnull final String key, final String value) {
-        values.merge(key, new Value(value), (a, b) -> a.update(value));
+        values.compute(key, (k, v) -> {
+            if (null == v)
+                throw new IllegalArgumentException();
+            return new Value(value);
+        });
     }
 
     private <T, R> Optional<R> track(final String key,
@@ -94,6 +100,7 @@ public class DefaultDynafig
         return u -> onUpdate.accept(key, u);
     }
 
+    @ToString
     private static final class Value {
         private final String value;
         private final List<Atomic<?, ?>> atomics;
@@ -116,59 +123,60 @@ public class DefaultDynafig
 
         private AtomicReference<String> track(
                 final Consumer<? super String> onUpdate) {
-            final Atomic<String, AtomicReference<String>> s = new Atomic<>(
-                    value, new AtomicReference<>(), AtomicReference::get,
-                    AtomicReference::set, onUpdate);
-            atomics.add(s);
-            return s.atomic;
+            final Atomic<String, AtomicReference<String>> atomic
+                    = new Atomic<>(value, new AtomicReference<>(),
+                    AtomicReference::get, AtomicReference::set, onUpdate);
+            atomics.add(atomic);
+            return atomic.atomic;
         }
 
         private AtomicBoolean trackBool(
                 final Consumer<? super Boolean> onUpdate) {
-            final Atomic<Boolean, AtomicBoolean> b = new Atomic<>(value,
+            final Atomic<Boolean, AtomicBoolean> atomic = new Atomic<>(value,
                     new AtomicBoolean(), AtomicBoolean::get,
                     (a, v) -> a.set(null == v ? false : Boolean.valueOf(v)),
                     onUpdate);
-            atomics.add(b);
-            return b.atomic;
+            atomics.add(atomic);
+            return atomic.atomic;
         }
 
         private AtomicInteger trackInt(
                 final Consumer<? super Integer> onUpdate) {
-            final Atomic<Integer, AtomicInteger> i = new Atomic<>(value,
+            final Atomic<Integer, AtomicInteger> atomic = new Atomic<>(value,
                     new AtomicInteger(), AtomicInteger::get,
                     (a, v) -> a.set(null == v ? 0 : Integer.valueOf(v)),
                     onUpdate);
-            atomics.add(i);
-            return i.atomic;
+            atomics.add(atomic);
+            return atomic.atomic;
         }
 
         private <T> AtomicReference<T> trackAs(
                 final Function<? super String, T> convert,
                 final Consumer<? super T> onUpdate) {
-            final Atomic<T, AtomicReference<T>> t = new Atomic<>(value,
+            final Atomic<T, AtomicReference<T>> atomic = new Atomic<>(value,
                     new AtomicReference<>(), AtomicReference::get,
                     (a, v) -> a.set(null == v ? null : convert.apply(v)),
                     onUpdate);
-            atomics.add(t);
-            return t.atomic;
+            atomics.add(atomic);
+            return atomic.atomic;
         }
     }
 
-    private static class Atomic<T, R>
+    private static final class Atomic<T, R>
             implements Consumer<String>, Supplier<T> {
-        protected final R atomic;
+        private final R atomic;
         private final Function<R, T> getter;
         private final BiConsumer<R, String> setter;
+        private final Consumer<? super T> onUpdate;
 
-        protected Atomic(final String value, final R atomic,
+        private Atomic(final String value, final R atomic,
                 final Function<R, T> getter,
                 final BiConsumer<R, String> setter,
                 final Consumer<? super T> onUpdate) {
             this.atomic = atomic;
             this.getter = getter;
-            this.setter = setter.
-                    andThen((a, v) -> onUpdate.accept(getter.apply(a)));
+            this.setter = setter;
+            this.onUpdate = onUpdate;
             accept(value);
         }
 
@@ -180,6 +188,7 @@ public class DefaultDynafig
         @Override
         public final void accept(final String value) {
             setter.accept(atomic, value);
+            onUpdate.accept(get());
         }
     }
 }

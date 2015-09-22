@@ -3,7 +3,9 @@ package lab.dynafig;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -34,6 +36,9 @@ import static org.junit.Assert.assertThat;
 @RunWith(Parameterized.class)
 public abstract class DynafigTesting<T, R, D extends Tracking & Updating> {
     protected static final String KEY = "bob";
+
+    @Rule
+    public final ExpectedException thrown = ExpectedException.none();
 
     protected final Args<T, R> args;
 
@@ -110,6 +115,13 @@ public abstract class DynafigTesting<T, R, D extends Tracking & Updating> {
 
         assertThat("key", key.get(), is(equalTo(KEY)));
         assertThat("value", value.get(), is(equalTo(args.newExepcted)));
+    }
+
+    @Test
+    public final void shouldComplainWhenUpdatingMissingKey() {
+        thrown.expect(IllegalArgumentException.class);
+
+        dynafig().update(KEY, null);
     }
 
     protected final T value() {
