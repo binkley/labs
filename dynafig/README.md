@@ -18,9 +18,9 @@ Cassandra.
   * Factory for `Optional<Atomic*>`
   * Connect `@Inject @Named(key)` to `track*`
 4. Cloud environment source for non-git.
-5. Update Spring `@Configuration` with constraints.sk
+5. Update Spring `@Configuration` with constraints.
 
-## Interfaces˚
+## Interfaces
 
 ### Tracking
 
@@ -56,6 +56,9 @@ public MerryGoRound(@Nonnull final Tracking settings) {
 }
 ```
 
+The callback is initially invoked with the current value for the key, and
+reinvoked as the key is updated.
+
 The four tracking choices are:
 
 * [`track`](dynafig-core/src/main/java/lab/dynafig/Tracking.java#L55)
@@ -74,7 +77,8 @@ The four tracking choices are:
 pair values:
 
 * [`update(key,value)`](dynafig-core/src/main/java/lab/dynafig/Updating.java#L23)
-  updates a pair value or creates a new key-value pair if `key` is undefined
+  updates a pair value or throws `IllegalArgumentException` if `key` is
+  undefined (TODO: should it create a new pair instead?)
 * [`update(entry)`](dynafig-core/src/main/java/lab/dynafig/Updating.java#L33)
   is a convenience to update from a map entry
 * [`updateAll`](dynafig-core/src/main/java/lab/dynafig/Updating.java#L45)
@@ -91,5 +95,5 @@ tests it
 
 * [Apache ZooKeeper](dynafig-zookeeper/src/main/java/lab/dynafig/zookeeper/ZookeeperListener)
 * TODO: Netflix Archaius2
-* [JCache](dynafig-jcache/src/main/java/lab/dynafig/jcache/JCacheListener)
+* TODO: JCache
 * [Spring Boot](dynafig-spring/src/main/java/lab/dynafig/spring/DynafixAutoConfiguration)
