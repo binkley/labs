@@ -84,7 +84,7 @@ public class DefaultDynafig
         values.compute(key, (k, v) -> {
             if (null == v)
                 throw new IllegalArgumentException();
-            return new Value(value);
+            return v.update(value);
         });
     }
 
