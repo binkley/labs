@@ -69,6 +69,7 @@ public class SpringDynafig
             final BiConsumer<String, ? super T> onUpdate,
             final Tracker<R, T> tracker) {
         final Optional<R> tracked = tracker.track(dynafig, key, onUpdate);
+        // Would have thrown IAE here if no such key existed in env
         if (tracked.isPresent())
             return tracked;
         if (!env.containsProperty(key))

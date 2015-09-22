@@ -2,10 +2,10 @@ package lab.dynafig.spring;
 
 import lab.dynafig.DynafigTesting;
 import org.junit.Before;
-import org.mockito.Mockito;
 import org.springframework.core.env.Environment;
 
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
  */
 public final class SpringDynafigTest<T, R>
         extends DynafigTesting<T, R, SpringDynafig> {
-    private final Environment env = Mockito.mock(Environment.class);
+    private final Environment env = mock(Environment.class);
 
     public SpringDynafigTest(final Args<T, R> args) {
         super(args);
