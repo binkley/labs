@@ -28,7 +28,7 @@ import static java.util.Optional.ofNullable;
  *
  * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
  */
-public class DefaultDynafig
+public final class DefaultDynafig
         implements Tracking, Updating {
     private final Map<String, Value> values = new ConcurrentHashMap<>();
 
@@ -48,6 +48,11 @@ public class DefaultDynafig
     public DefaultDynafig(@Nonnull final Properties properties) {
         properties.forEach(
                 (k, v) -> values.put((String) k, new Value((String) v)));
+    }
+
+    public void insert(final String key, final String value) {
+        if (null == values.computeIfAbsent(key, k -> new Value(value)))
+            throw new IllegalStateException();
     }
 
     @Nonnull

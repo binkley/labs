@@ -62,6 +62,7 @@ public class SpringDynafig
     @Override
     public void update(@Nonnull final String key,
             @Nullable final String value) {
+        track(key); // Lazy init from Spring
         dynafig.update(key, value);
     }
 
@@ -69,13 +70,12 @@ public class SpringDynafig
             final BiConsumer<String, ? super T> onUpdate,
             final Tracker<R, T> tracker) {
         final Optional<R> tracked = tracker.track(dynafig, key, onUpdate);
-        // Would have thrown IAE here if no such key existed in env
         if (tracked.isPresent())
             return tracked;
         if (!env.containsProperty(key))
             return empty();
         final String value = env.getProperty(key);
-        dynafig.update(key, value);
+        dynafig.insert(key, value); // Lie
         return tracker.track(dynafig, key, onUpdate);
     }
 

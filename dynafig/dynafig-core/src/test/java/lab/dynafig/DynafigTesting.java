@@ -12,6 +12,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
