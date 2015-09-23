@@ -32,27 +32,52 @@ public final class DefaultDynafig
         implements Tracking, Updating {
     private final Map<String, Value> values = new ConcurrentHashMap<>();
 
+    @FunctionalInterface
+    public interface Fetcher
+            extends Function<String, Optional<Optional<String>>> {}
+
+    private static final Fetcher none = k -> Optional.empty();
+    private final Fetcher fetch;
+
     public DefaultDynafig() {
+        this(none);
+    }
+
+    public DefaultDynafig(final Fetcher fetch) {
+        this.fetch = fetch;
     }
 
     public DefaultDynafig(@Nonnull final Map<String, String> pairs) {
+        this(pairs, none);
+    }
+
+    public DefaultDynafig(@Nonnull final Map<String, String> pairs,
+            final Fetcher fetch) {
+        this(fetch);
         pairs.forEach((k, v) -> values.put(k, new Value(v)));
     }
 
     public DefaultDynafig(
             @Nonnull final Stream<Entry<String, String>> pairs) {
+        this(pairs, none);
+    }
+
+    public DefaultDynafig(@Nonnull final Stream<Entry<String, String>> pairs,
+            final Fetcher fetch) {
+        this(fetch);
         pairs.forEach(pair -> values.
                 put(pair.getKey(), new Value(pair.getValue())));
     }
 
+    @SuppressWarnings("unchecked")
     public DefaultDynafig(@Nonnull final Properties properties) {
-        properties.forEach(
-                (k, v) -> values.put((String) k, new Value((String) v)));
+        this(properties, none);
     }
 
-    public void insert(final String key, final String value) {
-        if (null == values.computeIfAbsent(key, k -> new Value(value)))
-            throw new IllegalStateException();
+    @SuppressWarnings("unchecked")
+    public DefaultDynafig(@Nonnull final Properties properties,
+            final Fetcher fetch) {
+        this((Map) properties, fetch);
     }
 
     @Nonnull
@@ -88,16 +113,28 @@ public final class DefaultDynafig
     public void update(@Nonnull final String key, final String value) {
         values.compute(key, (k, v) -> {
             if (null == v)
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException(key);
             return v.update(value);
         });
     }
 
     private <T, R> Optional<R> track(final String key,
-            final BiFunction<Value, Consumer<T>, R> fn,
+            final BiFunction<Value, Consumer<T>, R> tracker,
             final BiConsumer<String, ? super T> onUpdate) {
-        return ofNullable(values.get(key)).
-                map(v -> fn.apply(v, curry(key, onUpdate)));
+        return value(key).
+                map(v -> tracker.apply(v, curry(key, onUpdate)));
+    }
+
+    private Optional<Value> value(final String key) {
+        return ofNullable(values.computeIfAbsent(key,
+                k -> fetch(key)));
+    }
+
+    private Value fetch(final String key) {
+        final Optional<Optional<String>> fetched = fetch.apply(key);
+        if (fetched.isPresent())
+            return new Value(fetched.get().orElse(null));
+        return null;
     }
 
     private static <U> Consumer<U> curry(final String key,

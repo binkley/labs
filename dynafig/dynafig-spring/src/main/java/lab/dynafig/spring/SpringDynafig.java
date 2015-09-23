@@ -3,7 +3,6 @@ package lab.dynafig.spring;
 import lab.dynafig.DefaultDynafig;
 import lab.dynafig.Tracking;
 import lab.dynafig.Updating;
-import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 
 import javax.annotation.Nonnull;
@@ -16,6 +15,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import static lab.dynafig.spring.SpringDynafig.Tracker.asTracker;
 
 /**
@@ -24,11 +24,15 @@ import static lab.dynafig.spring.SpringDynafig.Tracker.asTracker;
  * @author <a href="mailto:binkley@alumni.rice.edu">B. K. Oxley (binkley)</a>
  * @todo Needs documentation.
  */
-@RequiredArgsConstructor
 public class SpringDynafig
         implements Tracking, Updating {
-    private final DefaultDynafig dynafig = new DefaultDynafig();
-    private final Environment env;
+    private final DefaultDynafig dynafig;
+
+    public SpringDynafig(final Environment env) {
+        dynafig = new DefaultDynafig(
+                key -> env.containsProperty(key) ? Optional
+                        .of(ofNullable(env.getProperty(key))) : empty());
+    }
 
     @Nonnull
     @Override
@@ -69,13 +73,6 @@ public class SpringDynafig
     private <R, T> Optional<R> track(final String key,
             final BiConsumer<String, ? super T> onUpdate,
             final Tracker<R, T> tracker) {
-        final Optional<R> tracked = tracker.track(dynafig, key, onUpdate);
-        if (tracked.isPresent())
-            return tracked;
-        if (!env.containsProperty(key))
-            return empty();
-        final String value = env.getProperty(key);
-        dynafig.insert(key, value); // Lie
         return tracker.track(dynafig, key, onUpdate);
     }
 
