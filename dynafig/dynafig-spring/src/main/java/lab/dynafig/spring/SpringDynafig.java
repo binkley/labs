@@ -16,7 +16,6 @@ import java.util.function.Function;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static lab.dynafig.spring.SpringDynafig.Tracker.asTracker;
 
 /**
  * {@code SpringDynafig} <b>needs documentation</b>.
@@ -38,21 +37,21 @@ public class SpringDynafig
     @Override
     public Optional<AtomicReference<String>> track(@Nonnull final String key,
             @Nonnull final BiConsumer<String, ? super String> onUpdate) {
-        return track(key, onUpdate, Tracking::track);
+        return dynafig.track(key, onUpdate);
     }
 
     @Nonnull
     @Override
     public Optional<AtomicBoolean> trackBool(@Nonnull final String key,
             @Nonnull final BiConsumer<String, ? super Boolean> onUpdate) {
-        return track(key, onUpdate, Tracking::trackBool);
+        return dynafig.trackBool(key, onUpdate);
     }
 
     @Nonnull
     @Override
     public Optional<AtomicInteger> trackInt(@Nonnull final String key,
             @Nonnull final BiConsumer<String, ? super Integer> onUpdate) {
-        return track(key, onUpdate, Tracking::trackInt);
+        return dynafig.trackInt(key, onUpdate);
     }
 
     @Nonnull
@@ -60,7 +59,7 @@ public class SpringDynafig
     public <T> Optional<AtomicReference<T>> trackAs(@Nonnull final String key,
             @Nonnull final Function<String, T> convert,
             @Nonnull final BiConsumer<String, ? super T> onUpdate) {
-        return track(key, onUpdate, asTracker(convert));
+        return dynafig.trackAs(key, convert, onUpdate);
     }
 
     @Override
@@ -68,22 +67,5 @@ public class SpringDynafig
             @Nullable final String value) {
         track(key); // Lazy init from Spring
         dynafig.update(key, value);
-    }
-
-    private <R, T> Optional<R> track(final String key,
-            final BiConsumer<String, ? super T> onUpdate,
-            final Tracker<R, T> tracker) {
-        return tracker.track(dynafig, key, onUpdate);
-    }
-
-    @FunctionalInterface
-    interface Tracker<R, T> {
-        static <T> Tracker<AtomicReference<T>, T> asTracker(
-                final Function<String, T> convert) {
-            return (t, k, o) -> t.trackAs(k, convert, o);
-        }
-
-        Optional<R> track(final Tracking tracking, final String key,
-                final BiConsumer<String, ? super T> onUpdate);
     }
 }
