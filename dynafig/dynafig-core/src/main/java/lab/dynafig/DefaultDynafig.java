@@ -37,14 +37,14 @@ public final class DefaultDynafig
             extends Function<String, Optional<Optional<String>>> {}
 
     private static final Fetcher none = k -> Optional.empty();
-    private final Fetcher fetch;
+    private final Fetcher fetcher;
 
     public DefaultDynafig() {
         this(none);
     }
 
-    public DefaultDynafig(final Fetcher fetch) {
-        this.fetch = fetch;
+    public DefaultDynafig(final Fetcher fetcher) {
+        this.fetcher = fetcher;
     }
 
     public DefaultDynafig(@Nonnull final Map<String, String> pairs) {
@@ -52,8 +52,8 @@ public final class DefaultDynafig
     }
 
     public DefaultDynafig(@Nonnull final Map<String, String> pairs,
-            final Fetcher fetch) {
-        this(fetch);
+            final Fetcher fetcher) {
+        this(fetcher);
         pairs.forEach((k, v) -> values.put(k, new Value(v)));
     }
 
@@ -63,8 +63,8 @@ public final class DefaultDynafig
     }
 
     public DefaultDynafig(@Nonnull final Stream<Entry<String, String>> pairs,
-            final Fetcher fetch) {
-        this(fetch);
+            final Fetcher fetcher) {
+        this(fetcher);
         pairs.forEach(pair -> values.
                 put(pair.getKey(), new Value(pair.getValue())));
     }
@@ -76,8 +76,8 @@ public final class DefaultDynafig
 
     @SuppressWarnings("unchecked")
     public DefaultDynafig(@Nonnull final Properties properties,
-            final Fetcher fetch) {
-        this((Map) properties, fetch);
+            final Fetcher fetcher) {
+        this((Map) properties, fetcher);
     }
 
     @Nonnull
@@ -131,7 +131,7 @@ public final class DefaultDynafig
     }
 
     private Value fetch(final String key) {
-        final Optional<Optional<String>> fetched = fetch.apply(key);
+        final Optional<Optional<String>> fetched = fetcher.apply(key);
         if (fetched.isPresent())
             return new Value(fetched.get().orElse(null));
         return null;
