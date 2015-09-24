@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -24,14 +25,14 @@ import java.util.function.Function;
  * In an injection context: <pre>
  * class Wheel {
  *     private final AtomicInteger rapidity;
- *
+ * <p>
  *     &#64;Inject
  *     public Wheel(final Tracking dynafig) {
  *         rapidity = dynafig.track("rapidity").
  *                 orElseThrow(() -&gt; new IllegalStateException(
  *                         "Missing 'rapidity' property));
  *     }
- *
+ * <p>
  *     public void spin() {
  *         spinAtRate(rapidity.get());
  *     }
@@ -125,6 +126,33 @@ public interface Tracking {
     @Nonnull
     Optional<AtomicInteger> trackInt(@Nonnull final String key,
             @Nonnull final BiConsumer<String, ? super Integer> onUpdate);
+
+    /**
+     * Tracks the given <var>key</var> value as a long integer.  Returns empty
+     * if <var>key</var> is undefined.
+     *
+     * @param key the key, never missing
+     *
+     * @return the optional atomic value long, never missing
+     */
+    @Nonnull
+    default Optional<AtomicLong> trackLong(@Nonnull final String key) {
+        return trackLong(key, IGNORE);
+    }
+
+    /**
+     * Tracks the given <var>key</var> value as a long integer.  Returns empty
+     * if <var>key</var> is undefined.  Notifies <var>onUpdate</var> when the
+     * tracked value changes, including this call.
+     *
+     * @param key the key, never missing
+     * @param onUpdate the notification callback, never missing
+     *
+     * @return the optional atomic value long, never missing
+     */
+    @Nonnull
+    Optional<AtomicLong> trackLong(@Nonnull final String key,
+            @Nonnull final BiConsumer<String, ? super Long> onUpdate);
 
     /**
      * Tracks the given <var>key</var> value as <var>type</var>.  Returns

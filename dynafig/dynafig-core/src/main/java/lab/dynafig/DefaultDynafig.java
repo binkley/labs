@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -103,6 +104,13 @@ public class DefaultDynafig
 
     @Nonnull
     @Override
+    public Optional<AtomicLong> trackLong(@Nonnull final String key,
+            @Nonnull final BiConsumer<String, ? super Long> onUpdate) {
+        return track(key, Value::trackLong, onUpdate);
+    }
+
+    @Nonnull
+    @Override
     public <T> Optional<AtomicReference<T>> trackAs(@Nonnull final String key,
             @Nonnull final Function<String, T> convert,
             @Nonnull final BiConsumer<String, ? super T> onUpdate) {
@@ -186,6 +194,16 @@ public class DefaultDynafig
             final Atomic<Integer, AtomicInteger> atomic = new Atomic<>(value,
                     new AtomicInteger(), AtomicInteger::get,
                     (a, v) -> a.set(null == v ? 0 : Integer.valueOf(v)),
+                    onUpdate);
+            atomics.add(atomic);
+            return atomic.atomic;
+        }
+
+        private AtomicLong trackLong(
+                final Consumer<? super Long> onUpdate) {
+            final Atomic<Long, AtomicLong> atomic = new Atomic<>(value,
+                    new AtomicLong(), AtomicLong::get,
+                    (a, v) -> a.set(null == v ? 0L : Long.valueOf(v)),
                     onUpdate);
             atomics.add(atomic);
             return atomic.atomic;

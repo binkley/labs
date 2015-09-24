@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
@@ -57,6 +58,10 @@ public abstract class DynafigTesting<T, R, D extends Tracking & Updating> {
                 primitiveTypeParams("env key with integer values",
                         Tracking::trackInt, AtomicInteger::get, "3", 3, "4",
                         4, 0),
+
+                primitiveTypeParams("env key with long values",
+                        Tracking::trackLong, AtomicLong::get, "3", 3L, "4",
+                        4L, 0L),
 
                 refTypeParams("env key with reference type values",
                         (d, k, o) -> d.trackAs(k, File::new, o), "sally",
