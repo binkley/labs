@@ -28,7 +28,7 @@ import static java.util.Optional.ofNullable;
  *
  * @author <a href="mailto:boxley@thoughtworks.com">B. K. Oxley</a>
  */
-public final class DefaultDynafig
+public class DefaultDynafig
         implements Tracking, Updating {
     private final Map<String, Value> values = new ConcurrentHashMap<>();
 
