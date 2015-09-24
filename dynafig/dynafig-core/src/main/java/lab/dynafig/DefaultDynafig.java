@@ -34,9 +34,9 @@ public class DefaultDynafig
 
     @FunctionalInterface
     public interface Fetcher
-            extends Function<String, Optional<Optional<String>>> {}
+            extends Function<String, Optional<String>> {}
 
-    private static final Fetcher none = k -> Optional.empty();
+    private static final Fetcher none = k -> null;
     private final Fetcher fetcher;
 
     public DefaultDynafig() {
@@ -126,15 +126,14 @@ public class DefaultDynafig
     }
 
     private Optional<Value> value(final String key) {
-        return ofNullable(values.computeIfAbsent(key,
-                k -> fetch(key)));
+        return ofNullable(values.computeIfAbsent(key, k -> fetch(key)));
     }
 
     private Value fetch(final String key) {
-        final Optional<Optional<String>> fetched = fetcher.apply(key);
-        if (fetched.isPresent())
-            return new Value(fetched.get().orElse(null));
-        return null;
+        final Optional<String> fetched = fetcher.apply(key);
+        if (null == fetched)
+            return null;
+        return new Value(fetched.orElse(null));
     }
 
     private static <U> Consumer<U> curry(final String key,

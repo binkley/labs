@@ -5,9 +5,7 @@ import org.springframework.core.env.Environment;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Optional;
 
-import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -19,8 +17,8 @@ import static java.util.Optional.ofNullable;
 public class SpringDynafig
         extends DefaultDynafig {
     public SpringDynafig(final Environment env) {
-        super(key -> env.containsProperty(key) ? Optional
-                .of(ofNullable(env.getProperty(key))) : empty());
+        super(key -> env.containsProperty(key) ? ofNullable(
+                env.getProperty(key)) : null);
     }
 
     @Override
