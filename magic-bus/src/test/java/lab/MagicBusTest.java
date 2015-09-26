@@ -2,10 +2,12 @@ package lab;
 
 import lab.MagicBus.DeadLetter;
 import lab.MagicBus.FailedPost;
+import lab.MagicBus.Receiver;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -68,13 +70,25 @@ public final class MagicBusTest {
 
     @Test
     public void shouldSaveFailedPosts() {
-        bus.subscribe(LeftType.class, message -> {
-            throw new Exception();
-        });
+        bus.subscribe(LeftType.class, failWith(Exception::new));
 
         bus.post(new LeftType());
 
         assertThat(failed.get(), is(notNullValue()));
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void shouldThrowFailedPostsForUnchecked() {
+        bus.subscribe(LeftType.class, failWith(RuntimeException::new));
+
+        bus.post(new LeftType());
+    }
+
+    private static <T, U extends Exception> Receiver<T> failWith(
+            final Supplier<U> ctor) {
+        return message -> {
+            throw ctor.get();
+        };
     }
 
     private abstract static class BaseType {}

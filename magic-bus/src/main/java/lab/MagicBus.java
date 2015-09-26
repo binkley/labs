@@ -20,11 +20,6 @@ import java.util.stream.Stream;
  */
 @RequiredArgsConstructor
 public final class MagicBus {
-    public interface Receiver<T> {
-        void receive(final T message)
-                throws Exception;
-    }
-
     private final Subscribers subscribers = new Subscribers();
     private final Consumer<DeadLetter> returned;
     private final Consumer<FailedPost> failed;
@@ -56,6 +51,12 @@ public final class MagicBus {
         };
     }
 
+    @FunctionalInterface
+    public interface Receiver<T> {
+        void receive(final T message)
+                throws Exception;
+    }
+
     @RequiredArgsConstructor
     public static final class DeadLetter {
         public final MagicBus bus;
@@ -69,11 +70,6 @@ public final class MagicBus {
         public final Receiver receiver;
         public final Object message;
         public final Exception failure;
-
-        private void doom(final Exception e) {
-            failure.addSuppressed(e);
-            throw this;
-        }
     }
 
     private static final class Subscribers {
@@ -103,7 +99,7 @@ public final class MagicBus {
             return e -> e.getKey().isAssignableFrom(messageType);
         }
 
-        private static Function<Entry<Class, Set<Receiver>>, Stream<? extends Receiver>> toReceivers() {
+        private static Function<Entry<Class, Set<Receiver>>, Stream<Receiver>> toReceivers() {
             return e -> e.getValue().stream();
         }
     }
