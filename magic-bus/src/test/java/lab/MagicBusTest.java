@@ -1,7 +1,10 @@
 package lab;
 
+import lab.MagicBus.FailedPost;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -16,6 +19,9 @@ import static org.junit.Assert.assertThat;
  * @author <a href="mailto:binkley@alumni.rice.edu">B. K. Oxley (binkley)</a>
  */
 public final class MagicBusTest {
+    @Rule
+    public final ExpectedException thrown = ExpectedException.none();
+
     private MagicBus bus;
 
     @Before
@@ -51,6 +57,33 @@ public final class MagicBusTest {
         bus.post(new RightType());
 
         assertThat(mailbox.get(), is(notNullValue()));
+    }
+
+    @Test
+    public void shouldReceiveFailedPosts() {
+        final AtomicReference<FailedPost> mailbox = new AtomicReference<>();
+        bus.subscribe(FailedPost.class, mailbox::set);
+        bus.subscribe(LeftType.class, message -> {
+            throw new Exception();
+        });
+
+        bus.post(new LeftType());
+
+        assertThat(mailbox.get(), is(notNullValue()));
+    }
+
+    @Test
+    public void shouldNotRecurWhenFailedPostFails() {
+        thrown.expect(FailedPost.class);
+
+        bus.subscribe(FailedPost.class, failedPost -> {
+            throw new Exception();
+        });
+        bus.subscribe(LeftType.class, message -> {
+            throw new Exception();
+        });
+
+        bus.post(new LeftType());
     }
 
     private abstract static class BaseType {}
