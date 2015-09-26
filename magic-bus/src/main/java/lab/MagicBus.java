@@ -12,6 +12,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static java.util.stream.StreamSupport.stream;
+import static lab.CountedSpliterator.count;
+
 /**
  * {@code MagicBus} <b>needs documentation</b>.
  *
@@ -30,11 +33,11 @@ public final class MagicBus {
     }
 
     public void post(final Object message) {
-        final boolean[] found = {false};
-        subscribers.of(message).
-                peek(r -> found[0] = true).
+        final CountedSpliterator<Mailbox> it = count(subscribers.of(message));
+        stream(it, false).
                 forEach(receive(message));
-        if (!found[0])
+
+        if (it.isEmpty())
             returned.accept(new DeadLetter(this, message));
     }
 
