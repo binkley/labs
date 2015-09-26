@@ -25,8 +25,8 @@ public final class MagicBus {
     private final Consumer<FailedPost> failed;
 
     public <T> void subscribe(final Class<T> messageType,
-            final Receiver<? super T> receiver) {
-        subscribers.subscribe(messageType, receiver);
+            final Mailbox<? super T> mailbox) {
+        subscribers.subscribe(messageType, mailbox);
     }
 
     public void post(final Object message) {
@@ -39,20 +39,20 @@ public final class MagicBus {
     }
 
     @SuppressWarnings("unchecked")
-    private Consumer<Receiver> receive(final Object message) {
-        return receiver -> {
+    private Consumer<Mailbox> receive(final Object message) {
+        return mailbox -> {
             try {
-                receiver.receive(message);
+                mailbox.receive(message);
             } catch (final RuntimeException e) {
                 throw e;
             } catch (final Exception e) {
-                failed.accept(new FailedPost(this, receiver, message, e));
+                failed.accept(new FailedPost(this, mailbox, message, e));
             }
         };
     }
 
     @FunctionalInterface
-    public interface Receiver<T> {
+    public interface Mailbox<T> {
         void receive(final T message)
                 throws Exception;
     }
@@ -67,39 +67,39 @@ public final class MagicBus {
     public static final class FailedPost
             extends RuntimeException {
         public final MagicBus bus;
-        public final Receiver receiver;
+        public final Mailbox mailbox;
         public final Object message;
         public final Exception failure;
     }
 
     private static final class Subscribers {
-        private final Map<Class, Set<Receiver>> subscribers
+        private final Map<Class, Set<Mailbox>> subscribers
                 = new ConcurrentHashMap<>();
 
         private void subscribe(final Class messageType,
-                final Receiver receiver) {
-            subscribers.computeIfAbsent(messageType, Subscribers::receivers).
-                    add(receiver);
+                final Mailbox mailbox) {
+            subscribers.computeIfAbsent(messageType, Subscribers::mailbox).
+                    add(mailbox);
         }
 
-        private Stream<Receiver> of(final Object message) {
+        private Stream<Mailbox> of(final Object message) {
             final Class messageType = message.getClass();
             return subscribers.entrySet().stream().
                     filter(subscribedTo(messageType)).
-                    flatMap(toReceivers());
+                    flatMap(toMailboxes());
         }
 
-        private static Set<Receiver> receivers(final Class messageType) {
+        private static Set<Mailbox> mailbox(final Class messageType) {
             return new CopyOnWriteArraySet<>();
         }
 
         @SuppressWarnings("unchecked")
-        private static Predicate<Entry<Class, Set<Receiver>>> subscribedTo(
+        private static Predicate<Entry<Class, Set<Mailbox>>> subscribedTo(
                 final Class messageType) {
             return e -> e.getKey().isAssignableFrom(messageType);
         }
 
-        private static Function<Entry<Class, Set<Receiver>>, Stream<Receiver>> toReceivers() {
+        private static Function<Entry<Class, Set<Mailbox>>, Stream<Mailbox>> toMailboxes() {
             return e -> e.getValue().stream();
         }
     }

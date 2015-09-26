@@ -2,7 +2,7 @@ package lab;
 
 import lab.MagicBus.DeadLetter;
 import lab.MagicBus.FailedPost;
-import lab.MagicBus.Receiver;
+import lab.MagicBus.Mailbox;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -84,7 +84,7 @@ public final class MagicBusTest {
         bus.post(new LeftType());
     }
 
-    private static <T, U extends Exception> Receiver<T> failWith(
+    private static <T, U extends Exception> Mailbox<T> failWith(
             final Supplier<U> ctor) {
         return message -> {
             throw ctor.get();
