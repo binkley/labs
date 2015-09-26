@@ -18,6 +18,7 @@ import java.util.stream.Stream;
  * @author <a href="mailto:binkley@alumni.rice.edu">B. K. Oxley (binkley)</a>
  * @todo Needs documentation.
  */
+@RequiredArgsConstructor
 public final class MagicBus {
     public interface Receiver<T> {
         void receive(final T message)
@@ -25,6 +26,8 @@ public final class MagicBus {
     }
 
     private final Subscribers subscribers = new Subscribers();
+    private final Consumer<DeadLetter> returned;
+    private final Consumer<FailedPost> failed;
 
     public <T> void subscribe(final Class<T> messageType,
             final Receiver<? super T> receiver) {
@@ -32,8 +35,12 @@ public final class MagicBus {
     }
 
     public void post(final Object message) {
+        final boolean[] found = {false};
         subscribers.of(message).
+                peek(r -> found[0] = true).
                 forEach(receive(message));
+        if (!found[0])
+            returned.accept(new DeadLetter(this, message));
     }
 
     @SuppressWarnings("unchecked")
@@ -44,11 +51,15 @@ public final class MagicBus {
             } catch (final RuntimeException e) {
                 throw e;
             } catch (final Exception e) {
-                if (message instanceof FailedPost)
-                    ((FailedPost) message).doom(e);
-                post(new FailedPost(this, receiver, message, e));
+                failed.accept(new FailedPost(this, receiver, message, e));
             }
         };
+    }
+
+    @RequiredArgsConstructor
+    public static final class DeadLetter {
+        public final MagicBus bus;
+        public final Object message;
     }
 
     @RequiredArgsConstructor
