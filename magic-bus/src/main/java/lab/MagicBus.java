@@ -24,15 +24,15 @@ public final class MagicBus {
                 throws Exception;
     }
 
-    private final Receivers receivers = new Receivers();
+    private final Subscribers subscribers = new Subscribers();
 
     public <T> void subscribe(final Class<T> messageType,
             final Receiver<? super T> receiver) {
-        receivers.subscribe(messageType, receiver);
+        subscribers.subscribe(messageType, receiver);
     }
 
     public void post(final Object message) {
-        receivers.subscribedTo(message).
+        subscribers.of(message).
                 forEach(receive(message));
     }
 
@@ -65,24 +65,24 @@ public final class MagicBus {
         }
     }
 
-    private static final class Receivers {
-        private final Map<Class, Set<Receiver>> receivers
+    private static final class Subscribers {
+        private final Map<Class, Set<Receiver>> subscribers
                 = new ConcurrentHashMap<>();
 
         private void subscribe(final Class messageType,
                 final Receiver receiver) {
-            receivers.computeIfAbsent(messageType, Receivers::newReceiverSet).
+            subscribers.computeIfAbsent(messageType, Subscribers::receivers).
                     add(receiver);
         }
 
-        private Stream<Receiver> subscribedTo(final Object message) {
+        private Stream<Receiver> of(final Object message) {
             final Class messageType = message.getClass();
-            return receivers.entrySet().stream().
+            return subscribers.entrySet().stream().
                     filter(subscribedTo(messageType)).
                     flatMap(toReceivers());
         }
 
-        private static Set<Receiver> newReceiverSet(final Class messageType) {
+        private static Set<Receiver> receivers(final Class messageType) {
             return new CopyOnWriteArraySet<>();
         }
 
