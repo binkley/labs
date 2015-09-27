@@ -4,7 +4,7 @@
 
     <groupId>hm.binkley.labs</groupId>
     <artifactId>labs-parent</artifactId>
-    <version>2</version>
+    <version>3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
