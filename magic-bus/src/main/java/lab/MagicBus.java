@@ -7,13 +7,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import static java.util.stream.StreamSupport.stream;
-import static lab.CountedSpliterator.count;
 
 /**
  * {@code MagicBus} <b>needs documentation</b>.
@@ -33,12 +31,13 @@ public final class MagicBus {
     }
 
     public void post(final Object message) {
-        final CountedSpliterator<Mailbox> it = count(subscribers.of(message));
-        stream(it, false).
-                forEach(receive(message));
-
-        if (it.isEmpty())
-            returned.accept(new DeadLetter(this, message));
+        try (final Stream<Mailbox> mailboxes = subscribers.of(message)) {
+            final AtomicInteger deliveries = new AtomicInteger();
+            mailboxes.
+                    onClose(() -> returnIfDead(deliveries, message)).
+                    peek(record(deliveries)).
+                    forEach(receive(message));
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -52,6 +51,16 @@ public final class MagicBus {
                 failed.accept(new FailedPost(this, mailbox, message, e));
             }
         };
+    }
+
+    private static Consumer<Mailbox> record(final AtomicInteger deliveries) {
+        return subscriber -> deliveries.incrementAndGet();
+    }
+
+    private void returnIfDead(final AtomicInteger deliveries,
+            final Object message) {
+        if (0 == deliveries.get())
+            returned.accept(new DeadLetter(this, message));
     }
 
     @FunctionalInterface
