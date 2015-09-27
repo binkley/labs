@@ -9,6 +9,7 @@
 
     <modules>
         <module>dynafig</module>
+        <module>magic-bus</module>
     </modules>
 
     <licenses>
