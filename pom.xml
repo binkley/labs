@@ -99,7 +99,7 @@
                         <tag>
                             <name>todo</name>
                             <placement>a</placement>
-                            <head>To do:</head>
+                            <head>Pending:</head>
                         </tag>
                     </tags>
                 </configuration>
