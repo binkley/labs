@@ -2,6 +2,7 @@ package lab;
 
 import lombok.RequiredArgsConstructor;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -14,23 +15,48 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
- * {@code MagicBus} <b>needs documentation</b>.
+ * {@code MagicBus} is an intraprocess message bus.  Subscribers call {@link
+ * #subscribe(Class, Mailbox)} to register mailboxes for receiving messages.
+ * Senders call {@link #post(Object)} to send messages.
+ * <p>
+ * Delivery is synchronous.  There is no guaranteed order of delivery.
  *
  * @author <a href="mailto:binkley@alumni.rice.edu">B. K. Oxley (binkley)</a>
- * @todo Needs documentation.
  */
 @RequiredArgsConstructor
 public final class MagicBus {
     private final Subscribers subscribers = new Subscribers();
+    /** Receives unsubscribed posts. */
     private final Consumer<DeadLetter> returned;
+    /** Receives failed posts. */
     private final Consumer<FailedPost> failed;
 
-    public <T> void subscribe(final Class<T> messageType,
-            final Mailbox<? super T> mailbox) {
+    /**
+     * Subscribes the given <var>mailbox</var> for messages of
+     * <var>messageType</var> and subtypes.
+     *
+     * @param messageType the message type token, never missing
+     * @param mailbox the mailbox for delivery, never missing
+     * @param <T> the message type
+     */
+    public <T> void subscribe(@Nonnull final Class<T> messageType,
+            @Nonnull final Mailbox<? super T> mailbox) {
         subscribers.subscribe(messageType, mailbox);
     }
 
-    public void post(final Object message) {
+    /**
+     * Posts a message.  Subscribers to the type of <var>message</var> and its
+     * supertypes recieve the message in their mailboxes.
+     * <p>
+     * If there is no eligible mailbox, <var>message</var> is sent to the
+     * "dead letter" box.
+     * <p>
+     * If posting fails (a mailbox throws a checked exception),
+     * <var>message</var> is sent to the "failed post" box.
+     *
+     * @param message the message, never missing
+     */
+    public void post(@Nonnull final Object message) {
         try (final Stream<Mailbox> mailboxes = subscribers.of(message)) {
             final AtomicInteger deliveries = new AtomicInteger();
             mailboxes.
