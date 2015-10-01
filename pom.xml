@@ -8,7 +8,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>magic-bus</module>
     </modules>
 
     <licenses>
