@@ -14,6 +14,7 @@
 
     <properties>
         <checker.version>1.9.5</checker.version>
+        <javatuples.version>1.2</javatuples.version>
         <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
     </properties>
 
@@ -22,6 +23,11 @@
             <groupId>org.checkerframework</groupId>
             <artifactId>checker</artifactId>
             <version>${checker.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.javatuples</groupId>
+            <artifactId>javatuples</artifactId>
+            <version>${javatuples.version}</version>
         </dependency>
     </dependencies>
 
@@ -42,6 +48,9 @@
                                 <requireJavaVersion>
                                     <version>${java.version}</version>
                                 </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>[3.3,)</version>
+                                </requireMavenVersion>
                             </rules>
                         </configuration>
                         <goals>
