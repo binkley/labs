@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>modernj</module>
         <module>reagent</module>
     </modules>
 
