@@ -14,8 +14,10 @@
 
     <properties>
         <checker.version>1.9.5</checker.version>
+        <generateBackupPoms>false</generateBackupPoms>
         <javatuples.version>1.2</javatuples.version>
         <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
+        <versions-maven-plugin.version>2.2</versions-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -33,6 +35,20 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>${versions-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>update-dependencies</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>update-properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>${maven-enforcer-plugin.version}</version>
