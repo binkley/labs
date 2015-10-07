@@ -56,6 +56,7 @@
             <groupId>co.paralleluniverse</groupId>
             <artifactId>quasar-core</artifactId>
             <version>${quasar.version}</version>
+            <classifier>jdk8</classifier>
             <exclusions>
                 <exclusion>
                     <groupId>org.hdrhistogram</groupId>
@@ -147,7 +148,6 @@
                     <workingDirectory>target/classes</workingDirectory>
                     <executable>java</executable>
                     <arguments>
-                        <!-- Turn off before production -->
                         <argument>
                             -Dco.paralleluniverse.fibers.verifyInstrumentation=true
                         </argument>
