@@ -25,6 +25,7 @@
         <maven-surefire-plugin.version>2.16</maven-surefire-plugin.version>
         <quasar.version>0.7.3</quasar.version>
         <versions-maven-plugin.version>2.2</versions-maven-plugin.version>
+        <vertx.version>3.1.0</vertx.version>
     </properties>
 
     <dependencies>
@@ -69,6 +70,11 @@
             <groupId>org.hdrhistogram</groupId>
             <artifactId>HdrHistogram</artifactId>
             <version>${HdrHistogram.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>${vertx.version}</version>
         </dependency>
     </dependencies>
 
