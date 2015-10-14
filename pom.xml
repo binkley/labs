@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>modernj</module>
         <module>reagent</module>
     </modules>
 
@@ -65,20 +66,18 @@
     </developers>
 
     <properties>
+        <!-- @formatter:off -->
         <java.charset>UTF-8</java.charset>
-        <jgitflow-maven-plugin.version>1.0-m5.1
-        </jgitflow-maven-plugin.version>
+        <java.version>1.8</java.version>
+        <jgitflow-maven-plugin.version>1.0-m5.1</jgitflow-maven-plugin.version>
         <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
         <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
         <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
-        <project.build.outputEncoding>${java.charset}
-        </project.build.outputEncoding>
-        <project.build.sourceEncoding>${java.charset}
-        </project.build.sourceEncoding>
-        <project.reporting.outputEncoding>${java.charset}
-        </project.reporting.outputEncoding>
-        <project.reporting.sourceEncoding>${java.charset}
-        </project.reporting.sourceEncoding>
+        <project.build.outputEncoding>${java.charset}</project.build.outputEncoding>
+        <project.build.sourceEncoding>${java.charset}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${java.charset}</project.reporting.outputEncoding>
+        <project.reporting.sourceEncoding>${java.charset}</project.reporting.sourceEncoding>
+        <!-- @formatter:on -->
     </properties>
 
     <build>
@@ -91,6 +90,14 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                    <debug>true</debug>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
