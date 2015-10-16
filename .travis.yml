@@ -7,9 +7,9 @@ before_install:
   - tar zxvf apache-maven-3.3.3-bin.tar.gz
   - chmod +x apache-maven-3.3.3/bin/mvn
   - export PATH=$PWD/apache-maven-3.3.3/bin:${PATH}
-install: mvn install -Dmaven.javadoc.skip=true -DskipTests=true -Dgpg.skip=true
+install:
+  - which -a mvn
+  - mvn install -Dmaven.javadoc.skip=true -DskipTests=true -Dgpg.skip=true
 before_script:
   - export PATH=$PWD/apache-maven-3.3.3/bin:${PATH}
-script:
-  - which -a mvn
-  - mvn verify -Dmaven.javadoc.skip=true -Dgpg.skip=true
+script: mvn verify -Dmaven.javadoc.skip=true -Dgpg.skip=true
