@@ -1,3 +1,4 @@
+sudu: false
 language: java
 jdk:
   - oraclejdk8
