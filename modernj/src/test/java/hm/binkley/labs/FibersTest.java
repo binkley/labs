@@ -16,7 +16,7 @@ import static org.junit.Assert.assertThat;
  * @todo Needs documentation.
  */
 public final class FibersTest {
-    @Test(timeout = 1000L)
+    @Test(timeout = 10000L) // Longer for Travis CI
     public void shouldRunAgent()
             throws ExecutionException, InterruptedException {
         final Fiber<String> fiber = new Fiber<>(() -> "Foo!");
