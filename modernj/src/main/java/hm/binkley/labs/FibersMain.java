@@ -22,6 +22,7 @@ import static java.lang.String.format;
 import static java.lang.System.out;
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * {@code FibersMain} <b>needs documentation</b>.
@@ -33,7 +34,10 @@ public final class FibersMain {
     public static void main(final String... args)
             throws ExecutionException, InterruptedException,
             MalformedObjectNameException {
-        final Fiber<String> fiber = new Fiber<>(() -> "Foo!");
+        final Fiber<String> fiber = new Fiber<>(() -> {
+            SECONDS.sleep(1L);
+            return "Foo!";
+        });
         fiber.start();
 
         final MBeanServer mbeans = getPlatformMBeanServer();
