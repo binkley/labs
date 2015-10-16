@@ -254,7 +254,7 @@
                 <version>${exec-maven-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>default-cli</id>
+                        <id>use-java</id>
                         <configuration>
                             <arguments>
                                 <argument>
@@ -275,9 +275,6 @@
                             <arguments>
                                 <argument>
                                     -Dco.paralleluniverse.fibers.verifyInstrumentation=true
-                                </argument>
-                                <argument>
-                                    -javaagent:${co.paralleluniverse:quasar-core:jar:jdk8}
                                 </argument>
                                 <argument>-classpath</argument>
                                 <classpath/>
