@@ -2,7 +2,7 @@ language: java
 jdk:
   - oraclejdk8
 # TODO: Gross until Travis support setting maven version or upgrades to 3.3
-script_install:
+before_script:
   - wget http://apache.claz.org/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
   - tar zxvf apache-maven-3.3.3-bin.tar.gz
   - chmod +x apache-maven-3.3.3/bin/mvn
