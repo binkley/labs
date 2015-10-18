@@ -109,14 +109,12 @@
                 <executions>
                     <execution>
                         <id>download-sources</id>
-                        <phase>generate-sources</phase>
                         <goals>
                             <goal>sources</goal>
                         </goals>
                     </execution>
                     <execution>
                         <id>download-javadocs</id>
-                        <phase>generate-sources</phase>
                         <configuration>
                             <classifier>javadoc</classifier>
                         </configuration>
