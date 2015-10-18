@@ -13,7 +13,7 @@
     <artifactId>labs-reagent</artifactId>
 
     <properties>
-        <reactor.version>2.0.4.RELEASE</reactor.version>
+        <reactor.version>2.0.6.RELEASE</reactor.version>
     </properties>
 
     <dependencies>
