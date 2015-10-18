@@ -156,7 +156,7 @@
                         <id>instrument-classes</id>
                         <phase>compile</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <property name="ant_classpath"
                                           refid="maven.dependency.classpath"/>
                                 <taskdef name="instrumentationTask"
@@ -169,7 +169,7 @@
                                             dir="${project.build.outputDirectory}"
                                             includes="**/*.class"/>
                                 </instrumentationTask>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>
@@ -180,7 +180,7 @@
                         <id>instrument-test-classes</id>
                         <phase>test-compile</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <property name="ant_classpath"
                                           refid="maven.dependency.classpath"/>
                                 <taskdef name="instrumentationTask"
@@ -193,7 +193,7 @@
                                             dir="${project.build.testOutputDirectory}"
                                             includes="**/*.class"/>
                                 </instrumentationTask>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>
@@ -214,7 +214,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>${maven-shade-plugin.version}</version>
                 <configuration>
@@ -270,7 +269,8 @@
                     <execution>
                         <id>use-exec</id>
                         <configuration>
-                            <workingDirectory>target/classes</workingDirectory>
+                            <workingDirectory>target/classes
+                            </workingDirectory>
                             <executable>java</executable>
                             <arguments>
                                 <argument>
