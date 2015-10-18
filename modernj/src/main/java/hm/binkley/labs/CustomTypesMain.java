@@ -17,10 +17,10 @@ public final class CustomTypesMain {
         @SuppressWarnings("unsafe") final @m int m = 1; // define 1 meter
         @SuppressWarnings("unsafe") final @s int s = 1; // define 1 second
 
-        @m double meters = 5.0 * m;
-        @s double seconds = 2.0 * s;
+        @m final double meters = 5.0 * m;
+        @s final double seconds = 2.0 * s;
         // @kmPERh double speed = meters / seconds; // <-- doesn't compile
-        @mPERs double speed = meters / seconds;
+        @mPERs final double speed = meters / seconds;
 
         out.println("Speed: " + speed);
     }

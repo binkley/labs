@@ -30,7 +30,7 @@ import static java.util.stream.Collectors.toList;
 public final class CompletableFutureMain {
     public static final class Images {
         private final ExecutorService executor = newSingleThreadExecutor();
-        private Function<ImageInfo, ImageData> dataFrom = info -> {
+        private final Function<ImageInfo, ImageData> dataFrom = info -> {
             final CompletableFuture<ImageData> data = supplyAsync(
                     info::downloadImage, executor);
             try {
