@@ -1,0 +1,4 @@
+#!/bin/bash
+
+exec mvn io.takari.polyglot:polyglot-translate-plugin:translate \
+    -Dinput=pom.xml -Doutput=pom.yml
