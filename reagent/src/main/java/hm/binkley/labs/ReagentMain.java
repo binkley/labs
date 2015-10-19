@@ -1,13 +1,12 @@
 package hm.binkley.labs;
 
 import reactor.Environment;
-import reactor.bus.Event;
 import reactor.bus.EventBus;
 
 import java.util.concurrent.CountDownLatch;
 
 import static java.lang.System.out;
-import static reactor.bus.selector.Selectors.$;
+import static reactor.bus.selector.Selectors.T;
 
 /**
  * {@code ReagentMain} <strong>needs documentation</strong>.
@@ -27,13 +26,28 @@ public final class ReagentMain {
         final CountDownLatch done = new CountDownLatch(1);
         final EventBus bus = EventBus.create(Environment.get());
 
-        bus.on($("topic"), ev -> {
+        bus.on(T(Foo.class), ev -> {
             out.println(ev);
             done.countDown();
         });
 
-        bus.notify("topic", Event.wrap("Hello World!"));
+        bus.notify(new Bar());
 
         done.await();
+    }
+
+    public static abstract class Foo {
+        @Override
+        public String toString() {
+            return "I'm a Foo!";
+        }
+    }
+
+    public static final class Bar
+            extends Foo {
+        @Override
+        public String toString() {
+            return "I'm a Bar!";
+        }
     }
 }
