@@ -137,8 +137,9 @@
                                 <requireJavaVersion>
                                     <version>${java.version}</version>
                                 </requireJavaVersion>
+                                <!-- Polyglot needs 3.3.1+ -->
                                 <requireMavenVersion>
-                                    <version>[3.3,)</version>
+                                    <version>[3.3.1,)</version>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
