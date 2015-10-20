@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>jctools</module>
         <module>modernj</module>
         <module>reagent</module>
     </modules>
@@ -40,6 +41,7 @@
         <url>https://github.com/binkley/labs</url>
     </scm>
 
+    <!--
     <distributionManagement>
         <repository>
             <id>dummy</id>
@@ -47,6 +49,7 @@
             <url>file://${basedir}/target/deploy</url>
         </repository>
     </distributionManagement>
+    -->
 
     <organization>
         <name>binkley's BLOG</name>
@@ -67,11 +70,13 @@
 
     <properties>
         <!-- @formatter:off -->
+        <generateBackupPoms>false</generateBackupPoms>
         <java.charset>UTF-8</java.charset>
         <java.version>1.8</java.version>
         <jgitflow-maven-plugin.version>1.0-m5.1</jgitflow-maven-plugin.version>
         <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
         <maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
+        <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
         <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
         <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
         <project.build.outputEncoding>${java.charset}</project.build.outputEncoding>
@@ -109,6 +114,12 @@
                 <version>${maven-dependency-plugin.version}</version>
                 <executions>
                     <execution>
+                        <id>record-versions</id>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                    <execution>
                         <id>download-sources</id>
                         <goals>
                             <goal>sources</goal>
@@ -121,6 +132,33 @@
                         </configuration>
                         <goals>
                             <goal>resolve</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven-enforcer-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <configuration>
+                            <rules>
+                                <dependencyConvergence>
+                                    <uniqueVersions>true</uniqueVersions>
+                                </dependencyConvergence>
+                                <reactorModuleConvergence/>
+                                <requireJavaVersion>
+                                    <version>${java.version}</version>
+                                </requireJavaVersion>
+                                <!-- Polyglot needs 3.3.1+ -->
+                                <requireMavenVersion>
+                                    <version>[3.3.1,)</version>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                        <goals>
+                            <goal>enforce</goal>
                         </goals>
                     </execution>
                 </executions>

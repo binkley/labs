@@ -17,7 +17,6 @@
         <HdrHistogram.version>2.1.7</HdrHistogram.version>
         <checker.version>1.9.6</checker.version>
         <exec-maven-plugin.version>1.4.0</exec-maven-plugin.version>
-        <generateBackupPoms>false</generateBackupPoms>
         <hamcrest.version>2.0.0.0</hamcrest.version>
         <javatuples.version>1.2</javatuples.version>
         <junit.version>4.12</junit.version>
@@ -25,7 +24,6 @@
         <jsr305.version>3.0.1</jsr305.version>
         <main.class>hm.binkley.labs.FibersMain</main.class>
         <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
-        <maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
         <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
         <maven-shade-plugin.version>2.4.1</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.18.1</maven-surefire-plugin.version>
@@ -111,44 +109,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>${maven-dependency-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>properties</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>${maven-enforcer-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>enforce</id>
-                        <configuration>
-                            <rules>
-                                <dependencyConvergence>
-                                    <uniqueVersions>true</uniqueVersions>
-                                </dependencyConvergence>
-                                <reactorModuleConvergence/>
-                                <requireJavaVersion>
-                                    <version>${java.version}</version>
-                                </requireJavaVersion>
-                                <!-- Polyglot needs 3.3.1+ -->
-                                <requireMavenVersion>
-                                    <version>[3.3.1,)</version>
-                                </requireMavenVersion>
-                            </rules>
-                        </configuration>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>${maven-antrun-plugin.version}</version>
