@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>axon</module>
         <module>jctools</module>
         <module>modernj</module>
         <module>reagent</module>

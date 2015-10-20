@@ -8,6 +8,7 @@ There are no releases in the traditional sense.  This code is a playground.
 
 ## Modules
 
+* [Axon](axon/README.md) - Try Axon Framework
 * [JCTools](jctools/README.md) - Try JCTools
 * [Modern Java](modernj/README.md) - Latest Java choices
 * [Ramlific](ramlific/README.md) - Raml, Swagger and all that
