@@ -8,6 +8,7 @@ There are no releases in the traditional sense.  This code is a playground.
 
 ## Modules
 
+* [JCTools](jctools/README.md) - Try JCTools
 * [Modern Java](modernj/README.md) - Latest Java choices
 * [Ramlific](ramlific/README.md) - Raml, Swagger and all that
 * [Reagent](reaget/README.md) - Play with IO reactor
