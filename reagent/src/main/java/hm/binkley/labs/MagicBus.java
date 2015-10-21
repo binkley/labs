@@ -82,8 +82,7 @@ public class MagicBus {
 
     @RequiredArgsConstructor(onConstructor = @__(@Nonnull))
     @ToString
-    public static final class FailedMessage
-            extends RuntimeException {
+    public static final class FailedMessage {
         @Nonnull
         public final MagicBus bus;
         @Nonnull
