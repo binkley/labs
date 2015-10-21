@@ -7,19 +7,22 @@ import org.axonframework.eventhandling.ClusteringEventBus;
 import org.axonframework.eventhandling.DefaultClusterSelector;
 import org.axonframework.eventhandling.EventBus;
 import org.axonframework.eventhandling.SimpleCluster;
-import org.axonframework.eventhandling.annotation.AnnotationEventListenerAdapter;
 import org.axonframework.eventhandling.replay.BackloggingIncomingMessageHandler;
 import org.axonframework.eventhandling.replay.ReplayingCluster;
 import org.axonframework.unitofwork.NoTransactionManager;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static java.lang.Thread.yield;
+import static java.util.Arrays.asList;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.axonframework.domain.GenericEventMessage.asEventMessage;
+import static org.axonframework.eventhandling.annotation.AnnotationEventListenerAdapter.subscribe;
 
 /**
  * {@code AxonMain} <strong>needs documentation</strong>.
@@ -51,13 +54,11 @@ public final class AxonMain {
                 new DefaultClusterSelector(replayingCluster));
 
         // we subscribe our two listeners to the Event Bus
-        AnnotationEventListenerAdapter
-                .subscribe(new DumpingListener(), eventBus);
-        AnnotationEventListenerAdapter
-                .subscribe(new ReplayDumpingListener(), eventBus);
+        subscribe(new DumpingListener(), eventBus);
+        subscribe(new ReplayDumpingListener(), eventBus);
 
         // we append some events to simulate a full event store
-        final DomainEventMessage[] domainEventMessages = {
+        final List<DomainEventMessage> messages = asList(
                 new GenericDomainEventMessage<>("todo1", 0,
                         new ToDoItemCreatedEvent("todo1",
                                 "Need to do something")),
@@ -65,12 +66,12 @@ public final class AxonMain {
                         new ToDoItemCreatedEvent("todo2",
                                 "Another thing to do")),
                 new GenericDomainEventMessage<>("todo2", 0,
-                        new ToDoItemCompletedEvent("todo2"))};
-        eventStore.appendEvents("mock",
-                new SimpleDomainEventStream(domainEventMessages));
+                        new ToDoItemCompletedEvent("todo2")));
+        eventStore
+                .appendEvents("mock", new SimpleDomainEventStream(messages));
 
         // we create an executor service with a single thread and start the replay as an asynchronous process
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
+        final ExecutorService executor = newSingleThreadExecutor();
         final Future<Void> future = replayingCluster.startReplay(executor);
 
         // we want to wait for the cluster to have switched to replay mode, so we can send some messages to it.
@@ -82,10 +83,10 @@ public final class AxonMain {
                 new ToDoItemCreatedEvent("todo3", "Came in just now...")));
 
         // this message is also part of the replay, and should therefore not be handled twice.
-        eventBus.publish(domainEventMessages[2]);
+        eventBus.publish(messages.get(2));
 
         // we wait (at most 10 seconds) for the replay to complete.
-        future.get(10, TimeUnit.SECONDS);
+        future.get(10, SECONDS);
 
         // and we publish another event to show that it's handled in the calling thread
         eventBus.publish(
@@ -97,8 +98,7 @@ public final class AxonMain {
 
     private static void waitForReplayToHaveStarted(
             final ReplayingCluster replayingCluster) {
-        while (!replayingCluster.isInReplayMode()) {
-            Thread.yield();
-        }
+        while (!replayingCluster.isInReplayMode())
+            yield();
     }
 }
