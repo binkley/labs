@@ -65,10 +65,20 @@ public class MagicBusTest {
         assertThat(failed.message, is(sameInstance(message)));
     }
 
-    private static abstract class Foo {
+    @Test(expected = TestException.class)
+    public void shouldPassOutRuntimeException() {
+        bus.subscribe(Foo.class, __ -> {
+            throw new TestException();
+        });
+
+        bus.post(new Bar());
     }
 
+    private abstract static class Foo {}
+
     private static final class Bar
-            extends Foo {
-    }
+            extends Foo {}
+
+    private static final class TestException
+            extends RuntimeException {}
 }
