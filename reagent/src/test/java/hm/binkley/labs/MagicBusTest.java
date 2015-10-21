@@ -3,7 +3,9 @@ package hm.binkley.labs;
 import hm.binkley.labs.MagicBus.FailedMessage;
 import hm.binkley.labs.MagicBus.UnsubscribedMessage;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -18,7 +20,10 @@ import static org.junit.Assert.assertThat;
  * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
  * @todo Needs documentation
  */
-public class MagicBusTest {
+public final class MagicBusTest {
+    @Rule
+    public final ExpectedException thrown = ExpectedException.none();
+
     private AtomicReference<UnsubscribedMessage> unsubscribed;
     private AtomicReference<FailedMessage> failed;
     private MagicBus bus;
@@ -54,8 +59,9 @@ public class MagicBusTest {
 
     @Test
     public void shouldHandleFailed() {
+        final Exception e = new TestCheckedException();
         bus.subscribe(Foo.class, __ -> {
-            throw new Exception("Foo!");
+            throw e;
         });
 
         final Bar message = new Bar();
@@ -63,12 +69,16 @@ public class MagicBusTest {
         final FailedMessage failed = this.failed.get();
 
         assertThat(failed.message, is(sameInstance(message)));
+        assertThat(failed.failure, is(sameInstance(e)));
     }
 
-    @Test(expected = TestException.class)
+    @Test
     public void shouldPassOutRuntimeException() {
+        final RuntimeException e = new TestUncheckedException();
+        thrown.expect(is(sameInstance(e)));
+
         bus.subscribe(Foo.class, __ -> {
-            throw new TestException();
+            throw e;
         });
 
         bus.post(new Bar());
@@ -79,6 +89,9 @@ public class MagicBusTest {
     private static final class Bar
             extends Foo {}
 
-    private static final class TestException
+    private static final class TestCheckedException
+            extends Exception {}
+
+    private static final class TestUncheckedException
             extends RuntimeException {}
 }
