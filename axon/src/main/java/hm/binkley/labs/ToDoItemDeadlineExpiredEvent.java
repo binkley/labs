@@ -1,12 +1,10 @@
 package hm.binkley.labs;
 
-/**
- * {@code ToDoItemDeadlineExpiredEvent} <strong>needs documentation</strong>.
- *
- * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
- * @todo Needs documentation
- */
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+
+@RequiredArgsConstructor
+@ToString
 public class ToDoItemDeadlineExpiredEvent {
-    public ToDoItemDeadlineExpiredEvent(final String todo1) {
-    }
+    private final String name;
 }

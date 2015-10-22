@@ -24,20 +24,13 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.axonframework.domain.GenericEventMessage.asEventMessage;
 import static org.axonframework.eventhandling.annotation.AnnotationEventListenerAdapter.subscribe;
 
-/**
- * {@code AxonMain} <strong>needs documentation</strong>.
- *
- * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
- * @todo Needs documentation
- */
 public final class AxonMain {
-    public static void main(final String[] args)
+    public static void main(final String... args)
             throws InterruptedException, TimeoutException,
             ExecutionException {
-
         // we initialize an event store that is capable of doing replays. In this case, we create a Stub implementation.
         // In production, you would use an Event Store implementation such as the JpaEventStore or MongoEventStore.
-        final StubEventStore eventStore = new StubEventStore();
+        final StubEventStore events = new StubEventStore();
 
         //we create a ReplayingCluster, which wraps that actual cluster that listeners will be subscribed to
         // since we don't need transactions in this in-memory sample, we use a NoTransactionManager
@@ -45,7 +38,7 @@ public final class AxonMain {
         // The BackloggingIncomingMessageHandler will make sure any events published while replaying are backlogged
         // and postponed until the replay is done.
         final ReplayingCluster replayingCluster = new ReplayingCluster(
-                new SimpleCluster("simple"), eventStore,
+                new SimpleCluster("simple"), events,
                 new NoTransactionManager(), 0,
                 new BackloggingIncomingMessageHandler());
 
@@ -67,8 +60,7 @@ public final class AxonMain {
                                 "Another thing to do")),
                 new GenericDomainEventMessage<>("todo2", 0,
                         new ToDoItemCompletedEvent("todo2")));
-        eventStore
-                .appendEvents("mock", new SimpleDomainEventStream(messages));
+        events.appendEvents("mock", new SimpleDomainEventStream(messages));
 
         // we create an executor service with a single thread and start the replay as an asynchronous process
         final ExecutorService executor = newSingleThreadExecutor();

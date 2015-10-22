@@ -11,20 +11,14 @@ import org.axonframework.eventstore.management.EventStoreManagement;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-/**
- * {@code StubEventStore} <strong>needs documentation</strong>.
- *
- * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
- * @todo Needs documentation
- */
-public class StubEventStore
+public final class StubEventStore
         implements EventStoreManagement, EventStore {
-
     private final List<DomainEventMessage> eventMessages
             = new CopyOnWriteArrayList<>();
 
     @Override
-    public void appendEvents(final String type, final DomainEventStream events) {
+    public void appendEvents(final String type,
+            final DomainEventStream events) {
         while (events.hasNext()) {
             eventMessages.add(events.next());
         }
@@ -36,7 +30,8 @@ public class StubEventStore
     }
 
     @Override
-    public void visitEvents(final Criteria criteria, final EventVisitor visitor) {
+    public void visitEvents(final Criteria criteria,
+            final EventVisitor visitor) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
@@ -46,7 +41,8 @@ public class StubEventStore
     }
 
     @Override
-    public DomainEventStream readEvents(final String type, final Object identifier) {
+    public DomainEventStream readEvents(final String type,
+            final Object identifier) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }
