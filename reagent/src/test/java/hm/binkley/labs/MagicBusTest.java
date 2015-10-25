@@ -48,6 +48,22 @@ public final class MagicBusTest {
     }
 
     @Test
+    public void shouldUnsubscribe() {
+        final AtomicReference<Foo> mailbox = new AtomicReference<>();
+        final Mailbox<? super Foo> x = mailbox::set;
+        bus.subscribe(Foo.class, x);
+        bus.unsubscribe(Foo.class, x);
+
+        final Bar message = new Bar();
+        bus.post(message);
+
+        assertOn(noMailbox()).
+                noneDelivered().
+                returned(message).
+                noneFailed();
+    }
+
+    @Test
     public void shouldHandleUnsubscribed() {
         final Bar message = new Bar();
         bus.post(message);

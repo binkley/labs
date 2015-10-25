@@ -5,9 +5,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
+import reactor.bus.registry.Registration;
 import reactor.bus.spec.EventBusSpec;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import static reactor.bus.Event.wrap;
@@ -25,13 +28,21 @@ public class MagicBus {
             synchronousDispatcher().
             uncaughtErrorHandler(MagicBus::rethrowUnchecked).
             get();
+    private final Map<Subscription<?>, Registration<Object, reactor.fn.Consumer<? extends Event<?>>>>
+            subscriptions = new ConcurrentHashMap<>();
 
     private final Consumer<? super ReturnedMessage> returned;
     private final Consumer<? super FailedMessage> failed;
 
     public <T> void subscribe(final Class<T> type,
             final Mailbox<? super T> mailbox) {
-        bus.on(type(type), event -> receive(mailbox, event));
+        subscriptions.put(Subscription.of(type, mailbox),
+                bus.on(type(type), event -> receive(mailbox, event)));
+    }
+
+    public <T> void unsubscribe(final Class<T> type,
+            final Mailbox<? super T> mailbox) {
+        subscriptions.remove(Subscription.of(type, mailbox)).cancel();
     }
 
     public void post(final Object message) {
@@ -64,6 +75,13 @@ public class MagicBus {
             throw (Error) t;
         else
             throw new RuntimeException("BUG: Did not handle " + t);
+    }
+
+    @EqualsAndHashCode
+    @RequiredArgsConstructor(staticName = "of")
+    private static final class Subscription<T> {
+        private final Class<T> type;
+        private final Mailbox<? super T> mailbox;
     }
 
     @FunctionalInterface
