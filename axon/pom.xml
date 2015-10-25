@@ -14,11 +14,15 @@
     <artifactId>labs-axon</artifactId>
 
     <properties>
+        <!-- @formatter:off -->
         <axon.version>2.4.3</axon.version>
         <jsr305.version>3.0.1</jsr305.version>
         <hamcrest.version>2.0.0.0</hamcrest.version>
         <junit.version>4.12</junit.version>
         <lombok.version>1.16.6</lombok.version>
+        <persistence-api.version>1.0.2</persistence-api.version>
+        <!-- @formatter:on -->
+        <slf4j.version>1.7.12</slf4j.version>
     </properties>
 
     <dependencies>
@@ -40,6 +44,22 @@
             <groupId>org.axonframework</groupId>
             <artifactId>axon-core</artifactId>
             <version>${axon.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>javax.persistence</groupId>
+            <artifactId>persistence-api</artifactId>
+            <version>${persistence-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
 
         <dependency>
