@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import static java.util.Objects.requireNonNull;
 import static reactor.bus.Event.wrap;
 import static reactor.bus.selector.Selectors.type;
 
@@ -34,18 +35,20 @@ public class MagicBus {
     private final Consumer<? super ReturnedMessage> returned;
     private final Consumer<? super FailedMessage> failed;
 
-    public <T> void subscribe(final Class<T> type,
-            final Mailbox<? super T> mailbox) {
-        subscriptions.put(Subscription.of(type, mailbox),
+    public <T> void subscribe(@Nonnull final Class<T> type,
+            @Nonnull final Mailbox<? super T> mailbox) {
+        subscriptions.put(Subscription
+                        .of(requireNonNull(type), requireNonNull(mailbox)),
                 bus.on(type(type), event -> receive(mailbox, event)));
     }
 
-    public <T> void unsubscribe(final Class<T> type,
-            final Mailbox<? super T> mailbox) {
-        subscriptions.remove(Subscription.of(type, mailbox)).cancel();
+    public <T> void unsubscribe(@Nonnull final Class<T> type,
+            @Nonnull final Mailbox<? super T> mailbox) {
+        subscriptions.remove(Subscription
+                .of(requireNonNull(type), requireNonNull(mailbox))).cancel();
     }
 
-    public void post(final Object message) {
+    public void post(@Nonnull final Object message) {
         final Class<?> type = message.getClass();
         if (bus.respondsToKey(type)) {
             bus.notify(type, wrap(message));
