@@ -1,5 +1,6 @@
 package hm.binkley.labs;
 
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import reactor.bus.Event;
@@ -25,7 +26,7 @@ public class MagicBus {
             uncaughtErrorHandler(MagicBus::rethrowUnchecked).
             get();
 
-    private final Consumer<? super UnsubscribedMessage> returned;
+    private final Consumer<? super ReturnedMessage> returned;
     private final Consumer<? super FailedMessage> failed;
 
     public <T> void subscribe(final Class<T> type,
@@ -40,7 +41,7 @@ public class MagicBus {
             return;
         }
 
-        returned.accept(new UnsubscribedMessage(this, message));
+        returned.accept(new ReturnedMessage(this, message));
     }
 
     @SuppressWarnings("unchecked")
@@ -72,8 +73,9 @@ public class MagicBus {
     }
 
     @RequiredArgsConstructor(onConstructor = @__(@Nonnull))
+    @EqualsAndHashCode
     @ToString
-    public static final class UnsubscribedMessage {
+    public static final class ReturnedMessage {
         @Nonnull
         public final MagicBus bus;
         @Nonnull
@@ -81,6 +83,7 @@ public class MagicBus {
     }
 
     @RequiredArgsConstructor(onConstructor = @__(@Nonnull))
+    @EqualsAndHashCode
     @ToString
     public static final class FailedMessage {
         @Nonnull

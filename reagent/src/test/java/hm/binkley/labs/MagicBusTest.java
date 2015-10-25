@@ -1,20 +1,20 @@
 package hm.binkley.labs;
 
 import hm.binkley.labs.MagicBus.FailedMessage;
-import hm.binkley.labs.MagicBus.UnsubscribedMessage;
+import hm.binkley.labs.MagicBus.Mailbox;
+import hm.binkley.labs.MagicBus.ReturnedMessage;
 import lombok.RequiredArgsConstructor;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
@@ -22,30 +22,29 @@ public final class MagicBusTest {
     @Rule
     public final ExpectedException thrown = ExpectedException.none();
 
-    private List<UnsubscribedMessage> returned;
-    private List<FailedMessage> failed;
+    private AtomicReference<ReturnedMessage> returned;
+    private AtomicReference<FailedMessage> failed;
     private MagicBus bus;
 
     @Before
     public void setUp() {
-        returned = new ArrayList<>();
-        failed = new ArrayList<>();
-        bus = new MagicBus(returned::add, failed::add);
+        returned = new AtomicReference<>();
+        failed = new AtomicReference<>();
+        bus = new MagicBus(returned::set, failed::set);
     }
 
     @Test
     public void shouldSubscribeAndPost() {
-        final List<Foo> messages = new ArrayList<>();
-        bus.subscribe(Foo.class, messages::add);
+        final AtomicReference<Foo> mailbox = new AtomicReference<>();
+        bus.subscribe(Foo.class, mailbox::set);
 
         final Bar message = new Bar();
         bus.post(message);
 
-        assertOn(messages).
-                delivered(1).
-                returned(0).
-                failed(0);
-        assertThat(messages.get(0), is(sameInstance(message)));
+        assertOn(mailbox).
+                delivered(message).
+                noneReturned().
+                noneFailed();
     }
 
     @Test
@@ -53,31 +52,27 @@ public final class MagicBusTest {
         final Bar message = new Bar();
         bus.post(message);
 
-        assertOn(emptyList()).
-                delivered(0).
-                returned(1).
-                failed(0);
-        final UnsubscribedMessage returned = this.returned.get(0);
-        assertThat(returned.message, is(sameInstance(message)));
+        assertOn(noMailbox()).
+                noneDelivered().
+                returned(message).
+                noneFailed();
     }
 
     @Test
     public void shouldHandleFailed() {
         final Exception e = new TestCheckedException();
-        bus.subscribe(Foo.class, __ -> {
+        final Mailbox<Foo> mailbox = __ -> {
             throw e;
-        });
+        };
+        bus.subscribe(Foo.class, mailbox);
 
         final Bar message = new Bar();
         bus.post(message);
 
-        assertOn(emptyList()).
-                delivered(0).
-                returned(0).
-                failed(1);
-        final FailedMessage failed = this.failed.get(0);
-        assertThat(failed.message, is(sameInstance(message)));
-        assertThat(failed.failure, is(sameInstance(e)));
+        assertOn(noMailbox()).
+                noneDelivered().
+                noneReturned().
+                failed(mailbox, message, e);
     }
 
     @Test
@@ -92,26 +87,50 @@ public final class MagicBusTest {
         bus.post(new Bar());
     }
 
-    private AssertDelivery assertOn(final List messages) {
-        return new AssertDelivery(messages);
+    private <T> AssertDelivery<T> assertOn(final AtomicReference<T> message) {
+        return new AssertDelivery<>(message);
+    }
+
+    private static <T> AtomicReference<T> noMailbox() {
+        return new AtomicReference<>();
     }
 
     @RequiredArgsConstructor(access = PRIVATE)
-    private final class AssertDelivery {
-        private final List<?> messages;
+    private final class AssertDelivery<T> {
+        private final AtomicReference<T> delivered;
 
-        private AssertDelivery delivered(final int delivered) {
-            assertThat(messages, hasSize(delivered));
+        private AssertDelivery<T> noneDelivered() {
+            assertThat(delivered.get(), is(nullValue()));
             return this;
         }
 
-        private AssertDelivery returned(final int returned) {
-            assertThat(MagicBusTest.this.returned, hasSize(returned));
+        private <U extends T> AssertDelivery<T> delivered(final U delivered) {
+            assertThat(this.delivered.get(), is(sameInstance(delivered)));
             return this;
         }
 
-        private AssertDelivery failed(final int failed) {
-            assertThat(MagicBusTest.this.failed, hasSize(failed));
+        private AssertDelivery<T> noneReturned() {
+            assertThat(returned.get(), is(nullValue()));
+            return this;
+        }
+
+        private AssertDelivery<T> returned(final T message) {
+            final ReturnedMessage returned = MagicBusTest.this.returned.get();
+            assertThat(returned,
+                    is(equalTo(new ReturnedMessage(bus, message))));
+            return this;
+        }
+
+        private AssertDelivery<T> noneFailed() {
+            assertThat(failed.get(), is(nullValue()));
+            return this;
+        }
+
+        private AssertDelivery<T> failed(final Mailbox mailbox,
+                final T message, final Exception failure) {
+            final FailedMessage failed = MagicBusTest.this.failed.get();
+            assertThat(failed, is(equalTo(
+                    new FailedMessage(bus, mailbox, message, failure))));
             return this;
         }
     }
