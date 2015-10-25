@@ -11,8 +11,4 @@ import lombok.Data;
 @Data(staticConstructor = "of")
 public final class TodoDoneEvent {
     private final String name;
-
-    public static TodoDoneEvent of(final CompleteTodoCommand command) {
-        return TodoDoneEvent.of(command.getName());
-    }
 }

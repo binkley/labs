@@ -21,7 +21,7 @@ public final class Todo
 
     @CommandHandler
     public Todo(final CreateTodoCommand command) {
-        apply(TodoCreatedEvent.of(command));
+        apply(TodoCreatedEvent.of(command.getName(), command.getContent()));
     }
 
     @EventSourcingHandler
@@ -32,6 +32,6 @@ public final class Todo
 
     @CommandHandler
     public void markCompleted(final CompleteTodoCommand command) {
-        apply(TodoDoneEvent.of(command));
+        apply(TodoDoneEvent.of(command.getName()));
     }
 }

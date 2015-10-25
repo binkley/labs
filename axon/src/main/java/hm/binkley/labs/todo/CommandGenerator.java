@@ -22,6 +22,8 @@ import java.io.File;
 import static java.util.UUID.randomUUID;
 
 public final class CommandGenerator {
+    private CommandGenerator() {}
+
     public static void sendCommands(final CommandGateway gateway) {
         final String todo1 = randomUUID().toString();
         final String todo2 = randomUUID().toString();
