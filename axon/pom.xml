@@ -52,6 +52,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.axonframework</groupId>
+            <artifactId>axon-monitoring-jmx</artifactId>
+            <version>${axon.version}</version>
+        </dependency>
+        <dependency>
             <groupId>javax.persistence</groupId>
             <artifactId>persistence-api</artifactId>
             <version>${persistence-api.version}</version>

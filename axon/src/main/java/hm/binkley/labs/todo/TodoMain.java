@@ -17,6 +17,8 @@ import org.axonframework.eventstore.fs.SimpleEventFileResolver;
 
 import java.io.File;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 /**
  * {@code TodoMain} <b>needs documentation</b>.
  *
@@ -24,7 +26,8 @@ import java.io.File;
  * @todo Needs documentation.
  */
 public final class TodoMain {
-    public static void main(final String... args) {
+    public static void main(final String... args)
+            throws InterruptedException {
         // let's start with the Command Bus
         final CommandBus commandBus = new SimpleCommandBus();
 
@@ -54,5 +57,8 @@ public final class TodoMain {
 
         // and let's send some Commands on the CommandBus.
         CommandGenerator.sendCommands(commandGateway);
+
+        if (false)
+            MINUTES.sleep(5); // Chance to peek with JMX
     }
 }
