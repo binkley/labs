@@ -7,12 +7,6 @@ import org.springframework.context.annotation.Bean;
 
 import static java.lang.System.out;
 
-/**
- * {@code Main} <strong>needs documentation</strong>.
- *
- * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
- * @todo Needs documentation
- */
 @SpringBootApplication
 public class Application {
     public static void main(final String... args) {
@@ -27,9 +21,13 @@ public class Application {
 
             repository.findAll().
                     forEach(out::println);
+
             out.println("--");
+
             out.println(repository.findOne(1L));
+
             out.println("--");
+
             repository.findByName("Nancy").
                     forEach(out::println);
         };
