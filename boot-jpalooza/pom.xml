@@ -10,7 +10,7 @@
         <version>4-SNAPSHOT</version>
     </parent>
 
-    <artifactId>book-jpalooza</artifactId>
+    <artifactId>boot-jpalooza</artifactId>
 
     <properties>
         <!-- @formatter:off -->
