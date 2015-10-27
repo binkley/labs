@@ -24,7 +24,6 @@
         <jsr305.version>3.0.1</jsr305.version>
         <main.class>hm.binkley.labs.FibersMain</main.class>
         <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
-        <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
         <maven-shade-plugin.version>2.4.1</maven-shade-plugin.version>
         <maven-surefire-plugin.version>2.18.1</maven-surefire-plugin.version>
         <quasar.version>0.7.3</quasar.version>
