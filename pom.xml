@@ -12,6 +12,7 @@
 
     <modules>
         <module>axon</module>
+        <module>boot-jpalooza</module>
         <module>jctools</module>
         <module>modernj</module>
         <module>reagent</module>
