@@ -16,6 +16,7 @@
         <module>jctools</module>
         <module>modernj</module>
         <module>reagent</module>
+        <module>version-diff</module>
     </modules>
 
     <licenses>
