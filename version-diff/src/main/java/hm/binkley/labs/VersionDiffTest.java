@@ -13,34 +13,50 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.System.out;
 import static java.nio.file.Files.createTempDirectory;
+import static java.nio.file.Files.walk;
 import static java.nio.file.Files.write;
 import static java.util.Arrays.asList;
+import static javax.tools.ToolProvider.getSystemJavaCompiler;
 
 public final class VersionDiffTest {
     public static void main(final String... args)
             throws IOException, GitAPIException {
-        final Path rootDir = createTempDirectory("binkley");
+        final Path tmpDir = createTempDirectory("binkley");
+        // TODO: Recursively delete tmpDir at exit
+        final Path repoDir = tmpDir.resolve("repo");
+        mkdirs(repoDir);
 
-        final Path gitDir = rootDir.resolve(".git");
-        if (!gitDir.toFile().mkdirs())
-            throw new IOException("Cannot make " + gitDir);
+        final Path buildDir = tmpDir.resolve("build");
+        mkdirs(buildDir);
+
+        final Path srcDir = repoDir.resolve(Paths.get("src", "main", "java"));
+        mkdirs(srcDir);
+        final Path packageDir = srcDir.resolve(Paths.get("scratch"));
+        mkdirs(packageDir);
+        final Path fooFile = packageDir.resolve("Foo.java");
+
+        final Path gitDir = repoDir.resolve(".git");
+        mkdirs(gitDir);
         final Repository repo = FileRepositoryBuilder.create(gitDir.toFile());
         repo.create();
+
         try (final Git git = Git.wrap(repo)) {
             git.close();
             repo.close();
-            final Path packageDir = rootDir
-                    .resolve(Paths.get("src", "main", "java", "scratch"));
-            if (!packageDir.toFile().mkdirs())
-                throw new IOException("Cannot make " + packageDir);
-            final Path fooFile = packageDir.resolve("Foo.java");
-
             writeAndCommit(git, fooFile, "First Foo", "package scratch;",
                     "public final class Foo {}");
 
@@ -48,7 +64,40 @@ public final class VersionDiffTest {
                     "/** Silly javadoc. */", "public final class Foo {}");
         }
 
-        findStuff(repo);
+        final JavaCompiler javac = getSystemJavaCompiler();
+        try (final StandardJavaFileManager files = javac
+                .getStandardFileManager(null, null, null)) {
+            findStuff(repo, rev -> {
+                final List<File> inputs = new ArrayList<>();
+                commitContents(repo, rev.getId(), path -> {
+                    final Path srcFile = buildDir.resolve(Paths.get(path));
+                    mkdirs(srcFile.getParent());
+                    inputs.add(srcFile.toFile());
+                    return new FileOutputStream(srcFile.toFile());
+                }, "src/main/java/scratch/Foo.java");
+
+                final Iterable<? extends JavaFileObject> outputs = files
+                        .getJavaFileObjectsFromFiles(inputs);
+
+                javac.getTask(null, files, null, null, null, outputs);
+            });
+        }
+
+        walk(buildDir).
+                forEach(out::println);
+    }
+
+    private static void mkdirs(final Path path)
+            throws IOException {
+        final File file = path.toFile();
+        if (!file.exists() && !file.mkdirs())
+            throw new IOException("Cannot make " + path);
+    }
+
+    @FunctionalInterface
+    public interface IOConsumer<T> {
+        void accept(final T in)
+                throws IOException;
     }
 
     private static void writeAndCommit(final Git git, final Path where,
@@ -63,20 +112,29 @@ public final class VersionDiffTest {
                 call();
     }
 
-    private static void findStuff(final Repository repo)
+    private static void findStuff(final Repository repo,
+            final IOConsumer<RevCommit> process)
             throws IOException {
         final Ref head = repo.getRef("refs/heads/master");
         try (final RevWalk walk = new RevWalk(repo)) {
             final RevCommit commit = walk.parseCommit(head.getObjectId());
             walk.markStart(commit);
             for (final RevCommit rev : walk)
-                dumpContents(repo, rev.getId());
+                process.accept(rev);
             walk.dispose();
         }
     }
 
-    private static void dumpContents(final Repository repo,
-            final ObjectId commitId)
+    @FunctionalInterface
+    public interface IOFunction<T, U> {
+        U apply(final T in)
+                throws IOException;
+    }
+
+    private static void commitContents(final Repository repo,
+            final ObjectId commitId,
+            final IOFunction<String, OutputStream> out,
+            final String exampleJava)
             throws IOException {
         try (final RevWalk revWalk = new RevWalk(repo)) {
             final RevCommit commit = revWalk.parseCommit(commitId);
@@ -84,15 +142,14 @@ public final class VersionDiffTest {
             try (final TreeWalk treeWalk = new TreeWalk(repo)) {
                 treeWalk.addTree(tree);
                 treeWalk.setRecursive(true);
-                treeWalk.setFilter(
-                        PathFilter.create("src/main/java/scratch/Foo.java"));
+                treeWalk.setFilter(PathFilter.create(exampleJava));
 
                 if (!treeWalk.next())
-                    out.println("No Foo.java");
+                    throw new IOException("No " + exampleJava);
                 else {
                     final ObjectId objectId = treeWalk.getObjectId(0);
                     final ObjectLoader loader = repo.open(objectId);
-                    loader.copyTo(out);
+                    loader.copyTo(out.apply(treeWalk.getPathString()));
                 }
             }
 
