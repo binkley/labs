@@ -13,6 +13,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 
+import javax.annotation.Nullable;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
@@ -172,6 +173,7 @@ public final class VersionDiffPOC {
         final Path packageDir = srcDir.resolve(Paths.get("scratch"));
         mkdirs(packageDir);
         final Path fooFile = packageDir.resolve("Foo.java");
+        final Path barFile = packageDir.resolve("Bar.java");
 
         try (final Git git = Git.wrap(repo)) {
             writeAndCommit(git, fooFile, "Init", "package scratch;",
@@ -189,6 +191,25 @@ public final class VersionDiffPOC {
                     "    public final int x = 4;",
                     "    public static void main(final String... args) {",
                     "    }", "}");
+
+            writeAndCommit(git, fooFile, null, "package scratch;",
+                    "/** Another change. */", "public final class Foo {",
+                    "    public final int x = 4;",
+                    "    public static void main(final String... args) {",
+                    "    }", "}");
+
+            writeAndCommit(git, barFile, "Two files in one commit",
+                    "package scratch;", "/** Another change. */",
+                    "public final class Bar {}");
+
+            writeAndCommit(git, fooFile, null, "package scratch;",
+                    "public final class Foo {", "    public final int x = 4;",
+                    "    public static void main(final String... args) {",
+                    "    }", "}");
+
+            writeAndCommit(git, barFile,
+                    "Fake change - first commit ignored?", "package scratch;",
+                    "public final class Bar {}");   
         }
     }
 
@@ -200,15 +221,16 @@ public final class VersionDiffPOC {
     }
 
     private static void writeAndCommit(final Git git, final Path where,
-            final String commitMessage, final String... lines)
+            @Nullable final String commitMessage, final String... lines)
             throws IOException, GitAPIException {
         write(where, asList(lines));
         git.add().
                 addFilepattern("src").
                 call();
-        git.commit().
-                setMessage(commitMessage).
-                call();
+        if (null != commitMessage)
+            git.commit().
+                    setMessage(commitMessage).
+                    call();
     }
 
     private static void findCommits(final Repository repo,
