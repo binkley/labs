@@ -14,7 +14,6 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 
 import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -43,7 +42,8 @@ public final class VersionDiffTest {
         final Path buildDir = tmpDir.resolve("build");
         mkdirs(buildDir);
 
-        final Path srcDir = repoDir.resolve(Paths.get("src", "main", "java"));
+        final Path relativeSrcDir = Paths.get("src", "main", "java");
+        final Path srcDir = repoDir.resolve(relativeSrcDir);
         mkdirs(srcDir);
         final Path packageDir = srcDir.resolve(Paths.get("scratch"));
         mkdirs(packageDir);
@@ -67,19 +67,19 @@ public final class VersionDiffTest {
         final JavaCompiler javac = getSystemJavaCompiler();
         try (final StandardJavaFileManager files = javac
                 .getStandardFileManager(null, null, null)) {
-            findStuff(repo, rev -> {
+            findStuff(repo, revId -> {
                 final List<File> inputs = new ArrayList<>();
-                commitContents(repo, rev.getId(), path -> {
-                    final Path srcFile = buildDir.resolve(Paths.get(path));
+                commitContents(repo, revId, revPath -> {
+                    final Path srcFile = buildSrcFile(buildDir,
+                            relativeSrcDir, revPath);
                     mkdirs(srcFile.getParent());
                     inputs.add(srcFile.toFile());
                     return new FileOutputStream(srcFile.toFile());
                 }, "src/main/java/scratch/Foo.java");
 
-                final Iterable<? extends JavaFileObject> outputs = files
-                        .getJavaFileObjectsFromFiles(inputs);
-
-                javac.getTask(null, files, null, null, null, outputs);
+                javac.getTask(null, files, null, null, null,
+                        files.getJavaFileObjectsFromFiles(inputs)).
+                        call();
             });
         }
 
@@ -92,6 +92,12 @@ public final class VersionDiffTest {
         final File file = path.toFile();
         if (!file.exists() && !file.mkdirs())
             throw new IOException("Cannot make " + path);
+    }
+
+    private static Path buildSrcFile(final Path buildDir,
+            final Path relativeSrcDir, final String revPath) {
+        return buildDir
+                .resolve(relativeSrcDir.relativize(Paths.get(revPath)));
     }
 
     @FunctionalInterface
@@ -113,14 +119,14 @@ public final class VersionDiffTest {
     }
 
     private static void findStuff(final Repository repo,
-            final IOConsumer<RevCommit> process)
+            final IOConsumer<ObjectId> process)
             throws IOException {
         final Ref head = repo.getRef("refs/heads/master");
         try (final RevWalk walk = new RevWalk(repo)) {
             final RevCommit commit = walk.parseCommit(head.getObjectId());
             walk.markStart(commit);
             for (final RevCommit rev : walk)
-                process.accept(rev);
+                process.accept(rev.getId());
             walk.dispose();
         }
     }
@@ -149,7 +155,10 @@ public final class VersionDiffTest {
                 else {
                     final ObjectId objectId = treeWalk.getObjectId(0);
                     final ObjectLoader loader = repo.open(objectId);
-                    loader.copyTo(out.apply(treeWalk.getPathString()));
+                    try (final OutputStream src = out
+                            .apply(treeWalk.getPathString())) {
+                        loader.copyTo(src);
+                    }
                 }
             }
 
