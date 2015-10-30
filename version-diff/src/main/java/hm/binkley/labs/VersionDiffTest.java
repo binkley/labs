@@ -23,8 +23,10 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.System.out;
@@ -85,6 +87,19 @@ public final class VersionDiffTest {
                 walk(buildDir).
                         forEach(out::println);
             });
+
+            for (final Entry<Path, List<JavaFileObject>> e : compiled
+                    .entrySet()) {
+                final Iterator<JavaFileObject> it = e.getValue().iterator();
+                if (!it.hasNext())
+                    throw new IllegalStateException();
+                JavaFileObject last = it.next();
+                while (it.hasNext()) {
+                    final JavaFileObject next = it.next();
+                    out.println(last.equals(next));
+                    last = next;
+                }
+            }
         }
     }
 
@@ -101,6 +116,10 @@ public final class VersionDiffTest {
 
             writeAndCommit(git, fooFile, "First Foo", "package scratch;",
                     "/** Silly javadoc. */", "public final class Foo {}");
+
+            writeAndCommit(git, fooFile, "First Foo", "package scratch;",
+                    "/** Silly javadoc. */", "public final class Foo {",
+                    "    public final int x = 4;", "}");
         }
     }
 
