@@ -23,6 +23,8 @@ import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleImmutableEntry;
@@ -44,7 +46,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 import static javax.tools.ToolProvider.getSystemJavaCompiler;
 
-public final class VersionDiffTest {
+public final class VersionDiffPOC {
     private static final Function newList = __ -> new ArrayList<>();
     private static final Pattern javaSuffix = Pattern.compile("\\.java$");
 
@@ -54,7 +56,7 @@ public final class VersionDiffTest {
     }
 
     public static void main(final String... args)
-            throws IOException, GitAPIException {
+            throws IOException, GitAPIException, ClassNotFoundException {
         // TODO: Recursively delete tmpDir at exit
         final Path tmpDir = createTempDirectory("binkley");
 
@@ -73,7 +75,7 @@ public final class VersionDiffTest {
 
         final Path buildDir = tmpDir.resolve("build");
         mkdirs(buildDir);
-        final Map<Path, List<byte[]>> compiled = new ConcurrentHashMap<>();
+        final Map<Path, List<Class>> compiled = new ConcurrentHashMap<>();
         final JavaCompiler javac = getSystemJavaCompiler();
         try (final StandardJavaFileManager files = javac
                 .getStandardFileManager(null, null, null)) {
@@ -81,6 +83,7 @@ public final class VersionDiffTest {
                 commitContents(repo, revId, revPath -> {
                     final Path relativeSrcPath = relativeSrcDir
                             .relativize(Paths.get(revPath));
+                    final String className = toJavaName(relativeSrcPath);
                     final Path srcFile = buildDir.resolve(relativeSrcPath);
                     mkdirs(srcFile.getParent());
                     compiled.computeIfAbsent(relativeSrcPath, newList()).
@@ -91,7 +94,16 @@ public final class VersionDiffTest {
                                             objFile,
                                             compile(javac, files, objFile))).
                                     filter(Entry::getValue).
-                                    map(e -> toBytes(e.getKey())).
+                                    map(e -> {
+                                        try (final URLClassLoader loader = new URLClassLoader(
+                                                new URL[]{buildDir.toFile()
+                                                        .toURI().toURL()})) {
+                                            return loader
+                                                    .loadClass(className);
+                                        } catch (final Exception x) {
+                                            throw new IOError(x);
+                                        }
+                                    }).
                                     collect(toList()));
                     return srcFile;
                 });
@@ -102,32 +114,13 @@ public final class VersionDiffTest {
             });
 
             out.println("compiled = " + compiled);
-            compiled.entrySet().stream().
-                    flatMap(e -> e.getValue().stream().
-                            map(a -> new SimpleImmutableEntry<>(e.getKey(),
-                                    a.length))).
-                    forEach(e -> out.printf("%s -> %d bytes%n", e.getKey(),
-                            e.getValue()));
-
-            final BytesClassLoader loader = new BytesClassLoader();
-            final Map<String, List<Class>> analyzed
-                    = new ConcurrentHashMap<>();
-
-            for (final Entry<Path, List<byte[]>> e : compiled.entrySet()) {
-                final String className = toJavaName(e);
-                for (final byte[] bytes : e.getValue())
-                    analyzed.computeIfAbsent(className, newList()).
-                            add(loader.load(className, bytes));
-            }
-
-            out.println("analyzed = " + analyzed);
         }
     }
 
-    private static String toJavaName(final Entry<Path, List<byte[]>> e) {
+    private static String toJavaName(final Path relativeSrcPath) {
         // TODO: Correct binary name!  Ex: inner classes are scratch.Foo$Bar
         return javaSuffix.
-                matcher(e.getKey().toString()).replaceAll("").
+                matcher(relativeSrcPath.toString()).replaceAll("").
                 replace('/', '.');
     }
 
