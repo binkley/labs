@@ -1,8 +1,5 @@
 package hm.binkley.labs;
 
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.NotFoundException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -19,7 +16,6 @@ import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -58,7 +54,7 @@ public final class VersionDiffTest {
     }
 
     public static void main(final String... args)
-            throws IOException, GitAPIException, NotFoundException {
+            throws IOException, GitAPIException {
         // TODO: Recursively delete tmpDir at exit
         final Path tmpDir = createTempDirectory("binkley");
 
@@ -110,23 +106,29 @@ public final class VersionDiffTest {
                     flatMap(e -> e.getValue().stream().
                             map(a -> new SimpleImmutableEntry<>(e.getKey(),
                                     a.length))).
-                    forEach(out::println);
+                    forEach(e -> out.printf("%s -> %d bytes%n", e.getKey(),
+                            e.getValue()));
 
-            final Map<String, List<CtClass>> analyzed
+            final BytesClassLoader loader = new BytesClassLoader();
+            final Map<String, List<Class>> analyzed
                     = new ConcurrentHashMap<>();
-            final ClassPool pool = ClassPool.getDefault();
-            pool.insertClassPath(buildDir.toString());
 
             for (final Entry<Path, List<byte[]>> e : compiled.entrySet()) {
-                final String className = javaSuffix
-                        .matcher(e.getKey().toString()).replaceAll("")
-                        .replace('/', '.');
+                final String className = toJavaName(e);
                 for (final byte[] bytes : e.getValue())
-                    read(analyzed, pool, className, bytes);
+                    analyzed.computeIfAbsent(className, newList()).
+                            add(loader.load(className, bytes));
             }
 
             out.println("analyzed = " + analyzed);
         }
+    }
+
+    private static String toJavaName(final Entry<Path, List<byte[]>> e) {
+        // TODO: Correct binary name!  Ex: inner classes are scratch.Foo$Bar
+        return javaSuffix.
+                matcher(e.getKey().toString()).replaceAll("").
+                replace('/', '.');
     }
 
     private static byte[] toBytes(final JavaFileObject objFile) {
@@ -149,13 +151,6 @@ public final class VersionDiffTest {
         return javac.
                 getTask(null, files, null, null, null, singleton(objFile)).
                 call();
-    }
-
-    private static void read(final Map<String, List<CtClass>> analyzed,
-            final ClassPool pool, final String className, final byte[] bytes)
-            throws IOException {
-        analyzed.computeIfAbsent(className, newList()).
-                add(pool.makeClass(new ByteArrayInputStream(bytes)));
     }
 
     private static void writeFakeJavaHistory(final Repository repo,
@@ -257,8 +252,8 @@ public final class VersionDiffTest {
 
     private static final class BytesClassLoader
             extends ClassLoader {
-        public Class load(final byte[] bytes) {
-            return defineClass(null, bytes, 0, bytes.length);
+        public Class load(final String name, final byte[] bytes) {
+            return defineClass(name, bytes, 0, bytes.length);
         }
     }
 }
