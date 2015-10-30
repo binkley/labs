@@ -1,5 +1,8 @@
 package hm.binkley.labs;
 
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -16,18 +19,24 @@ import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOError;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import static java.lang.System.out;
 import static java.nio.file.Files.createTempDirectory;
@@ -40,8 +49,16 @@ import static java.util.stream.StreamSupport.stream;
 import static javax.tools.ToolProvider.getSystemJavaCompiler;
 
 public final class VersionDiffTest {
+    private static final Function newList = __ -> new ArrayList<>();
+    private static final Pattern javaSuffix = Pattern.compile("\\.java$");
+
+    @SuppressWarnings("unchecked")
+    private static <K, V> Function<K, List<V>> newList() {
+        return newList;
+    }
+
     public static void main(final String... args)
-            throws IOException, GitAPIException {
+            throws IOException, GitAPIException, NotFoundException {
         // TODO: Recursively delete tmpDir at exit
         final Path tmpDir = createTempDirectory("binkley");
 
@@ -60,47 +77,85 @@ public final class VersionDiffTest {
 
         final Path buildDir = tmpDir.resolve("build");
         mkdirs(buildDir);
-        final Map<Path, List<JavaFileObject>> compiled
-                = new ConcurrentHashMap<>();
+        final Map<Path, List<byte[]>> compiled = new ConcurrentHashMap<>();
         final JavaCompiler javac = getSystemJavaCompiler();
         try (final StandardJavaFileManager files = javac
                 .getStandardFileManager(null, null, null)) {
-            findStuff(repo, revId -> {
+            findCommits(repo, revId -> {
                 commitContents(repo, revId, revPath -> {
                     final Path relativeSrcPath = relativeSrcDir
                             .relativize(Paths.get(revPath));
                     final Path srcFile = buildDir.resolve(relativeSrcPath);
                     mkdirs(srcFile.getParent());
-                    compiled.computeIfAbsent(srcFile,
-                            path -> new ArrayList<>()).
+                    compiled.computeIfAbsent(relativeSrcPath, newList()).
                             addAll(stream(
                                     files.getJavaFileObjects(srcFile.toFile())
                                             .spliterator(), false).
-                                    peek(o -> javac
-                                            .getTask(null, files, null, null,
-                                                    null, singleton(o)).
-                                                    call()).
+                                    map(objFile -> new SimpleImmutableEntry<>(
+                                            objFile,
+                                            compile(javac, files, objFile))).
+                                    filter(Entry::getValue).
+                                    map(e -> toBytes(e.getKey())).
                                     collect(toList()));
                     return srcFile;
                 });
 
                 walk(buildDir).
+                        filter(p -> p.toFile().isFile()).
                         forEach(out::println);
             });
 
-            for (final Entry<Path, List<JavaFileObject>> e : compiled
-                    .entrySet()) {
-                final Iterator<JavaFileObject> it = e.getValue().iterator();
-                if (!it.hasNext())
-                    throw new IllegalStateException();
-                JavaFileObject last = it.next();
-                while (it.hasNext()) {
-                    final JavaFileObject next = it.next();
-                    out.println(last.equals(next));
-                    last = next;
-                }
+            out.println("compiled = " + compiled);
+            compiled.entrySet().stream().
+                    flatMap(e -> e.getValue().stream().
+                            map(a -> new SimpleImmutableEntry<>(e.getKey(),
+                                    a.length))).
+                    forEach(out::println);
+
+            final Map<String, List<CtClass>> analyzed
+                    = new ConcurrentHashMap<>();
+            final ClassPool pool = ClassPool.getDefault();
+            pool.insertClassPath(buildDir.toString());
+
+            for (final Entry<Path, List<byte[]>> e : compiled.entrySet()) {
+                final String className = javaSuffix
+                        .matcher(e.getKey().toString()).replaceAll("")
+                        .replace('/', '.');
+                for (final byte[] bytes : e.getValue())
+                    read(analyzed, pool, className, bytes);
             }
+
+            out.println("analyzed = " + analyzed);
         }
+    }
+
+    private static byte[] toBytes(final JavaFileObject objFile) {
+        // TODO: JDK 8 way to copy i/o?
+        try (final ByteArrayOutputStream bytes = new ByteArrayOutputStream()) {
+            try (final InputStream in = objFile.openInputStream()) {
+                int b;
+                while (-1 != (b = in.read()))
+                    bytes.write(b);
+            }
+            return bytes.toByteArray();
+        } catch (final IOException e) {
+            throw new IOError(e);
+        }
+    }
+
+    private static Boolean compile(final JavaCompiler javac,
+            final StandardJavaFileManager files,
+            final JavaFileObject objFile) {
+        return javac.
+                getTask(null, files, null, null, null, singleton(objFile)).
+                call();
+    }
+
+    private static void read(final Map<String, List<CtClass>> analyzed,
+            final ClassPool pool, final String className, final byte[] bytes)
+            throws IOException {
+        analyzed.computeIfAbsent(className, newList()).
+                add(pool.makeClass(new ByteArrayInputStream(bytes)));
     }
 
     private static void writeFakeJavaHistory(final Repository repo,
@@ -111,15 +166,21 @@ public final class VersionDiffTest {
         final Path fooFile = packageDir.resolve("Foo.java");
 
         try (final Git git = Git.wrap(repo)) {
-            writeAndCommit(git, fooFile, "First Foo", "package scratch;",
-                    "public final class Foo {}");
+            writeAndCommit(git, fooFile, "Init", "package scratch;",
+                    "public final class Foo {",
+                    "    public static void main(final String... args) {",
+                    "    }", "}");
 
-            writeAndCommit(git, fooFile, "First Foo", "package scratch;",
-                    "/** Silly javadoc. */", "public final class Foo {}");
-
-            writeAndCommit(git, fooFile, "First Foo", "package scratch;",
+            writeAndCommit(git, fooFile, "No real change", "package scratch;",
                     "/** Silly javadoc. */", "public final class Foo {",
-                    "    public final int x = 4;", "}");
+                    "    public static void main(final String... args) {",
+                    "    }", "}");
+
+            writeAndCommit(git, fooFile, "Added field", "package scratch;",
+                    "/** Silly javadoc. */", "public final class Foo {",
+                    "    public final int x = 4;",
+                    "    public static void main(final String... args) {",
+                    "    }", "}");
         }
     }
 
@@ -148,7 +209,7 @@ public final class VersionDiffTest {
                 call();
     }
 
-    private static void findStuff(final Repository repo,
+    private static void findCommits(final Repository repo,
             final IOConsumer<ObjectId> process)
             throws IOException {
         final Ref head = repo.getRef("refs/heads/master");
@@ -191,6 +252,13 @@ public final class VersionDiffTest {
             }
 
             revWalk.dispose();
+        }
+    }
+
+    private static final class BytesClassLoader
+            extends ClassLoader {
+        public Class load(final byte[] bytes) {
+            return defineClass(null, bytes, 0, bytes.length);
         }
     }
 }
