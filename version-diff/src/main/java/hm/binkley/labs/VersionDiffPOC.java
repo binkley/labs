@@ -28,13 +28,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import static java.lang.System.out;
@@ -47,16 +42,10 @@ import static java.util.stream.StreamSupport.stream;
 import static javax.tools.ToolProvider.getSystemJavaCompiler;
 
 public final class VersionDiffPOC {
-    private static final Function newList = __ -> new ArrayList<>();
     private static final Pattern javaSuffix = Pattern.compile("\\.java$");
     private static final Path relativeSrcDir = Paths
             .get("src", "main", "java");
     private static final JavaCompiler javac = getSystemJavaCompiler();
-
-    @SuppressWarnings("unchecked")
-    static <K, V> Function<K, List<V>> newList() {
-        return newList;
-    }
 
     public static void main(final String... args)
             throws IOException, GitAPIException {
@@ -76,31 +65,19 @@ public final class VersionDiffPOC {
         writeFakeJavaHistory(repo, srcDir);
 
         final Path buildDir = tmpDir.resolve("build");
-        mkdirs(buildDir);
-        final Map<Path, List<Class>> classesBySource
-                = new ConcurrentHashMap<>();
-        final Map<RevCommit, List<Class>> classesByCommit
-                = new ConcurrentHashMap<>();
-
         final List<CompiledCommit> commits = new ArrayList<>();
 
         try (final StandardJavaFileManager files = javac
                 .getStandardFileManager(null, null, null)) {
             findCommits(repo, commit -> writeOutCommits(repo, commit.getId(),
-                    revPath -> compile(buildDir, classesBySource, commit,
-                            commits, files, revPath)));
+                    revPath -> compile(buildDir, commit, commits, files,
+                            revPath)));
         }
 
-        out.println("compiled = " + classesBySource);
         out.println("commits = " + commits);
-        classesBySource.values().stream().
-                flatMap(Collection::stream).
-                map(c -> Arrays.toString(c.getFields())).
-                forEach(out::println);
     }
 
-    private static Path compile(final Path buildDir,
-            final Map<Path, List<Class>> compiled, final RevCommit commit,
+    private static Path compile(final Path buildDir, final RevCommit commit,
             final List<CompiledCommit> commits,
             final StandardJavaFileManager files, final String revPath)
             throws IOException {
@@ -109,12 +86,8 @@ public final class VersionDiffPOC {
         final String className = toJavaName(relativeSrcPath);
         final Path srcFile = buildDir.resolve(relativeSrcPath);
         mkdirs(srcFile.getParent());
-        final List<Class<?>> classes = loadClasses(buildDir, files, className,
-                srcFile);
-        compiled.computeIfAbsent(relativeSrcPath, newList()).
-                addAll(classes);
         final CompiledCommit compiledCommit = CompiledCommit
-                .of(commit, classes);
+                .of(commit, loadClasses(buildDir, files, className, srcFile));
         commits.add(compiledCommit);
         return srcFile;
     }
