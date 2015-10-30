@@ -24,16 +24,24 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import static hm.binkley.labs.IORunnable.rethrow;
+import static java.lang.Runtime.getRuntime;
 import static java.lang.System.out;
+import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.Files.createTempDirectory;
+import static java.nio.file.Files.delete;
+import static java.nio.file.Files.walkFileTree;
 import static java.nio.file.Files.write;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
@@ -50,7 +58,10 @@ public final class VersionDiffPOC {
     public static void main(final String... args)
             throws IOException, GitAPIException {
         // TODO: Recursively delete tmpDir at exit
-        final Path tmpDir = createTempDirectory("binkley");
+        final Path tmpDir = createTempDirectory(
+                VersionDiffPOC.class.getPackage().getName());
+        getRuntime().addShutdownHook(
+                new Thread(rethrow(() -> recursivelyDelete(tmpDir))));
 
         final Path repoDir = tmpDir.resolve("repo");
         mkdirs(repoDir);
@@ -75,6 +86,27 @@ public final class VersionDiffPOC {
         }
 
         out.println("commits = " + commits);
+    }
+
+    private static Path recursivelyDelete(final Path tmpDir)
+            throws IOException {
+        return walkFileTree(tmpDir, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(final Path file,
+                    final BasicFileAttributes attrs)
+                    throws IOException {
+                delete(file);
+                return CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(final Path dir,
+                    final IOException exc)
+                    throws IOException {
+                delete(dir);
+                return CONTINUE;
+            }
+        });
     }
 
     private static Path compile(final Path buildDir, final RevCommit commit,
@@ -167,12 +199,6 @@ public final class VersionDiffPOC {
             throw new IOException("Cannot make " + path);
     }
 
-    @FunctionalInterface
-    public interface IOConsumer<T> {
-        void accept(final T in)
-                throws IOException;
-    }
-
     private static void writeAndCommit(final Git git, final Path where,
             final String commitMessage, final String... lines)
             throws IOException, GitAPIException {
@@ -196,12 +222,6 @@ public final class VersionDiffPOC {
                 process.accept(rev);
             walk.dispose();
         }
-    }
-
-    @FunctionalInterface
-    public interface IOFunction<T, U> {
-        U apply(final T in)
-                throws IOException;
     }
 
     private static void writeOutCommits(final Repository repo,
