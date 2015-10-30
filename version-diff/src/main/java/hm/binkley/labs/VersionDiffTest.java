@@ -11,7 +11,7 @@ import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 
 import javax.tools.JavaCompiler;
 import javax.tools.StandardJavaFileManager;
@@ -29,62 +29,70 @@ import static java.nio.file.Files.createTempDirectory;
 import static java.nio.file.Files.walk;
 import static java.nio.file.Files.write;
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static javax.tools.ToolProvider.getSystemJavaCompiler;
 
 public final class VersionDiffTest {
     public static void main(final String... args)
             throws IOException, GitAPIException {
-        final Path tmpDir = createTempDirectory("binkley");
         // TODO: Recursively delete tmpDir at exit
+        final Path tmpDir = createTempDirectory("binkley");
+
         final Path repoDir = tmpDir.resolve("repo");
         mkdirs(repoDir);
-
-        final Path buildDir = tmpDir.resolve("build");
-        mkdirs(buildDir);
-
-        final Path relativeSrcDir = Paths.get("src", "main", "java");
-        final Path srcDir = repoDir.resolve(relativeSrcDir);
-        mkdirs(srcDir);
-        final Path packageDir = srcDir.resolve(Paths.get("scratch"));
-        mkdirs(packageDir);
-        final Path fooFile = packageDir.resolve("Foo.java");
-
         final Path gitDir = repoDir.resolve(".git");
         mkdirs(gitDir);
         final Repository repo = FileRepositoryBuilder.create(gitDir.toFile());
         repo.create();
 
+        final Path relativeSrcDir = Paths.get("src", "main", "java");
+        final Path srcDir = repoDir.resolve(relativeSrcDir);
+        mkdirs(srcDir);
+
+        writeFakeJavaHistory(repo, srcDir);
+
+        final Path buildDir = tmpDir.resolve("build");
+        mkdirs(buildDir);
+        final JavaCompiler javac = getSystemJavaCompiler();
+        try (final StandardJavaFileManager files = javac
+                .getStandardFileManager(null, null, null)) {
+            findStuff(repo, revId -> {
+                final List<Path> inputs = new ArrayList<>();
+                commitContents(repo, revId, revPath -> {
+                    final Path relativeSrcPath = relativeSrcDir
+                            .relativize(Paths.get(revPath));
+                    final Path srcFile = buildDir.resolve(relativeSrcPath);
+                    mkdirs(srcFile.getParent());
+                    inputs.add(srcFile);
+                    return srcFile;
+                });
+
+                javac.getTask(null, files, null, null, null,
+                        files.getJavaFileObjectsFromFiles(inputs.stream().
+                                map(Path::toFile).
+                                collect(toList()))).
+                        call();
+
+                walk(buildDir).
+                        forEach(out::println);
+            });
+        }
+    }
+
+    private static void writeFakeJavaHistory(final Repository repo,
+            final Path srcDir)
+            throws IOException, GitAPIException {
+        final Path packageDir = srcDir.resolve(Paths.get("scratch"));
+        mkdirs(packageDir);
+        final Path fooFile = packageDir.resolve("Foo.java");
+
         try (final Git git = Git.wrap(repo)) {
-            git.close();
-            repo.close();
             writeAndCommit(git, fooFile, "First Foo", "package scratch;",
                     "public final class Foo {}");
 
             writeAndCommit(git, fooFile, "First Foo", "package scratch;",
                     "/** Silly javadoc. */", "public final class Foo {}");
         }
-
-        final JavaCompiler javac = getSystemJavaCompiler();
-        try (final StandardJavaFileManager files = javac
-                .getStandardFileManager(null, null, null)) {
-            findStuff(repo, revId -> {
-                final List<File> inputs = new ArrayList<>();
-                commitContents(repo, revId, revPath -> {
-                    final Path srcFile = buildSrcFile(buildDir,
-                            relativeSrcDir, revPath);
-                    mkdirs(srcFile.getParent());
-                    inputs.add(srcFile.toFile());
-                    return new FileOutputStream(srcFile.toFile());
-                }, "src/main/java/scratch/Foo.java");
-
-                javac.getTask(null, files, null, null, null,
-                        files.getJavaFileObjectsFromFiles(inputs)).
-                        call();
-            });
-        }
-
-        walk(buildDir).
-                forEach(out::println);
     }
 
     private static void mkdirs(final Path path)
@@ -92,12 +100,6 @@ public final class VersionDiffTest {
         final File file = path.toFile();
         if (!file.exists() && !file.mkdirs())
             throw new IOException("Cannot make " + path);
-    }
-
-    private static Path buildSrcFile(final Path buildDir,
-            final Path relativeSrcDir, final String revPath) {
-        return buildDir
-                .resolve(relativeSrcDir.relativize(Paths.get(revPath)));
     }
 
     @FunctionalInterface
@@ -138,9 +140,7 @@ public final class VersionDiffTest {
     }
 
     private static void commitContents(final Repository repo,
-            final ObjectId commitId,
-            final IOFunction<String, OutputStream> out,
-            final String exampleJava)
+            final ObjectId commitId, final IOFunction<String, Path> out)
             throws IOException {
         try (final RevWalk revWalk = new RevWalk(repo)) {
             final RevCommit commit = revWalk.parseCommit(commitId);
@@ -148,15 +148,15 @@ public final class VersionDiffTest {
             try (final TreeWalk treeWalk = new TreeWalk(repo)) {
                 treeWalk.addTree(tree);
                 treeWalk.setRecursive(true);
-                treeWalk.setFilter(PathFilter.create(exampleJava));
+                treeWalk.setFilter(PathSuffixFilter.create(".java"));
 
                 if (!treeWalk.next())
-                    throw new IOException("No " + exampleJava);
+                    throw new IOException("No Java");
                 else {
                     final ObjectId objectId = treeWalk.getObjectId(0);
                     final ObjectLoader loader = repo.open(objectId);
-                    try (final OutputStream src = out
-                            .apply(treeWalk.getPathString())) {
+                    try (final OutputStream src = new FileOutputStream(
+                            out.apply(treeWalk.getPathString()).toFile())) {
                         loader.copyTo(src);
                     }
                 }
