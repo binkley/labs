@@ -14,6 +14,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 
 import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,13 +24,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.System.out;
 import static java.nio.file.Files.createTempDirectory;
 import static java.nio.file.Files.walk;
 import static java.nio.file.Files.write;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.StreamSupport.stream;
 import static javax.tools.ToolProvider.getSystemJavaCompiler;
 
 public final class VersionDiffTest {
@@ -53,25 +58,29 @@ public final class VersionDiffTest {
 
         final Path buildDir = tmpDir.resolve("build");
         mkdirs(buildDir);
+        final Map<Path, List<JavaFileObject>> compiled
+                = new ConcurrentHashMap<>();
         final JavaCompiler javac = getSystemJavaCompiler();
         try (final StandardJavaFileManager files = javac
                 .getStandardFileManager(null, null, null)) {
             findStuff(repo, revId -> {
-                final List<Path> inputs = new ArrayList<>();
                 commitContents(repo, revId, revPath -> {
                     final Path relativeSrcPath = relativeSrcDir
                             .relativize(Paths.get(revPath));
                     final Path srcFile = buildDir.resolve(relativeSrcPath);
                     mkdirs(srcFile.getParent());
-                    inputs.add(srcFile);
+                    compiled.computeIfAbsent(srcFile,
+                            path -> new ArrayList<>()).
+                            addAll(stream(
+                                    files.getJavaFileObjects(srcFile.toFile())
+                                            .spliterator(), false).
+                                    peek(o -> javac
+                                            .getTask(null, files, null, null,
+                                                    null, singleton(o)).
+                                                    call()).
+                                    collect(toList()));
                     return srcFile;
                 });
-
-                javac.getTask(null, files, null, null, null,
-                        files.getJavaFileObjectsFromFiles(inputs.stream().
-                                map(Path::toFile).
-                                collect(toList()))).
-                        call();
 
                 walk(buildDir).
                         forEach(out::println);
