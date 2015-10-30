@@ -16,12 +16,10 @@ import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOError;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -29,6 +27,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -56,7 +56,7 @@ public final class VersionDiffPOC {
     }
 
     public static void main(final String... args)
-            throws IOException, GitAPIException, ClassNotFoundException {
+            throws IOException, GitAPIException {
         // TODO: Recursively delete tmpDir at exit
         final Path tmpDir = createTempDirectory("binkley");
 
@@ -114,6 +114,11 @@ public final class VersionDiffPOC {
             });
 
             out.println("compiled = " + compiled);
+
+            compiled.values().stream().
+                    flatMap(Collection::stream).
+                    map(c -> Arrays.toString(c.getFields())).
+                    forEach(out::println);
         }
     }
 
@@ -122,20 +127,6 @@ public final class VersionDiffPOC {
         return javaSuffix.
                 matcher(relativeSrcPath.toString()).replaceAll("").
                 replace('/', '.');
-    }
-
-    private static byte[] toBytes(final JavaFileObject objFile) {
-        // TODO: JDK 8 way to copy i/o?
-        try (final ByteArrayOutputStream bytes = new ByteArrayOutputStream()) {
-            try (final InputStream in = objFile.openInputStream()) {
-                int b;
-                while (-1 != (b = in.read()))
-                    bytes.write(b);
-            }
-            return bytes.toByteArray();
-        } catch (final IOException e) {
-            throw new IOError(e);
-        }
     }
 
     private static Boolean compile(final JavaCompiler javac,
@@ -240,13 +231,6 @@ public final class VersionDiffPOC {
             }
 
             revWalk.dispose();
-        }
-    }
-
-    private static final class BytesClassLoader
-            extends ClassLoader {
-        public Class load(final String name, final byte[] bytes) {
-            return defineClass(name, bytes, 0, bytes.length);
         }
     }
 }
