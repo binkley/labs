@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
@@ -38,7 +39,6 @@ import java.util.regex.Pattern;
 
 import static java.lang.System.out;
 import static java.nio.file.Files.createTempDirectory;
-import static java.nio.file.Files.walk;
 import static java.nio.file.Files.write;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
@@ -49,9 +49,12 @@ import static javax.tools.ToolProvider.getSystemJavaCompiler;
 public final class VersionDiffPOC {
     private static final Function newList = __ -> new ArrayList<>();
     private static final Pattern javaSuffix = Pattern.compile("\\.java$");
+    private static final Path relativeSrcDir = Paths
+            .get("src", "main", "java");
+    private static final JavaCompiler javac = getSystemJavaCompiler();
 
     @SuppressWarnings("unchecked")
-    private static <K, V> Function<K, List<V>> newList() {
+    static <K, V> Function<K, List<V>> newList() {
         return newList;
     }
 
@@ -67,7 +70,6 @@ public final class VersionDiffPOC {
         final Repository repo = FileRepositoryBuilder.create(gitDir.toFile());
         repo.create();
 
-        final Path relativeSrcDir = Paths.get("src", "main", "java");
         final Path srcDir = repoDir.resolve(relativeSrcDir);
         mkdirs(srcDir);
 
@@ -75,51 +77,74 @@ public final class VersionDiffPOC {
 
         final Path buildDir = tmpDir.resolve("build");
         mkdirs(buildDir);
-        final Map<Path, List<Class>> compiled = new ConcurrentHashMap<>();
-        final JavaCompiler javac = getSystemJavaCompiler();
+        final Map<Path, List<Class>> classesBySource
+                = new ConcurrentHashMap<>();
+        final Map<RevCommit, List<Class>> classesByCommit
+                = new ConcurrentHashMap<>();
+
+        final List<CompiledCommit> commits = new ArrayList<>();
+
         try (final StandardJavaFileManager files = javac
                 .getStandardFileManager(null, null, null)) {
-            findCommits(repo, revId -> {
-                commitContents(repo, revId, revPath -> {
-                    final Path relativeSrcPath = relativeSrcDir
-                            .relativize(Paths.get(revPath));
-                    final String className = toJavaName(relativeSrcPath);
-                    final Path srcFile = buildDir.resolve(relativeSrcPath);
-                    mkdirs(srcFile.getParent());
-                    compiled.computeIfAbsent(relativeSrcPath, newList()).
-                            addAll(stream(
-                                    files.getJavaFileObjects(srcFile.toFile())
-                                            .spliterator(), false).
-                                    map(objFile -> new SimpleImmutableEntry<>(
-                                            objFile,
-                                            compile(javac, files, objFile))).
-                                    filter(Entry::getValue).
-                                    map(e -> {
-                                        try (final URLClassLoader loader = new URLClassLoader(
-                                                new URL[]{buildDir.toFile()
-                                                        .toURI().toURL()})) {
-                                            return loader
-                                                    .loadClass(className);
-                                        } catch (final Exception x) {
-                                            throw new IOError(x);
-                                        }
-                                    }).
-                                    collect(toList()));
-                    return srcFile;
-                });
-
-                walk(buildDir).
-                        filter(p -> p.toFile().isFile()).
-                        forEach(out::println);
-            });
-
-            out.println("compiled = " + compiled);
-
-            compiled.values().stream().
-                    flatMap(Collection::stream).
-                    map(c -> Arrays.toString(c.getFields())).
-                    forEach(out::println);
+            findCommits(repo, commit -> writeOutCommits(repo, commit.getId(),
+                    revPath -> compile(buildDir, classesBySource, commit,
+                            commits, files, revPath)));
         }
+
+        out.println("compiled = " + classesBySource);
+        out.println("commits = " + commits);
+        classesBySource.values().stream().
+                flatMap(Collection::stream).
+                map(c -> Arrays.toString(c.getFields())).
+                forEach(out::println);
+    }
+
+    private static Path compile(final Path buildDir,
+            final Map<Path, List<Class>> compiled, final RevCommit commit,
+            final List<CompiledCommit> commits,
+            final StandardJavaFileManager files, final String revPath)
+            throws IOException {
+        final Path relativeSrcPath = relativeSrcDir
+                .relativize(Paths.get(revPath));
+        final String className = toJavaName(relativeSrcPath);
+        final Path srcFile = buildDir.resolve(relativeSrcPath);
+        mkdirs(srcFile.getParent());
+        final List<Class<?>> classes = loadClasses(buildDir, files, className,
+                srcFile);
+        compiled.computeIfAbsent(relativeSrcPath, newList()).
+                addAll(classes);
+        final CompiledCommit compiledCommit = CompiledCommit
+                .of(commit, classes);
+        commits.add(compiledCommit);
+        return srcFile;
+    }
+
+    private static List<Class<?>> loadClasses(final Path buildDir,
+            final StandardJavaFileManager files, final String className,
+            final Path srcFile) {
+        return stream(
+                files.getJavaFileObjects(srcFile.toFile()).spliterator(),
+                false).
+                map(objFile -> new SimpleImmutableEntry<>(objFile,
+                        compile(files, objFile))).
+                filter(Entry::getValue).
+                map(e -> loadClass(buildDir, className)).
+                collect(toList());
+    }
+
+    private static Class<?> loadClass(final Path buildDir,
+            final String className) {
+        try (final URLClassLoader loader = newLoader(buildDir)) {
+            return loader.loadClass(className);
+        } catch (final IOException | ClassNotFoundException e) {
+            throw new IOError(e);
+        }
+    }
+
+    private static URLClassLoader newLoader(final Path buildDir)
+            throws MalformedURLException {
+        return new URLClassLoader(
+                new URL[]{buildDir.toFile().toURI().toURL()});
     }
 
     private static String toJavaName(final Path relativeSrcPath) {
@@ -129,8 +154,7 @@ public final class VersionDiffPOC {
                 replace('/', '.');
     }
 
-    private static Boolean compile(final JavaCompiler javac,
-            final StandardJavaFileManager files,
+    private static Boolean compile(final StandardJavaFileManager files,
             final JavaFileObject objFile) {
         return javac.
                 getTask(null, files, null, null, null, singleton(objFile)).
@@ -189,14 +213,14 @@ public final class VersionDiffPOC {
     }
 
     private static void findCommits(final Repository repo,
-            final IOConsumer<ObjectId> process)
+            final IOConsumer<RevCommit> process)
             throws IOException {
         final Ref head = repo.getRef("refs/heads/master");
         try (final RevWalk walk = new RevWalk(repo)) {
             final RevCommit commit = walk.parseCommit(head.getObjectId());
             walk.markStart(commit);
             for (final RevCommit rev : walk)
-                process.accept(rev.getId());
+                process.accept(rev);
             walk.dispose();
         }
     }
@@ -207,7 +231,7 @@ public final class VersionDiffPOC {
                 throws IOException;
     }
 
-    private static void commitContents(final Repository repo,
+    private static void writeOutCommits(final Repository repo,
             final ObjectId commitId, final IOFunction<String, Path> out)
             throws IOException {
         try (final RevWalk revWalk = new RevWalk(repo)) {
