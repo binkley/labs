@@ -3,7 +3,6 @@ package hm.binkley.labs;
 import reactor.Environment;
 import reactor.bus.EventBus;
 
-import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 import static java.lang.System.out;
@@ -11,7 +10,10 @@ import static reactor.bus.selector.Selectors.T;
 
 public final class ReagentMain {
     public static void main(final String... args)
-            throws InterruptedException, IOException {
+            throws Exception {
+        // Force jdeps to fail
+        com.alexkasko.unsafe.bytearray.ByteArrayTool.unsafe().isUnsafe();
+
         try (final Environment __ = Environment.initialize()) {
             // Because main() exits before bus can process, force it to wait
             final CountDownLatch done = new CountDownLatch(1);
