@@ -31,7 +31,10 @@ public interface IORunnable {
         };
     }
 
-    /** @see {@link Runnable#run()} */
+    /**
+     * @throws IOException if the runner fails
+     * @see Runnable#run() Runnable
+     */
     void run()
             throws IOException;
 }
