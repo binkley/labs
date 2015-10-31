@@ -9,12 +9,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
@@ -22,21 +26,21 @@ public final class MagicBusTest {
     @Rule
     public final ExpectedException thrown = ExpectedException.none();
 
-    private AtomicReference<ReturnedMessage> returned;
-    private AtomicReference<FailedMessage> failed;
+    private List<ReturnedMessage> returned;
+    private List<FailedMessage> failed;
     private MagicBus bus;
 
     @Before
     public void setUp() {
-        returned = new AtomicReference<>();
-        failed = new AtomicReference<>();
-        bus = new MagicBus(returned::set, failed::set);
+        returned = new CopyOnWriteArrayList<>();
+        failed = new CopyOnWriteArrayList<>();
+        bus = new MagicBus(returned::add, failed::add);
     }
 
     @Test
     public void shouldSubscribeAndPost() {
-        final AtomicReference<Foo> mailbox = new AtomicReference<>();
-        bus.subscribe(Foo.class, mailbox::set);
+        final List<Foo> mailbox = new CopyOnWriteArrayList<>();
+        bus.subscribe(Foo.class, mailbox::add);
 
         final Bar message = new Bar();
         bus.post(message);
@@ -59,7 +63,7 @@ public final class MagicBusTest {
 
         assertOn(noMailbox()).
                 noneDelivered().
-                returned(message).
+                returned(with(message)).
                 noneFailed();
     }
 
@@ -70,7 +74,7 @@ public final class MagicBusTest {
 
         assertOn(noMailbox()).
                 noneDelivered().
-                returned(message).
+                returned(with(message)).
                 noneFailed();
     }
 
@@ -88,7 +92,7 @@ public final class MagicBusTest {
         assertOn(noMailbox()).
                 noneDelivered().
                 noneReturned().
-                failed(mailbox, message, e);
+                failed(with(mailbox, message, e));
     }
 
     @Test
@@ -103,50 +107,58 @@ public final class MagicBusTest {
         bus.post(new Bar());
     }
 
-    private <T> AssertDelivery<T> assertOn(final AtomicReference<T> message) {
-        return new AssertDelivery<>(message);
+    private <T> AssertDelivery<T> assertOn(final List<T> delivered) {
+        return new AssertDelivery<>(delivered);
     }
 
-    private static <T> AtomicReference<T> noMailbox() {
-        return new AtomicReference<>();
+    private static <T> List<T> noMailbox() {
+        return emptyList();
+    }
+
+    private ReturnedMessage with(final Object message) {
+        return new ReturnedMessage(bus, message);
+    }
+
+    private FailedMessage with(final Mailbox mailbox, final Object message,
+            final Exception failure) {
+        return new FailedMessage(bus, mailbox, message, failure);
     }
 
     @RequiredArgsConstructor(access = PRIVATE)
     private final class AssertDelivery<T> {
-        private final AtomicReference<T> delivered;
+        private final List<T> delivered;
 
         private AssertDelivery<T> noneDelivered() {
-            assertThat(delivered.get(), is(nullValue()));
+            assertThat(delivered, is(empty()));
             return this;
         }
 
-        private <U extends T> AssertDelivery<T> delivered(final U delivered) {
-            assertThat(this.delivered.get(), is(sameInstance(delivered)));
+        @SafeVarargs
+        private final <U extends T> AssertDelivery<T> delivered(
+                final U... delivered) {
+            assertThat(this.delivered, is(asList(delivered)));
             return this;
         }
 
         private AssertDelivery<T> noneReturned() {
-            assertThat(returned.get(), is(nullValue()));
+            assertThat(returned, is(emptyList()));
             return this;
         }
 
-        private AssertDelivery<T> returned(final T message) {
-            final ReturnedMessage returned = MagicBusTest.this.returned.get();
-            assertThat(returned,
-                    is(equalTo(new ReturnedMessage(bus, message))));
+        private AssertDelivery<T> returned(
+                final ReturnedMessage... returned) {
+            assertThat(MagicBusTest.this.returned,
+                    is(equalTo(asList(returned))));
             return this;
         }
 
         private AssertDelivery<T> noneFailed() {
-            assertThat(failed.get(), is(nullValue()));
+            assertThat(failed, is(emptyList()));
             return this;
         }
 
-        private AssertDelivery<T> failed(final Mailbox mailbox,
-                final T message, final Exception failure) {
-            final FailedMessage failed = MagicBusTest.this.failed.get();
-            assertThat(failed, is(equalTo(
-                    new FailedMessage(bus, mailbox, message, failure))));
+        private AssertDelivery<T> failed(final FailedMessage... failed) {
+            assertThat(MagicBusTest.this.failed, is(equalTo(asList(failed))));
             return this;
         }
     }
