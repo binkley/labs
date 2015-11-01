@@ -33,6 +33,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import static hm.binkley.labs.IORunnable.rethrow;
@@ -80,9 +81,10 @@ public final class VersionDiffPOC {
 
         try (final StandardJavaFileManager files = javac
                 .getStandardFileManager(null, null, null)) {
-            findCommits(repo, commit -> writeOutCommits(repo, commit.getId(),
-                    revPath -> compile(buildDir, commit, commits, files,
-                            revPath)));
+            findCommits(repo, rev -> true,
+                    commit -> writeOutCommits(repo, commit.getId(),
+                            revPath -> compile(buildDir, commit, commits,
+                                    files, revPath)));
         }
 
         out.println("commits = " + commits);
@@ -109,7 +111,7 @@ public final class VersionDiffPOC {
         });
     }
 
-    private static Path compile(final Path buildDir, final RevCommit commit,
+    private static OutputStream compile(final Path buildDir, final RevCommit commit,
             final List<CompiledCommit> commits,
             final StandardJavaFileManager files, final String revPath)
             throws IOException {
@@ -121,7 +123,7 @@ public final class VersionDiffPOC {
         final CompiledCommit compiledCommit = CompiledCommit
                 .of(commit, loadClasses(buildDir, files, className, srcFile));
         commits.add(compiledCommit);
-        return srcFile;
+        return new FileOutputStream(srcFile.toFile());
     }
 
     private static List<Class<?>> loadClasses(final Path buildDir,
@@ -212,6 +214,7 @@ public final class VersionDiffPOC {
     }
 
     private static void findCommits(final Repository repo,
+            final Predicate<RevCommit> check,
             final IOConsumer<RevCommit> process)
             throws IOException {
         final Ref head = repo.getRef("refs/heads/master");
@@ -219,13 +222,15 @@ public final class VersionDiffPOC {
             final RevCommit commit = walk.parseCommit(head.getObjectId());
             walk.markStart(commit);
             for (final RevCommit rev : walk)
-                process.accept(rev);
+                if (check.test(rev))
+                    process.accept(rev);
             walk.dispose();
         }
     }
 
     private static void writeOutCommits(final Repository repo,
-            final ObjectId commitId, final IOFunction<String, Path> out)
+            final ObjectId commitId,
+            final IOFunction<String, OutputStream> out)
             throws IOException {
         try (final RevWalk revWalk = new RevWalk(repo)) {
             final RevCommit commit = revWalk.parseCommit(commitId);
@@ -240,8 +245,8 @@ public final class VersionDiffPOC {
                 else {
                     final ObjectId objectId = treeWalk.getObjectId(0);
                     final ObjectLoader loader = repo.open(objectId);
-                    try (final OutputStream src = new FileOutputStream(
-                            out.apply(treeWalk.getPathString()).toFile())) {
+                    try (final OutputStream src = out
+                            .apply(treeWalk.getPathString())) {
                         loader.copyTo(src);
                     }
                 }
