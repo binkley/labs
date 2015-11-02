@@ -9,26 +9,19 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 
 import javax.annotation.Nullable;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import java.io.File;
-import java.io.IOError;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
+import static hm.binkley.labs.CompileJava.processCompiledJava;
 import static hm.binkley.labs.FindCommits.findCommits;
 import static hm.binkley.labs.FindCommits.writeOutCommits;
 import static hm.binkley.labs.IORunnable.rethrow;
@@ -40,16 +33,11 @@ import static java.nio.file.Files.delete;
 import static java.nio.file.Files.walkFileTree;
 import static java.nio.file.Files.write;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.StreamSupport.stream;
-import static javax.tools.ToolProvider.getSystemJavaCompiler;
 
 public final class VersionDiffPOC {
     private static final Pattern javaSuffix = Pattern.compile("\\.java$");
     private static final Path relativeSrcDir = Paths
             .get("src", "main", "java");
-    private static final JavaCompiler javac = getSystemJavaCompiler();
 
     public static void main(final String... args)
             throws IOException, GitAPIException {
@@ -74,13 +62,11 @@ public final class VersionDiffPOC {
         final Path buildDir = tmpDir.resolve("build");
         final List<CompiledCommit> commits = new ArrayList<>();
 
-        try (final StandardJavaFileManager files = javac
-                .getStandardFileManager(null, null, null)) {
-            findCommits(repo, commit -> writeOutCommits(repo, commit.getId(),
-                    VersionDiffPOC::configureTreeWalk,
-                    revPath -> compile(buildDir, commit, commits, files,
-                            revPath)));
-        }
+        processCompiledJava(files -> findCommits(repo,
+                commit -> writeOutCommits(repo, commit.getId(),
+                        VersionDiffPOC::configureTreeWalk,
+                        revPath -> compile(buildDir, commit, commits, files,
+                                revPath))));
 
         out.println("commits = " + commits);
     }
@@ -119,38 +105,10 @@ public final class VersionDiffPOC {
         final Path srcFile = buildDir.resolve(relativeSrcPath);
         mkdirs(srcFile.getParent());
         final CompiledCommit compiledCommit = CompiledCommit.of(commit,
-                loadClasses(buildDir, files, toJavaName(relativeSrcPath),
-                        srcFile));
+                CompileJava.loadClasses(buildDir, files,
+                        toJavaName(relativeSrcPath), srcFile));
         commits.add(compiledCommit);
         return srcFile;
-    }
-
-    private static List<Class<?>> loadClasses(final Path buildDir,
-            final StandardJavaFileManager files, final String className,
-            final Path srcFile) {
-        return stream(
-                files.getJavaFileObjects(srcFile.toFile()).spliterator(),
-                false).
-                map(objFile -> new SimpleImmutableEntry<>(objFile,
-                        compile(files, objFile))).
-                filter(Entry::getValue).
-                map(e -> loadClass(buildDir, className)).
-                collect(toList());
-    }
-
-    private static Class<?> loadClass(final Path buildDir,
-            final String className) {
-        try (final URLClassLoader loader = newLoader(buildDir)) {
-            return loader.loadClass(className);
-        } catch (final IOException | ClassNotFoundException e) {
-            throw new IOError(e);
-        }
-    }
-
-    private static URLClassLoader newLoader(final Path buildDir)
-            throws MalformedURLException {
-        return new URLClassLoader(
-                new URL[]{buildDir.toFile().toURI().toURL()});
     }
 
     private static String toJavaName(final Path relativeSrcPath) {
@@ -158,13 +116,6 @@ public final class VersionDiffPOC {
         return javaSuffix.
                 matcher(relativeSrcPath.toString()).replaceAll("").
                 replace('/', '.');
-    }
-
-    private static Boolean compile(final StandardJavaFileManager files,
-            final JavaFileObject objFile) {
-        return javac.
-                getTask(null, files, null, null, null, singleton(objFile)).
-                call();
     }
 
     private static void writeFakeJavaHistory(final Repository repo,
