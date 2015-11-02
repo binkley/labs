@@ -13,12 +13,12 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static hm.binkley.labs.FindCommits.findCommits;
 import static hm.binkley.labs.FindCommits.writeOutCommits;
 import static java.nio.file.Files.lines;
 import static java.nio.file.Files.write;
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.equalTo;
@@ -61,7 +61,7 @@ public class FindCommitsTest {
             throws IOException, GitAPIException {
         final File readme = repoDir.newFile("README.md");
         final String firstLine = "# README";
-        write(readme.toPath(), asList(firstLine));
+        write(readme.toPath(), singletonList(firstLine));
         git.add().
                 addFilepattern("README.md").
                 call();
@@ -73,9 +73,7 @@ public class FindCommitsTest {
                 commit -> writeOutCommits(repo, commit.getId(), treeWalk -> {
                 }, revPath -> repoDir.getRoot().toPath().resolve(revPath)));
 
-        assertThat(
-                lines(new File(repoDir.getRoot(), "README" + ".md").toPath()).
-                        collect(toList()),
-                is(equalTo(singletonList(firstLine))));
+        assertThat(lines(Paths.get(repoDir.getRoot().getPath(), "README.md")).
+                collect(toList()), is(equalTo(singletonList(firstLine))));
     }
 }
