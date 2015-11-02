@@ -14,7 +14,6 @@
         <module>axon</module>
         <module>boot-jpalooza</module>
         <module>jctools</module>
-        <module>modernj</module>
         <module>quasar</module>
         <module>reagent</module>
         <module>version-diff</module>
