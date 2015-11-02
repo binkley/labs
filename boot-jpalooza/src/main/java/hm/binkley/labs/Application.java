@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import java.util.concurrent.TimeUnit;
+import javax.transaction.TransactionManager;
 
 import static java.lang.System.out;
 
@@ -32,9 +32,6 @@ public class Application {
 
             repository.findByName("Nancy").
                     forEach(out::println);
-
-            // To see JMX
-            TimeUnit.MINUTES.sleep(5);
         };
     }
 }
