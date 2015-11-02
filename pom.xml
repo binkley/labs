@@ -67,7 +67,7 @@
         <java.charset>UTF-8</java.charset>
         <java.version>1.8</java.version>
         <jgitflow-maven-plugin.version>1.0-m5.1</jgitflow-maven-plugin.version>
-        <maven-surefire.version>2.18</maven-surefire.version>
+        <maven-surefire.version>2.18.1</maven-surefire.version>
         <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
         <maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
         <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
