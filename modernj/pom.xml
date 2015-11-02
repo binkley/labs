@@ -14,19 +14,12 @@
 
     <properties>
         <!-- @formatter:off -->
-        <HdrHistogram.version>2.1.7</HdrHistogram.version>
         <checker.version>1.9.7</checker.version>
-        <exec-maven-plugin.version>1.4.0</exec-maven-plugin.version>
         <hamcrest.version>2.0.0.0</hamcrest.version>
         <javatuples.version>1.2</javatuples.version>
         <junit.version>4.12</junit.version>
         <lombok.version>1.16.6</lombok.version>
         <jsr305.version>3.0.1</jsr305.version>
-        <main.class>hm.binkley.labs.FibersMain</main.class>
-        <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
-        <maven-shade-plugin.version>2.4.1</maven-shade-plugin.version>
-        <maven-surefire-plugin.version>2.18.1</maven-surefire-plugin.version>
-        <quasar.version>0.7.3</quasar.version>
         <vertx.version>3.1.0</vertx.version>
         <!-- @formatter:on -->
     </properties>
@@ -55,24 +48,6 @@
             <groupId>org.javatuples</groupId>
             <artifactId>javatuples</artifactId>
             <version>${javatuples.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>co.paralleluniverse</groupId>
-            <artifactId>quasar-core</artifactId>
-            <version>${quasar.version}</version>
-            <classifier>jdk8</classifier>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hdrhistogram</groupId>
-                    <artifactId>HdrHistogram</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <!-- Fix version mismatch with quasar -->
-            <groupId>org.hdrhistogram</groupId>
-            <artifactId>HdrHistogram</artifactId>
-            <version>${HdrHistogram.version}</version>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
@@ -105,148 +80,4 @@
             </exclusions>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>${maven-antrun-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>instrument-classes</id>
-                        <phase>compile</phase>
-                        <configuration>
-                            <target>
-                                <property name="ant_classpath"
-                                          refid="maven.dependency.classpath"/>
-                                <taskdef name="instrumentationTask"
-                                         classname="co.paralleluniverse.fibers.instrument.InstrumentationTask"
-                                         classpath="${ant_classpath}"/>
-                                <!-- Use "allowMonitors" to allow instrumenting methods containing synchronization -->
-                                <!-- instrumentationTask allowMonitors="true" -->
-                                <instrumentationTask>
-                                    <fileset
-                                            dir="${project.build.outputDirectory}"
-                                            includes="**/*.class"/>
-                                </instrumentationTask>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-
-                    <execution>
-                        <id>instrument-test-classes</id>
-                        <phase>test-compile</phase>
-                        <configuration>
-                            <target>
-                                <property name="ant_classpath"
-                                          refid="maven.dependency.classpath"/>
-                                <taskdef name="instrumentationTask"
-                                         classname="co.paralleluniverse.fibers.instrument.InstrumentationTask"
-                                         classpath="${ant_classpath}"/>
-                                <!-- Use "allowMonitors" to allow instrumenting methods containing synchronization -->
-                                <!-- instrumentationTask allowMonitors="true" -->
-                                <instrumentationTask>
-                                    <fileset
-                                            dir="${project.build.testOutputDirectory}"
-                                            includes="**/*.class"/>
-                                </instrumentationTask>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-plugin.version}</version>
-                <configuration>
-                    <argLine>
-                        -Dco.paralleluniverse.fibers.verifyInstrumentation=true
-                    </argLine>
-                    <argLine>
-                        -javaagent:${co.paralleluniverse:quasar-core:jar:jdk8}
-                    </argLine>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>${maven-shade-plugin.version}</version>
-                <configuration>
-                    <dependencyReducedPomLocation>
-                        ${project.build.directory}/dependency-reduced-pom.xml
-                    </dependencyReducedPomLocation>
-                    <filters>
-                        <filter>
-                            <artifact>org.checkerframework:checker</artifact>
-                            <excludes>
-                                <exclude>javax/annotation/**</exclude>
-                                <exclude>lombok/**</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <transformers>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>${main.class}</mainClass>
-                                </transformer>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>${exec-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>use-java</id>
-                        <configuration>
-                            <arguments>
-                                <argument>
-                                    -Dco.paralleluniverse.fibers.verifyInstrumentation=true
-                                </argument>
-                            </arguments>
-                            <mainClass>${main.class}</mainClass>
-                        </configuration>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>use-exec</id>
-                        <configuration>
-                            <workingDirectory>target/classes
-                            </workingDirectory>
-                            <executable>java</executable>
-                            <arguments>
-                                <argument>
-                                    -Dco.paralleluniverse.fibers.verifyInstrumentation=true
-                                </argument>
-                                <argument>-classpath</argument>
-                                <classpath/>
-                                <argument>${main.class}</argument>
-                            </arguments>
-                        </configuration>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>
