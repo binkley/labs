@@ -71,9 +71,9 @@ public final class VersionDiffPOC {
         out.println("commits = " + commits);
     }
 
-    private static Path recursivelyDelete(final Path tmpDir)
+    private static void recursivelyDelete(final Path tmpDir)
             throws IOException {
-        return walkFileTree(tmpDir, new SimpleFileVisitor<Path>() {
+        walkFileTree(tmpDir, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(final Path file,
                     final BasicFileAttributes attrs)
