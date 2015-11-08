@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -10,12 +10,13 @@
         <version>4-SNAPSHOT</version>
     </parent>
 
-    <artifactId>labs-modernj</artifactId>
+    <artifactId>labs-quasar</artifactId>
 
     <properties>
         <!-- @formatter:off -->
         <HdrHistogram.version>2.1.7</HdrHistogram.version>
         <checker.version>1.9.7</checker.version>
+        <dependency.failOnWarning>false</dependency.failOnWarning>
         <exec-maven-plugin.version>1.4.0</exec-maven-plugin.version>
         <hamcrest.version>2.0.0.0</hamcrest.version>
         <javatuples.version>1.2</javatuples.version>
@@ -36,14 +37,14 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
             <version>${jsr305.version}</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
