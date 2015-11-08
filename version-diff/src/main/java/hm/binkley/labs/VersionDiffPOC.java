@@ -10,7 +10,6 @@ import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 
 import javax.annotation.Nullable;
 import javax.tools.StandardJavaFileManager;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
@@ -28,6 +27,7 @@ import static hm.binkley.labs.IORunnable.rethrow;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.out;
 import static java.nio.file.FileVisitResult.CONTINUE;
+import static java.nio.file.Files.createDirectories;
 import static java.nio.file.Files.createTempDirectory;
 import static java.nio.file.Files.delete;
 import static java.nio.file.Files.walkFileTree;
@@ -48,14 +48,14 @@ public final class VersionDiffPOC {
                 new Thread(rethrow(() -> recursivelyDelete(tmpDir))));
 
         final Path repoDir = tmpDir.resolve("repo");
-        mkdirs(repoDir);
+        createDirectories(repoDir);
         final Path gitDir = repoDir.resolve(".git");
-        mkdirs(gitDir);
+        createDirectories(gitDir);
         final Repository repo = FileRepositoryBuilder.create(gitDir.toFile());
         repo.create();
 
         final Path srcDir = repoDir.resolve(relativeSrcDir);
-        mkdirs(srcDir);
+        createDirectories(srcDir);
 
         writeFakeJavaHistory(repo, srcDir);
 
@@ -71,9 +71,9 @@ public final class VersionDiffPOC {
         out.println("commits = " + commits);
     }
 
-    private static void recursivelyDelete(final Path tmpDir)
+    private static void recursivelyDelete(final Path dir)
             throws IOException {
-        walkFileTree(tmpDir, new SimpleFileVisitor<Path>() {
+        walkFileTree(dir, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(final Path file,
                     final BasicFileAttributes attrs)
@@ -84,8 +84,10 @@ public final class VersionDiffPOC {
 
             @Override
             public FileVisitResult postVisitDirectory(final Path dir,
-                    final IOException exc)
+                    final IOException e)
                     throws IOException {
+                if (null != e)
+                    throw e;
                 delete(dir);
                 return CONTINUE;
             }
@@ -103,7 +105,7 @@ public final class VersionDiffPOC {
         final Path relativeSrcPath = relativeSrcDir
                 .relativize(Paths.get(revPath));
         final Path srcFile = buildDir.resolve(relativeSrcPath);
-        mkdirs(srcFile.getParent());
+        createDirectories(srcFile.getParent());
         final CompiledCommit compiledCommit = CompiledCommit.of(commit,
                 CompileJava.loadClasses(buildDir, files,
                         toJavaName(relativeSrcPath), srcFile));
@@ -123,7 +125,7 @@ public final class VersionDiffPOC {
             final Path srcDir)
             throws IOException, GitAPIException {
         final Path packageDir = srcDir.resolve(Paths.get("scratch"));
-        mkdirs(packageDir);
+        createDirectories(packageDir);
         final Path fooFile = packageDir.resolve("Foo.java");
         final Path barFile = packageDir.resolve("Bar.java");
 
@@ -163,13 +165,6 @@ public final class VersionDiffPOC {
                     "Fake change - first commit ignored?", "package scratch;",
                     "public final class Bar {}");
         }
-    }
-
-    private static void mkdirs(final Path path)
-            throws IOException {
-        final File file = path.toFile();
-        if (!file.exists() && !file.mkdirs())
-            throw new IOException("Cannot make " + path);
     }
 
     private static void writeAndCommit(final Git git, final Path where,
