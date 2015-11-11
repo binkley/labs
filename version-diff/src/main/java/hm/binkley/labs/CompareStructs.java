@@ -9,8 +9,7 @@ import javax.tools.StandardJavaFileManager;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import static hm.binkley.labs.CompileJava.loadClasses;
@@ -28,19 +27,17 @@ public final class CompareStructs {
         treeWalk.setFilter(PathSuffixFilter.create(".java"));
     }
 
-    static List<CompiledCommit> compiledCommits(final Repository repo,
-            final Path buildDir)
+    static void compiledCommits(final Repository repo, final Path buildDir,
+            final Consumer<CompiledCommit> andThen)
             throws IOException {
-        final List<CompiledCommit> commits = new ArrayList<>();
         processCompiledJava(files -> findCommits(repo,
                 commit -> writeOutCommits(repo, commit.getId(),
                         CompareStructs::configureTreeWalk, revPath -> {
                             final CompiledCommit compiledCommit = compile(
                                     buildDir, commit, files, revPath);
-                            commits.add(compiledCommit);
+                            andThen.accept(compiledCommit);
                             return compiledCommit.srcFile;
                         })));
-        return commits;
     }
 
     private static CompiledCommit compile(final Path buildDir,

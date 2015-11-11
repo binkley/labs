@@ -1,5 +1,9 @@
 package scratch;
 
+@lombok.AllArgsConstructor
+@lombok.Getter
+@lombok.Setter
+@lombok.ToString
 public class Bar {
-    public final String s = "Sally";
+    public String s;
 }

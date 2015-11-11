@@ -1,6 +1,10 @@
 package scratch;
 
 /** Silly javadoc. */
+@lombok.AllArgsConstructor
+@lombok.Getter
+@lombok.Setter
+@lombok.ToString
 public class Foo {
-    public final int x = 4;
+    public int x;
 }

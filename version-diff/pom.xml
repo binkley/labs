@@ -14,7 +14,6 @@
 
     <properties>
         <!-- @formatter:off -->
-        <binkley-blog.version>6</binkley-blog.version>
         <dependency.failOnWarning>false</dependency.failOnWarning>
         <hamcrest.version>2.0.0.0</hamcrest.version>
         <junit.version>4.12</junit.version>
@@ -52,11 +51,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>hm.binkley</groupId>
-            <artifactId>binkley-util</artifactId>
-            <version>${binkley-blog.version}</version>
         </dependency>
 
         <dependency>
