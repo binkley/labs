@@ -3,6 +3,11 @@
     <extension>
         <groupId>io.takari.polyglot</groupId>
         <artifactId>polyglot-yaml</artifactId>
-        <version>0.1.12</version>
+        <version>0.1.14</version>
+    </extension>
+    <extension>
+        <groupId>fr.jcgay.maven</groupId>
+        <artifactId>maven-profiler</artifactId>
+        <version>2.4</version>
     </extension>
 </extensions>
