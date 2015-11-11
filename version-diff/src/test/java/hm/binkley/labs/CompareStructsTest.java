@@ -15,13 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
-import static hm.binkley.labs.CompareStructs.compile;
-import static hm.binkley.labs.CompileJava.processCompiledJava;
-import static hm.binkley.labs.FindCommits.findCommits;
-import static hm.binkley.labs.FindCommits.writeOutCommits;
+import static hm.binkley.labs.CompareStructs.compiledCommits;
 import static java.lang.System.out;
 import static java.nio.file.Files.createDirectories;
 import static java.nio.file.Files.write;
@@ -51,19 +46,7 @@ public final class CompareStructsTest {
     @Test
     public void should()
             throws IOException {
-        final List<CompiledCommit> commits = new ArrayList<>();
-
-        processCompiledJava(files -> findCommits(repo,
-                commit -> writeOutCommits(repo, commit.getId(),
-                        CompareStructs::configureTreeWalk, revPath -> {
-                            final CompiledCommit compiledCommit = compile(
-                                    buildDir.getRoot().toPath(), commit,
-                                    files, revPath);
-                            commits.add(compiledCommit);
-                            return compiledCommit.srcFile;
-                        })));
-
-        commits.stream().
+        compiledCommits(repo, buildDir.getRoot().toPath()).stream().
                 forEach(out::println);
     }
 
