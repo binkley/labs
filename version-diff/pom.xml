@@ -22,6 +22,8 @@
         <jackson.version>2.6.3</jackson.version>
         <jgit.version>4.1.0.201509280440-r</jgit.version>
         <jsr305.version>3.0.1</jsr305.version>
+        <snakeyaml.version>1.16</snakeyaml.version>
+        <spring.version>4.2.2.RELEASE</spring.version>
         <!-- @formatter:on -->
     </properties>
 
@@ -80,6 +82,18 @@
                     <artifactId>hamcrest-core</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${spring.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

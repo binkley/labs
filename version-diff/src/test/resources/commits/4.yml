@@ -1,0 +1,6 @@
+message: Added field.
+details:
+  - path: src/main/java/scratch/Foo.java
+    content: /commits/4.Foo.java
+  - path: src/main/java/scratch/Bar.java
+    content: /commits/4.Bar.java

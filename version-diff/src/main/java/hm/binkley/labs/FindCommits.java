@@ -8,7 +8,6 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,9 +36,7 @@ public final class FindCommits {
                 treeWalk.setRecursive(true);
                 configure.accept(treeWalk);
 
-                if (!treeWalk.next())
-                    throw new IOException("No Java");
-                else {
+                while (treeWalk.next()) {
                     final ObjectId objectId = treeWalk.getObjectId(0);
                     final ObjectLoader loader = repo.open(objectId);
                     try (final OutputStream src = new FileOutputStream(

@@ -1,0 +1,5 @@
+message: Init.
+details:
+  - path: src/main/java/scratch/Foo.java
+    content: /commits/1.Foo.java
+

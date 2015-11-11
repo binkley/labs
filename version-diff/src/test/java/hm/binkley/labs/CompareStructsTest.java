@@ -1,6 +1,7 @@
 package hm.binkley.labs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hm.binkley.labs.Commit.Detail;
 import hm.binkley.util.Bug;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -11,17 +12,23 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.yaml.snakeyaml.Yaml;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
 
@@ -29,8 +36,8 @@ import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_
 import static hm.binkley.labs.CompareStructs.compiledCommits;
 import static hm.binkley.util.function.Matching.matching;
 import static java.lang.System.out;
+import static java.nio.file.Files.copy;
 import static java.nio.file.Files.createDirectories;
-import static java.nio.file.Files.write;
 import static java.util.Arrays.asList;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toList;
@@ -50,7 +57,8 @@ public final class CompareStructsTest {
             throws IOException, GitAPIException {
         final File gitDir = repoDir.newFolder(".git");
         repo = FileRepositoryBuilder.create(gitDir);
-        repo.create();
+        repo.create(false);
+
         final File srcDir = repoDir.newFolder("src", "main", "java");
 
         writeFakeJavaHistory(repo, srcDir.toPath());
@@ -72,8 +80,7 @@ public final class CompareStructsTest {
                 forEach(out::println);
     }
 
-    private static Constructor<? extends Object> bestConstructor(
-            final Class<?> c) {
+    private static Constructor<?> bestConstructor(final Class<?> c) {
         final Constructor<?>[] ctors = c.getConstructors();
         switch (ctors.length) {
         case 1:
@@ -125,48 +132,48 @@ public final class CompareStructsTest {
             throws IOException, GitAPIException {
         final Path packageDir = srcDir.resolve(Paths.get("scratch"));
         createDirectories(packageDir);
-        final Path fooFile = packageDir.resolve("Foo.java");
-        final Path barFile = packageDir.resolve("Bar.java");
 
         try (final Git git = Git.wrap(repo)) {
-            writeAndCommit(git, fooFile, "Init", "package scratch;",
-                    "public final class Foo {}");
+            final List<Commit> commits = loadTestCommits();
+            out.println("commits = " + commits);
 
-            writeAndCommit(git, fooFile, "No real change", "package scratch;",
-                    "/** Silly javadoc. */", "public final class Foo {}");
-
-            writeAndCommit(git, fooFile, "Added field", "package scratch;",
-                    "/** Silly javadoc. */", "public final class Foo {",
-                    "    public final int x = 4;", "}");
-
-            writeAndCommit(git, fooFile, null, "package scratch;",
-                    "/** Another change. */", "public final class Foo {",
-                    "    public final int x = 4;", "}");
-
-            writeAndCommit(git, barFile, "Two files in one commit",
-                    "package scratch;", "/** Another change. */",
-                    "public final class Bar {}");
-
-            writeAndCommit(git, fooFile, null, "package scratch;",
-                    "public final class Foo {", "    public final int x = 4;",
-                    "}");
-
-            writeAndCommit(git, barFile,
-                    "Fake change - first commit ignored?", "package scratch;",
-                    "public final class Bar {}");
+            for (final Commit commit : commits) {
+                for (final Detail detail : commit.details) {
+                    final File file = new File(repoDir.getRoot(),
+                            detail.path);
+                    file.delete(); // Copy does not like overwriting
+                    try (final InputStream content = detail.getClass()
+                            .getResourceAsStream(detail.content)) {
+                        copy(content, file.toPath());
+                    }
+                    git.add().addFilepattern(detail.path).call();
+                }
+                git.commit().setMessage(commit.message).call();
+            }
         }
     }
 
-    private static void writeAndCommit(final Git git, final Path where,
-            @Nullable final String commitMessage, final String... lines)
-            throws IOException, GitAPIException {
-        write(where, asList(lines));
-        git.add().
-                addFilepattern("src").
-                call();
-        if (null != commitMessage)
-            git.commit().
-                    setMessage(commitMessage).
-                    call();
+    private static List<Commit> loadTestCommits()
+            throws IOException {
+        final List<Commit> commits = new ArrayList<>();
+        final ResourcePatternResolver loader
+                = new PathMatchingResourcePatternResolver();
+        final List<Resource> resources = asList(
+                loader.getResources("classpath:/commits/*.yml"));
+        resources.sort((a, b) -> {
+            final int i = Integer.valueOf(a.getFilename()
+                    .substring(0, a.getFilename().indexOf(".")));
+            final int j = Integer.valueOf(b.getFilename()
+                    .substring(0, b.getFilename().indexOf(".")));
+            return Integer.compare(i, j);
+        });
+
+        final Yaml yaml = new Yaml();
+        for (final Resource resource : resources)
+            try (final InputStream in = resource.getInputStream()) {
+                commits.add(yaml.loadAs(in, Commit.class));
+            }
+
+        return commits;
     }
 }
