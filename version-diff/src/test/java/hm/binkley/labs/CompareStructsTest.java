@@ -21,6 +21,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.function.Supplier;
 
@@ -62,7 +63,9 @@ public final class CompareStructsTest {
         mapper.configure(FAIL_ON_EMPTY_BEANS, false);
 
         compiledCommits(repo, buildDir.getRoot().toPath()).stream().
+                peek(out::println).
                 flatMap(cc -> cc.compiled.stream()).
+                peek(c -> out.println(Arrays.toString(c.getFields()))).
                 map(CompareStructsTest::bestConstructor).
                 map(CompareStructsTest::randomInstance).
                 map(o -> toJSON(mapper, o)).
@@ -127,26 +130,18 @@ public final class CompareStructsTest {
 
         try (final Git git = Git.wrap(repo)) {
             writeAndCommit(git, fooFile, "Init", "package scratch;",
-                    "public final class Foo {",
-                    "    public static void main(final String... args) {",
-                    "    }", "}");
+                    "public final class Foo {}");
 
             writeAndCommit(git, fooFile, "No real change", "package scratch;",
-                    "/** Silly javadoc. */", "public final class Foo {",
-                    "    public static void main(final String... args) {",
-                    "    }", "}");
+                    "/** Silly javadoc. */", "public final class Foo {}");
 
             writeAndCommit(git, fooFile, "Added field", "package scratch;",
                     "/** Silly javadoc. */", "public final class Foo {",
-                    "    public final int x = 4;",
-                    "    public static void main(final String... args) {",
-                    "    }", "}");
+                    "    public final int x = 4;", "}");
 
             writeAndCommit(git, fooFile, null, "package scratch;",
                     "/** Another change. */", "public final class Foo {",
-                    "    public final int x = 4;",
-                    "    public static void main(final String... args) {",
-                    "    }", "}");
+                    "    public final int x = 4;", "}");
 
             writeAndCommit(git, barFile, "Two files in one commit",
                     "package scratch;", "/** Another change. */",
@@ -154,8 +149,7 @@ public final class CompareStructsTest {
 
             writeAndCommit(git, fooFile, null, "package scratch;",
                     "public final class Foo {", "    public final int x = 4;",
-                    "    public static void main(final String... args) {",
-                    "    }", "}");
+                    "}");
 
             writeAndCommit(git, barFile,
                     "Fake change - first commit ignored?", "package scratch;",
