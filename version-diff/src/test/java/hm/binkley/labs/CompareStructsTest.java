@@ -1,5 +1,7 @@
 package hm.binkley.labs;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import hm.binkley.util.Bug;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
@@ -12,15 +14,25 @@ import org.junit.rules.TemporaryFolder;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.IOError;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Random;
+import java.util.function.Supplier;
 
+import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS;
 import static hm.binkley.labs.CompareStructs.compiledCommits;
+import static hm.binkley.util.function.Matching.matching;
 import static java.lang.System.out;
 import static java.nio.file.Files.createDirectories;
 import static java.nio.file.Files.write;
 import static java.util.Arrays.asList;
+import static java.util.UUID.randomUUID;
+import static java.util.stream.Collectors.toList;
 
 @SuppressWarnings("StaticNonFinalField")
 public final class CompareStructsTest {
@@ -46,8 +58,63 @@ public final class CompareStructsTest {
     @Test
     public void should()
             throws IOException {
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(FAIL_ON_EMPTY_BEANS, false);
+
         compiledCommits(repo, buildDir.getRoot().toPath()).stream().
+                flatMap(cc -> cc.compiled.stream()).
+                map(CompareStructsTest::bestConstructor).
+                map(CompareStructsTest::randomInstance).
+                map(o -> toJSON(mapper, o)).
                 forEach(out::println);
+    }
+
+    private static Constructor<? extends Object> bestConstructor(
+            final Class<?> c) {
+        final Constructor<?>[] ctors = c.getConstructors();
+        switch (ctors.length) {
+        case 1:
+            return ctors[0];
+        case 2:
+            return 0 == ctors[0].getParameterCount() ? ctors[1] : ctors[0];
+        default:
+            throw new Bug("More than 1 or 2 ctors: %s", c);
+        }
+    }
+
+    private static Object randomInstance(final Constructor<?> ctor) {
+        try {
+            return randomParameters(ctor);
+        } catch (final Exception e) {
+            throw new Bug(e, "Cannot instantiate random %s",
+                    ctor.getDeclaringClass());
+        }
+    }
+
+    private static Object randomParameters(final Constructor<?> ctor)
+            throws IllegalAccessException, InvocationTargetException,
+            InstantiationException {
+        final Random random = new Random();
+        return ctor.newInstance(asList(ctor.getParameterTypes()).stream().
+                map(type -> matching(Class.class, Object.class).
+                        when(String.class::equals).
+                        then(() -> randomUUID().toString()).
+                        when(int.class::equals).
+                        then((Supplier<Object>) random::nextInt).
+                        none().thenThrow(
+                        () -> new Bug("Unsupported type: %s", type))).
+                collect(toList()).
+                toArray(new Object[ctor.getParameterCount()]));
+    }
+
+    private static String toJSON(final ObjectMapper mapper, final Object o) {
+        try {
+            final StringWriter writer = new StringWriter();
+            mapper.writeValue(writer, o);
+            return writer.toString();
+        } catch (final IOException e) {
+            throw new IOError(e);
+        }
     }
 
     private static void writeFakeJavaHistory(final Repository repo,
