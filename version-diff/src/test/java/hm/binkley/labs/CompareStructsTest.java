@@ -21,7 +21,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS;
 import static hm.binkley.labs.CompareStructs.compiledCommits;
@@ -75,11 +79,11 @@ public final class CompareStructsTest {
     }
 
     private static void generateJson(final CompiledCommit compiledCommit) {
-        compiledCommit.compiled.stream().
+        out.println(compiledCommit.compiled.stream().
                 map(CompareStructsTest::bestConstructor).
                 map(CompareStructsTest::randomInstance).
                 map(CompareStructsTest::toJSON).
-                forEach(out::println);
+                collect(MappedJson::new, MappedJson::add, Map::putAll));
     }
 
     private static TypedValue<Constructor> bestConstructor(
@@ -152,6 +156,14 @@ public final class CompareStructsTest {
                 git.add().addFilepattern(detail.path).call();
             }
             git.commit().setMessage(commit.message).call();
+        }
+    }
+
+    private static final class MappedJson
+            extends ConcurrentHashMap<Class, List<String>> {
+        public void add(final TypedValue<String> json) {
+            computeIfAbsent(json.relatedTo, kv -> new ArrayList<>())
+                    .add(json.value);
         }
     }
 }
