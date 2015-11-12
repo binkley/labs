@@ -23,10 +23,6 @@ public final class CompareStructs {
     private static final Path relativeSrcDir = Paths
             .get("src", "main", "java");
 
-    static void configureTreeWalk(final TreeWalk treeWalk) {
-        treeWalk.setFilter(PathSuffixFilter.create(".java"));
-    }
-
     static void compiledCommits(final Repository repo, final Path buildDir,
             final Consumer<CompiledCommit> andThen)
             throws IOException {
@@ -38,6 +34,10 @@ public final class CompareStructs {
                             andThen.accept(compiledCommit);
                             return compiledCommit.srcFile;
                         })));
+    }
+
+    private static void configureTreeWalk(final TreeWalk treeWalk) {
+        treeWalk.setFilter(PathSuffixFilter.create(".java"));
     }
 
     private static CompiledCommit compile(final Path buildDir,

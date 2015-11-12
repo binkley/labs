@@ -12,7 +12,6 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static hm.binkley.labs.FindCommits.findCommits;
@@ -41,11 +40,8 @@ public class FindCommitsTest {
     @Before
     public void setUpRepo()
             throws IOException {
-        final Path repoDir = this.repoDir.getRoot().toPath();
-        final Path gitDir = repoDir.resolve(".git");
-        if (!gitDir.toFile().mkdirs())
-            throw new IOException("Cannot make " + gitDir);
-        repo = FileRepositoryBuilder.create(gitDir.toFile());
+        final File gitDir = repoDir.newFolder(".git");
+        repo = FileRepositoryBuilder.create(gitDir);
         repo.create();
         git = new Git(repo);
     }

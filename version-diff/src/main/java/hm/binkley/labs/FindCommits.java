@@ -26,7 +26,7 @@ public final class FindCommits {
 
     public static void writeOutCommits(final Repository repo,
             final ObjectId commitId, final Consumer<TreeWalk> configure,
-            final IOFunction<String, Path> out)
+            final ThrowingFunction<String, Path, IOException> out)
             throws IOException {
         try (final RevWalk revWalk = new RevWalk(repo)) {
             final RevCommit commit = revWalk.parseCommit(commitId);
@@ -51,7 +51,7 @@ public final class FindCommits {
     }
 
     public static void findCommits(final Repository repo,
-            final IOConsumer<RevCommit> process)
+            final ThrowingConsumer<RevCommit, IOException> process)
             throws IOException {
         final Ref head = repo.getRef("refs/heads/master");
         try (final RevWalk walk = new RevWalk(repo)) {

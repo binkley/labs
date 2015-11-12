@@ -1,7 +1,5 @@
 package hm.binkley.labs;
 
-import java.io.IOException;
-
 /**
  * {@code IOFunction} <strong>needs documentation</strong>.
  *
@@ -9,7 +7,7 @@ import java.io.IOException;
  * @todo Needs documentation
  */
 @FunctionalInterface
-public interface IOFunction<T, U> {
+public interface ThrowingFunction<T, U, E extends Exception> {
     U apply(final T in)
-            throws IOException;
+            throws E;
 }

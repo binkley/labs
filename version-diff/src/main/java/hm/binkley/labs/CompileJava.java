@@ -30,7 +30,7 @@ public final class CompileJava {
     private CompileJava() {}
 
     public static void processCompiledJava(
-            final IOConsumer<StandardJavaFileManager> process)
+            final ThrowingConsumer<StandardJavaFileManager, IOException> process)
             throws IOException {
         try (final StandardJavaFileManager manager = javac
                 .getStandardFileManager(null, null, null)) {

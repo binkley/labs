@@ -16,7 +16,10 @@ import static java.util.Arrays.asList;
 
 @ToString
 public final class FakeCommit {
-    public static List<FakeCommit> loadTestCommits()
+    public String message;
+    public final List<Detail> details = new ArrayList<>();
+
+    public static List<FakeCommit> readFakeCommits()
             throws IOException {
         final List<FakeCommit> commits = new ArrayList<>();
         final ResourcePatternResolver loader
@@ -53,7 +56,4 @@ public final class FakeCommit {
             }
         }
     }
-
-    public String message;
-    public final List<Detail> details = new ArrayList<>();
 }

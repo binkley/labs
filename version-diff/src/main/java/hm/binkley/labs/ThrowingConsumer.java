@@ -1,7 +1,5 @@
 package hm.binkley.labs;
 
-import java.io.IOException;
-
 /**
  * {@code IOConsumer} <strong>needs documentation</strong>.
  *
@@ -9,7 +7,7 @@ import java.io.IOException;
  * @todo Needs documentation
  */
 @FunctionalInterface
-public interface IOConsumer<T> {
+public interface ThrowingConsumer<T, E extends Exception> {
     void accept(final T in)
-            throws IOException;
+            throws E;
 }
