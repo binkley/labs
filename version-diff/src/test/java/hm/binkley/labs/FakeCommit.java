@@ -21,11 +21,8 @@ final class FakeCommit {
             = new PathMatchingResourcePatternResolver();
     private static final Yaml yaml = new Yaml();
 
-    static {
-    }
-
-    String message;
-    final List<Detail> details = new ArrayList<>();
+    public String message;
+    public final List<Detail> details = new ArrayList<>();
 
     static List<FakeCommit> readFakeCommits()
             throws IOException {
@@ -56,8 +53,8 @@ final class FakeCommit {
 
     @ToString
     static final class Detail {
-        String path;
-        String content;
+        public String path;
+        public String content;
 
         void read(final Consumer<InputStream> reader)
                 throws IOException {
