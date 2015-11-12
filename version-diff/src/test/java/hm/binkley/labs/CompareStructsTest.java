@@ -23,9 +23,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS;
 import static hm.binkley.labs.CompareStructs.compiledCommits;
@@ -74,16 +74,18 @@ public final class CompareStructsTest {
     @Test
     public void should()
             throws IOException {
-        compiledCommits(repo, buildDir.getRoot().toPath(),
-                CompareStructsTest::generateJson);
+        final MappedJson all = new MappedJson();
+        compiledCommits(repo, buildDir.getRoot().toPath(), generateJson(all));
+        out.println("all = " + all);
     }
 
-    private static void generateJson(final CompiledCommit compiledCommit) {
-        out.println(compiledCommit.compiled.stream().
+    private static Consumer<CompiledCommit> generateJson(
+            final MappedJson json) {
+        return cc -> cc.compiled.stream().
                 map(CompareStructsTest::bestConstructor).
                 map(CompareStructsTest::randomInstance).
                 map(CompareStructsTest::toJSON).
-                collect(MappedJson::new, MappedJson::add, Map::putAll));
+                forEach(json::add);
     }
 
     private static TypedValue<Constructor> bestConstructor(
@@ -160,9 +162,9 @@ public final class CompareStructsTest {
     }
 
     private static final class MappedJson
-            extends ConcurrentHashMap<Class, List<String>> {
+            extends ConcurrentHashMap<String, List<String>> {
         public void add(final TypedValue<String> json) {
-            computeIfAbsent(json.relatedTo, kv -> new ArrayList<>())
+            computeIfAbsent(json.relatedTo.getName(), kv -> new ArrayList<>())
                     .add(json.value);
         }
     }
