@@ -74,13 +74,18 @@ public final class CompareStructsTest {
     @Test
     public void should()
             throws IOException {
-        final MappedJson all = new MappedJson();
-        compiledCommits(repo, buildDir.getRoot().toPath(), generateJson(all));
-        out.println("all = " + all);
+        out.println("all = " + commitsByClassAsJson(buildDir));
     }
 
-    private static Consumer<CompiledCommit> generateJson(
-            final MappedJson json) {
+    private static MappedJson commitsByClassAsJson(
+            final TemporaryFolder buildDir)
+            throws IOException {
+        final MappedJson all = new MappedJson();
+        compiledCommits(repo, buildDir.getRoot().toPath(), jsonInto(all));
+        return all;
+    }
+
+    private static Consumer<CompiledCommit> jsonInto(final MappedJson json) {
         return cc -> cc.compiled.stream().
                 map(CompareStructsTest::bestConstructor).
                 map(CompareStructsTest::randomInstance).

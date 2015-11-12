@@ -23,6 +23,8 @@ public final class CompareStructs {
     private static final Path relativeSrcDir = Paths
             .get("src", "main", "java");
 
+    private CompareStructs() {}
+
     static void compiledCommits(final Repository repo, final Path buildDir,
             final Consumer<CompiledCommit> andThen)
             throws IOException {

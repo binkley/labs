@@ -1,5 +1,7 @@
 package hm.binkley.labs;
 
+import hm.binkley.labs.function.ThrowingConsumer;
+import hm.binkley.labs.function.ThrowingFunction;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Ref;

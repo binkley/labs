@@ -1,5 +1,7 @@
 package hm.binkley.labs;
 
+import hm.binkley.labs.function.ThrowingConsumer;
+
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
@@ -18,18 +20,12 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 import static javax.tools.ToolProvider.getSystemJavaCompiler;
 
-/**
- * {@code CompileJava} <strong>needs documentation</strong>.
- *
- * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
- * @todo Needs documentation
- */
-public final class CompileJava {
+final class CompileJava {
     private static final JavaCompiler javac = getSystemJavaCompiler();
 
     private CompileJava() {}
 
-    public static void processCompiledJava(
+    static void processCompiledJava(
             final ThrowingConsumer<StandardJavaFileManager, IOException> process)
             throws IOException {
         try (final StandardJavaFileManager manager = javac
@@ -38,7 +34,7 @@ public final class CompileJava {
         }
     }
 
-    public static List<Class<?>> loadClasses(final Path buildDir,
+    static List<Class<?>> loadClasses(final Path buildDir,
             final StandardJavaFileManager files, final String className,
             final Path srcFile) {
         return stream(

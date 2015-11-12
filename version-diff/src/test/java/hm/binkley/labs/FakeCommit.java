@@ -15,40 +15,51 @@ import java.util.function.Consumer;
 import static java.util.Arrays.asList;
 
 @ToString
-public final class FakeCommit {
-    public String message;
-    public final List<Detail> details = new ArrayList<>();
+final class FakeCommit {
+    private static final String YAML_RESOURCES = "classpath:/commits/*.yml";
+    private static final ResourcePatternResolver loader
+            = new PathMatchingResourcePatternResolver();
+    private static final Yaml yaml = new Yaml();
 
-    public static List<FakeCommit> readFakeCommits()
+    static {
+    }
+
+    String message;
+    final List<Detail> details = new ArrayList<>();
+
+    static List<FakeCommit> readFakeCommits()
             throws IOException {
         final List<FakeCommit> commits = new ArrayList<>();
-        final ResourcePatternResolver loader
-                = new PathMatchingResourcePatternResolver();
-        final List<Resource> resources = asList(
-                loader.getResources("classpath:/commits/*.yml"));
-        resources.sort((a, b) -> {
-            final int i = Integer.valueOf(a.getFilename()
-                    .substring(0, a.getFilename().indexOf(".")));
-            final int j = Integer.valueOf(b.getFilename()
-                    .substring(0, b.getFilename().indexOf(".")));
-            return Integer.compare(i, j);
-        });
-
-        final Yaml yaml = new Yaml();
-        for (final Resource resource : resources)
+        for (final Resource resource : loadYamlResources())
             try (final InputStream in = resource.getInputStream()) {
                 commits.add(yaml.loadAs(in, FakeCommit.class));
             }
-
         return commits;
     }
 
-    @ToString
-    public static final class Detail {
-        public String path;
-        public String content;
+    private static List<Resource> loadYamlResources()
+            throws IOException {
+        final List<Resource> resources = asList(
+                loader.getResources(YAML_RESOURCES));
+        resources.sort(FakeCommit::sortByPrefixedNumber);
+        return resources;
+    }
 
-        public void read(final Consumer<InputStream> reader)
+    private static int sortByPrefixedNumber(final Resource a,
+            final Resource b) {
+        final int i = Integer.parseInt(
+                a.getFilename().substring(0, a.getFilename().indexOf(".")));
+        final int j = Integer.parseInt(
+                b.getFilename().substring(0, b.getFilename().indexOf(".")));
+        return Integer.compare(i, j);
+    }
+
+    @ToString
+    static final class Detail {
+        String path;
+        String content;
+
+        void read(final Consumer<InputStream> reader)
                 throws IOException {
             try (final InputStream in = getClass()
                     .getResourceAsStream(content)) {

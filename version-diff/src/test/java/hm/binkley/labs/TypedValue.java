@@ -1,5 +1,6 @@
 package hm.binkley.labs;
 
+import hm.binkley.labs.function.ThrowingFunction;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
