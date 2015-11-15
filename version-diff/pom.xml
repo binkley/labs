@@ -20,7 +20,7 @@
         <junit.version>4.12</junit.version>
         <lombok.version>1.16.6</lombok.version>
         <jackson.version>2.6.3</jackson.version>
-        <jgit.version>4.1.0.201509280440-r</jgit.version>
+        <jgit.version>4.1.1.201511131810-r</jgit.version>
         <jsr305.version>3.0.1</jsr305.version>
         <snakeyaml.version>1.16</snakeyaml.version>
         <spring.version>4.2.2.RELEASE</spring.version>
