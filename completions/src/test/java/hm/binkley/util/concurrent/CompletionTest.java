@@ -41,10 +41,18 @@ public class CompletionTest {
                 thenAssert(CompletionTest::isDone);
     }
 
-    @Test(expected = WentWrongException.class)
-    public void shouldFail()
+    @Test(expected = CheckedWentWrongException.class)
+    public void shouldFailWithChecked()
             throws Exception {
-        given(new NthAttempt(3, WentWrongException::new, 3)).
+        given(new NthAttempt(3, CheckedWentWrongException::new, 3)).
+                whenRetrying(MILLISECONDS, 0).
+                thenAssert(CompletionTest::isDone);
+    }
+
+    @Test(expected = UncheckedWentWrongException.class)
+    public void shouldFailWithUnchecked()
+            throws Exception {
+        given(new NthAttempt(3, UncheckedWentWrongException::new, 3)).
                 whenRetrying(MILLISECONDS, 0).
                 thenAssert(CompletionTest::isDone);
     }
@@ -62,8 +70,12 @@ public class CompletionTest {
             extends Exception {}
 
     @EqualsAndHashCode(callSuper = false)
-    private static final class WentWrongException
+    private static final class CheckedWentWrongException
             extends Exception {}
+
+    @EqualsAndHashCode(callSuper = false)
+    private static final class UncheckedWentWrongException
+            extends RuntimeException {}
 
     @RequiredArgsConstructor(access = PRIVATE)
     private static final class NthAttempt

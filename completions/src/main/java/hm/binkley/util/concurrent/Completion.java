@@ -147,6 +147,8 @@ public final class Completion<T>
         try {
             unit.sleep(delay);
             return valued(callable.call());
+        } catch (final RuntimeException e) {
+            throw e;
         } catch (final InterruptedException e) {
             currentThread().interrupt();
             return Completion.<T>failed(e);
