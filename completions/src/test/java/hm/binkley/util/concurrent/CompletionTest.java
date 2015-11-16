@@ -2,7 +2,6 @@ package hm.binkley.util.concurrent;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -16,6 +15,7 @@ import java.util.function.Supplier;
 import static hm.binkley.util.concurrent.CompletionAssertJ.given;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CompletionTest {
     @Test
@@ -53,7 +53,6 @@ public class CompletionTest {
             throws Exception {
         final NthAttempt callable = NthAttempt.builder().
                 attempting(3).
-                returning(null).
                 throwing(NeedsRetryException::new).
                 build();
         final List<Long> delays = new ArrayList<>(4);
@@ -63,7 +62,7 @@ public class CompletionTest {
                 whenRetrying(MILLISECONDS, 0, 10, 10, 20).
                 thenAssert(CompletionTest::isDone);
 
-        Assertions.assertThat(delays).isEqualTo(asList(0L, 10L, 10L));
+        assertThat(delays).isEqualTo(asList(0L, 10L, 10L));
     }
 
     @Test(expected = TimeoutException.class)
