@@ -13,6 +13,7 @@
     <modules>
         <module>axon</module>
         <module>boot-jpalooza</module>
+        <module>completions</module>
         <module>quasar</module>
         <module>reagent</module>
         <module>version-diff</module>
