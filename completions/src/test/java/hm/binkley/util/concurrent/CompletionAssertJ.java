@@ -5,6 +5,7 @@ import org.assertj.core.api.AbstractAssert;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -29,9 +30,25 @@ public final class CompletionAssertJ<T>
     public static final class Given<T> {
         private final Callable<T> callable;
 
+        public Peeking<T> peeking(final LongConsumer peekDelay) {
+            return new Peeking<>(callable, peekDelay);
+        }
+
         public WhenRetrying<T> whenRetrying(final TimeUnit unit,
                 final long firstDelay, final long... restOfDelays) {
-            return new WhenRetrying<>(callable, unit, firstDelay,
+            return new WhenRetrying<>(callable, delay -> {}, unit, firstDelay,
+                    restOfDelays);
+        }
+    }
+
+    @RequiredArgsConstructor(access = PRIVATE)
+    public static final class Peeking<T> {
+        private final Callable<T> callable;
+        private final LongConsumer peekDelay;
+
+        public WhenRetrying<T> whenRetrying(final TimeUnit unit,
+                final long firstDelay, final long... restOfDelays) {
+            return new WhenRetrying<>(callable, peekDelay, unit, firstDelay,
                     restOfDelays);
         }
     }
@@ -39,6 +56,7 @@ public final class CompletionAssertJ<T>
     @RequiredArgsConstructor(access = PRIVATE)
     public static final class WhenRetrying<T> {
         private final Callable<T> callable;
+        private final LongConsumer peekDelay;
         private final TimeUnit unit;
         private final long firstDelay;
         private final long[] restOfDelays;
@@ -47,7 +65,7 @@ public final class CompletionAssertJ<T>
                 final Predicate<Completion<T>> isDone)
                 throws Exception {
             return new CompletionAssertJ<>(Completion
-                    .eventually(callable, isDone, unit, firstDelay,
+                    .eventually(callable, isDone, peekDelay, unit, firstDelay,
                             restOfDelays));
         }
     }

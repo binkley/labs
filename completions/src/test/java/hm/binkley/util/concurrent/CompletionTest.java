@@ -2,15 +2,17 @@ package hm.binkley.util.concurrent;
 
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
-import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 import static hm.binkley.util.concurrent.CompletionAssertJ.given;
-import static java.lang.System.out;
+import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -31,6 +33,19 @@ public class CompletionTest {
                 whenRetrying(MILLISECONDS, 0, 10, 10, 20).
                 thenAssert(CompletionTest::isDone).
                 isNull();
+    }
+
+    @Test
+    public void shouldPeekAtDelays()
+            throws Exception {
+        final List<Long> delays = new ArrayList<>(4);
+
+        given(new NthAttempt(null, NeedsRetryException::new, 3)).
+                peeking(delays::add).
+                whenRetrying(MILLISECONDS, 0, 10, 10, 20).
+                thenAssert(CompletionTest::isDone);
+
+        Assertions.assertThat(delays).isEqualTo(asList(0L, 10L, 10L));
     }
 
     @Test(expected = TimeoutException.class)
@@ -59,10 +74,6 @@ public class CompletionTest {
 
     private static <T> boolean isDone(final Completion<T> completion) {
         return !(completion.failure instanceof NeedsRetryException);
-    }
-
-    private static PrintStream peekDelay(final long delay) {
-        return out.printf("Sleeping %dms%n", delay);
     }
 
     @EqualsAndHashCode(callSuper = false)
