@@ -3,6 +3,7 @@ package hm.binkley.util.concurrent;
 import lombok.RequiredArgsConstructor;
 import org.assertj.core.api.AbstractAssert;
 
+import javax.annotation.Nonnull;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.LongConsumer;
@@ -12,10 +13,11 @@ import static hm.binkley.util.concurrent.Completion.eventually;
 import static lombok.AccessLevel.PRIVATE;
 
 /**
- * {@code CompletionAssertJ} <strong>needs documentation</strong>.
+ * {@code CompletionAssert} provides an AssertJ assertion which
+ * <em>eventually</em> evaluates in a "given, when, then" builder pattern.
  *
  * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
- * @todo Needs documentation
+ * @todo How to specialize for specific types, e.g., File?
  */
 public final class CompletionAssert<T>
         extends AbstractAssert<CompletionAssert<T>, T> {
@@ -23,7 +25,18 @@ public final class CompletionAssert<T>
         super(actual, CompletionAssert.class);
     }
 
-    public static <T> Given<T> given(final Callable<T> callable) {
+    /**
+     * Starts an eventual assertion for the vien <var>callable</var>.
+     *
+     * @param callable the callable returning the asserted-on value, never
+     * {@code null}
+     * @param <T> the return type
+     *
+     * @return the next given-when-then step defining the assertion, never
+     * {@code null}
+     */
+    @Nonnull
+    public static <T> Given<T> given(@Nonnull final Callable<T> callable) {
         return new Given<>(callable);
     }
 
@@ -31,8 +44,8 @@ public final class CompletionAssert<T>
     public static final class Given<T> {
         private final Callable<T> callable;
 
-        public Peeking<T> peeking(final LongConsumer peekDelay) {
-            return new Peeking<>(callable, peekDelay);
+        public NotingDelays<T> notingDelays(final LongConsumer peekDelay) {
+            return new NotingDelays<>(callable, peekDelay);
         }
 
         public WhenRetryingAfter<T> whenRetryingAfter(final TimeUnit unit,
@@ -43,7 +56,7 @@ public final class CompletionAssert<T>
     }
 
     @RequiredArgsConstructor(access = PRIVATE)
-    public static final class Peeking<T> {
+    public static final class NotingDelays<T> {
         private final Callable<T> callable;
         private final LongConsumer peekDelay;
 

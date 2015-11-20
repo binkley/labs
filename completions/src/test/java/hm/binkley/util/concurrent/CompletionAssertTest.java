@@ -17,7 +17,7 @@ import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CompletionTest {
+public class CompletionAssertTest {
     @Test
     public void shouldComplete()
             throws Exception {
@@ -29,7 +29,7 @@ public class CompletionTest {
 
         given(callable).
                 whenRetryingAfter(MILLISECONDS, 0, 10, 10, 20).
-                thenAssertEventually(CompletionTest::isDone).
+                thenAssertEventually(CompletionAssertTest::isDone).
                 isEqualTo(3);
     }
 
@@ -44,12 +44,12 @@ public class CompletionTest {
 
         given(callable).
                 whenRetryingAfter(MILLISECONDS, 0, 10, 10, 20).
-                thenAssertEventually(CompletionTest::isDone).
+                thenAssertEventually(CompletionAssertTest::isDone).
                 isNull();
     }
 
     @Test
-    public void shouldPeekAtDelays()
+    public void shouldNoteRetries()
             throws Exception {
         final NthAttempt callable = NthAttempt.builder().
                 attempting(3).
@@ -58,9 +58,9 @@ public class CompletionTest {
         final List<Long> delays = new ArrayList<>(4);
 
         given(callable).
-                peeking(delays::add).
+                notingDelays(delays::add).
                 whenRetryingAfter(MILLISECONDS, 0, 10, 10, 20).
-                thenAssertEventually(CompletionTest::isDone);
+                thenAssertEventually(CompletionAssertTest::isDone);
 
         assertThat(delays).isEqualTo(asList(0L, 10L, 10L));
     }
@@ -75,7 +75,7 @@ public class CompletionTest {
 
         given(callable).
                 whenRetryingAfter(MILLISECONDS, 0, 10).
-                thenAssertEventually(CompletionTest::isDone);
+                thenAssertEventually(CompletionAssertTest::isDone);
     }
 
     @Test(expected = CheckedWentWrongException.class)
@@ -88,7 +88,7 @@ public class CompletionTest {
 
         given(callable).
                 whenRetryingAfter(MILLISECONDS, 0).
-                thenAssertEventually(CompletionTest::isDone);
+                thenAssertEventually(CompletionAssertTest::isDone);
     }
 
     @Test(expected = UncheckedWentWrongException.class)
@@ -101,7 +101,7 @@ public class CompletionTest {
 
         given(callable).
                 whenRetryingAfter(MILLISECONDS, 0).
-                thenAssertEventually(CompletionTest::isDone);
+                thenAssertEventually(CompletionAssertTest::isDone);
     }
 
     private static <T> boolean isDone(final Completion<T> completion) {
