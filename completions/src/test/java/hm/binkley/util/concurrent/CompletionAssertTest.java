@@ -1,7 +1,6 @@
 package hm.binkley.util.concurrent;
 
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -108,15 +107,12 @@ public class CompletionAssertTest {
         return !(completion.failure instanceof NeedsRetryException);
     }
 
-    @EqualsAndHashCode(callSuper = false)
     private static final class NeedsRetryException
             extends Exception {}
 
-    @EqualsAndHashCode(callSuper = false)
     private static final class CheckedWentWrongException
             extends Exception {}
 
-    @EqualsAndHashCode(callSuper = false)
     private static final class UncheckedWentWrongException
             extends RuntimeException {}
 
