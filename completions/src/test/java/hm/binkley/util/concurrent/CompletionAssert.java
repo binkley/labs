@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 
+import static hm.binkley.util.concurrent.Completion.eventually;
 import static lombok.AccessLevel.PRIVATE;
 
 /**
@@ -16,10 +17,10 @@ import static lombok.AccessLevel.PRIVATE;
  * @author <a href="mailto:boxley@thoughtworks.com">Brian Oxley</a>
  * @todo Needs documentation
  */
-public final class CompletionAssertJ<T>
-        extends AbstractAssert<CompletionAssertJ<T>, T> {
-    private CompletionAssertJ(final T actual) {
-        super(actual, CompletionAssertJ.class);
+public final class CompletionAssert<T>
+        extends AbstractAssert<CompletionAssert<T>, T> {
+    private CompletionAssert(final T actual) {
+        super(actual, CompletionAssert.class);
     }
 
     public static <T> Given<T> given(final Callable<T> callable) {
@@ -34,10 +35,10 @@ public final class CompletionAssertJ<T>
             return new Peeking<>(callable, peekDelay);
         }
 
-        public WhenRetrying<T> whenRetrying(final TimeUnit unit,
+        public WhenRetryingAfter<T> whenRetryingAfter(final TimeUnit unit,
                 final long firstDelay, final long... restOfDelays) {
-            return new WhenRetrying<>(callable, delay -> {}, unit, firstDelay,
-                    restOfDelays);
+            return new WhenRetryingAfter<>(callable, delay -> {}, unit,
+                    firstDelay, restOfDelays);
         }
     }
 
@@ -46,26 +47,26 @@ public final class CompletionAssertJ<T>
         private final Callable<T> callable;
         private final LongConsumer peekDelay;
 
-        public WhenRetrying<T> whenRetrying(final TimeUnit unit,
+        public WhenRetryingAfter<T> whenRetryingAfter(final TimeUnit unit,
                 final long firstDelay, final long... restOfDelays) {
-            return new WhenRetrying<>(callable, peekDelay, unit, firstDelay,
-                    restOfDelays);
+            return new WhenRetryingAfter<>(callable, peekDelay, unit,
+                    firstDelay, restOfDelays);
         }
     }
 
     @RequiredArgsConstructor(access = PRIVATE)
-    public static final class WhenRetrying<T> {
+    public static final class WhenRetryingAfter<T> {
         private final Callable<T> callable;
         private final LongConsumer peekDelay;
         private final TimeUnit unit;
         private final long firstDelay;
         private final long[] restOfDelays;
 
-        public CompletionAssertJ<T> thenAssert(
+        public CompletionAssert<T> thenAssertEventually(
                 final Predicate<Completion<T>> isDone)
                 throws Exception {
-            return new CompletionAssertJ<>(Completion
-                    .eventually(callable, isDone, peekDelay, unit, firstDelay,
+            return new CompletionAssert<>(
+                    eventually(callable, isDone, peekDelay, unit, firstDelay,
                             restOfDelays));
         }
     }

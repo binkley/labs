@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
-import static hm.binkley.util.concurrent.CompletionAssertJ.given;
+import static hm.binkley.util.concurrent.CompletionAssert.given;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,8 +28,8 @@ public class CompletionTest {
                 build();
 
         given(callable).
-                whenRetrying(MILLISECONDS, 0, 10, 10, 20).
-                thenAssert(CompletionTest::isDone).
+                whenRetryingAfter(MILLISECONDS, 0, 10, 10, 20).
+                thenAssertEventually(CompletionTest::isDone).
                 isEqualTo(3);
     }
 
@@ -43,8 +43,8 @@ public class CompletionTest {
                 build();
 
         given(callable).
-                whenRetrying(MILLISECONDS, 0, 10, 10, 20).
-                thenAssert(CompletionTest::isDone).
+                whenRetryingAfter(MILLISECONDS, 0, 10, 10, 20).
+                thenAssertEventually(CompletionTest::isDone).
                 isNull();
     }
 
@@ -59,8 +59,8 @@ public class CompletionTest {
 
         given(callable).
                 peeking(delays::add).
-                whenRetrying(MILLISECONDS, 0, 10, 10, 20).
-                thenAssert(CompletionTest::isDone);
+                whenRetryingAfter(MILLISECONDS, 0, 10, 10, 20).
+                thenAssertEventually(CompletionTest::isDone);
 
         assertThat(delays).isEqualTo(asList(0L, 10L, 10L));
     }
@@ -74,8 +74,8 @@ public class CompletionTest {
                 build();
 
         given(callable).
-                whenRetrying(MILLISECONDS, 0, 10).
-                thenAssert(CompletionTest::isDone);
+                whenRetryingAfter(MILLISECONDS, 0, 10).
+                thenAssertEventually(CompletionTest::isDone);
     }
 
     @Test(expected = CheckedWentWrongException.class)
@@ -87,8 +87,8 @@ public class CompletionTest {
                 build();
 
         given(callable).
-                whenRetrying(MILLISECONDS, 0).
-                thenAssert(CompletionTest::isDone);
+                whenRetryingAfter(MILLISECONDS, 0).
+                thenAssertEventually(CompletionTest::isDone);
     }
 
     @Test(expected = UncheckedWentWrongException.class)
@@ -100,8 +100,8 @@ public class CompletionTest {
                 build();
 
         given(callable).
-                whenRetrying(MILLISECONDS, 0).
-                thenAssert(CompletionTest::isDone);
+                whenRetryingAfter(MILLISECONDS, 0).
+                thenAssertEventually(CompletionTest::isDone);
     }
 
     private static <T> boolean isDone(final Completion<T> completion) {
