@@ -1,0 +1,10 @@
+boot-jpalooza:
+  errors:
+    some-problem:
+      code: 1
+      message: >
+        ({0}) So sad! {1}
+    another-problem:
+      code: 2
+      message: >
+        ({0}) Ignore me.
