@@ -1,10 +1,21 @@
-boot-jpalooza:
+operate:
   errors:
-    some-problem:
-      code: 1
-      message: >
-        ({0}) So sad! {1}
-    another-problem:
-      code: 2
-      message: >
-        ({0}) Ignore me.
+    boot-jpalooza:
+      some-problem:
+        code: 1
+        message: >
+          ({0}) So sad! {1}
+      another-problem:
+        code: 2
+        message: >
+          ({0}) Ignore me.
+
+    some-other-system:
+      not-my-problem:
+        code: 1
+        message: >
+          ({0}) Let PET fix it.
+      who-cares:
+        code: 2
+        message: >
+          ({0}) Not my error.
