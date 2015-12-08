@@ -13,9 +13,11 @@ public class ExampleFailure {
 
     public void exampleFail() {
         try {
-            throw new RuntimeException("I died.");
+            throw new RuntimeException("I died.",
+                    new RuntimeException("No, you died!"));
         } catch (final Exception e) {
-            err.println(operate.alert("boot-jpalooza", "some-problem", e));
+            err.println(operate.messageFor("boot-jpalooza", "some-problem", e,
+                    3));
         }
     }
 }
