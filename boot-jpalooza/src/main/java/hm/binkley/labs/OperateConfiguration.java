@@ -39,8 +39,8 @@ public class OperateConfiguration {
             final Object... params) {
         Throwable root = e;
         for (Throwable parent = root.getCause(); null != parent;
-                root = parent, parent = root.getCause())
-            ;
+                parent = root.getCause())
+            root = parent;
         return messageFor(applicationName, errorName, params) + ": " + root;
     }
 
