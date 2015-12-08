@@ -3,12 +3,16 @@ operate:
   errors:
     boot-jpalooza:
       some-problem:
-        message: "So sad, #{1,number}!  Try restarting."
+        id: abc-1
+        message: "So sad, #{0,number}!  Try restarting."
       another-problem:
+        id: abc-2
         message: Ignore me.  There is no way to fix this.
 
     some-other-system:
       not-my-problem:
+        id: pqr-1
         message: Let PET fix it.  I don't know how.
       who-cares:
+        id: pqr-2
         message: Not my error.  Someone else will fix it.

@@ -19,6 +19,7 @@ public class OperateConfiguration {
     @Getter
     @Setter
     public static final class ErrorMessage {
+        private String id;
         private String message;
     }
 
@@ -28,10 +29,16 @@ public class OperateConfiguration {
     public String messageFor(final String applicationName,
             final String errorName, final Object... params) {
         final ErrorMessage error = errors.get(applicationName).get(errorName);
-        final Object[] fullParams = new Object[1 + params.length];
-        fullParams[0] = String.format(urlPattern, applicationName, errorName);
-        arraycopy(params, 0, fullParams, 1, params.length);
-        return MessageFormat.format(messageOf(error), fullParams);
+        final Object[] fullParams = new Object[params.length + 2];
+        arraycopy(params, 0, fullParams, 0, params.length);
+
+        final int endOfParams = params.length;
+        fullParams[endOfParams] = error.id;
+        fullParams[endOfParams + 1] = String
+                .format(urlPattern, applicationName, errorName);
+
+        return MessageFormat
+                .format(messageOf(error, endOfParams), fullParams);
     }
 
     public String messageFor(final String applicationName,
@@ -45,8 +52,20 @@ public class OperateConfiguration {
     }
 
     @Nonnull
-    private static String messageOf(final ErrorMessage error) {
-        final String message = error.message;
-        return message.contains("{0}") ? message : message + " [{0}]";
+    private static String messageOf(final ErrorMessage error,
+            final int index) {
+        final String rawMessage = error.message;
+        final StringBuilder message = new StringBuilder(rawMessage);
+
+        maybeAutomate(rawMessage, index, message);
+        maybeAutomate(rawMessage, index + 1, message);
+
+        return message.toString();
+    }
+
+    private static void maybeAutomate(final String rawMessage,
+            final int index, final StringBuilder message) {
+        if (!rawMessage.contains("{" + index + "}"))
+            message.append(" [{").append(index).append("}]");
     }
 }
