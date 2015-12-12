@@ -13,7 +13,6 @@
     <modules>
         <module>axon</module>
         <module>boot-jpalooza</module>
-        <module>completions</module>
         <module>quasar</module>
         <module>reagent</module>
         <module>version-diff</module>
@@ -63,6 +62,7 @@
 
     <properties>
         <!-- @formatter:off -->
+        <buildplan-maven-plugin.version>1.1</buildplan-maven-plugin.version>
         <dependency.failOnWarning>true</dependency.failOnWarning>
         <generateBackupPoms>false</generateBackupPoms>
         <java.charset>UTF-8</java.charset>
@@ -90,7 +90,7 @@
             <plugin>
                 <groupId>fr.jcgay.maven.plugins</groupId>
                 <artifactId>buildplan-maven-plugin</artifactId>
-                <version>1.1</version>
+                <version>${buildplan-maven-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>external.atlassian.jgitflow</groupId>
@@ -202,8 +202,14 @@
                 <version>${maven-surefire.version}</version>
                 <executions>
                     <execution>
+                        <id>integration-test</id>
                         <goals>
                             <goal>integration-test</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>verify</id>
+                        <goals>
                             <goal>verify</goal>
                         </goals>
                     </execution>
