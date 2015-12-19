@@ -29,8 +29,7 @@ public final class ReagentTest {
     }
 
     @Test
-    public void shouldSubscribeByTopic()
-            throws InterruptedException {
+    public void shouldSubscribeByTopic() {
         final AtomicReference<Event<String>> inbox = new AtomicReference<>();
         bus.on($("topic"), inbox::set);
 
@@ -54,5 +53,6 @@ public final class ReagentTest {
 
     private static abstract class Foo {}
 
-    private static final class Bar extends Foo {}
+    private static final class Bar
+            extends Foo {}
 }

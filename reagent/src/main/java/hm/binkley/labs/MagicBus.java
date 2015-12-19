@@ -32,7 +32,9 @@ public class MagicBus {
     private final Map<Subscription<?>, Registration<Object, reactor.fn.Consumer<? extends Event<?>>>>
             subscriptions = new ConcurrentHashMap<>();
 
+    @Nonnull
     private final Consumer<? super ReturnedMessage> returned;
+    @Nonnull
     private final Consumer<? super FailedMessage> failed;
 
     public <T> void subscribe(@Nonnull final Class<T> type,
@@ -93,7 +95,7 @@ public class MagicBus {
                 throws Exception;
     }
 
-    @RequiredArgsConstructor(onConstructor = @__(@Nonnull))
+    @RequiredArgsConstructor
     @EqualsAndHashCode
     @ToString
     public static final class ReturnedMessage {
@@ -103,7 +105,7 @@ public class MagicBus {
         public final Object message;
     }
 
-    @RequiredArgsConstructor(onConstructor = @__(@Nonnull))
+    @RequiredArgsConstructor
     @EqualsAndHashCode
     @ToString
     public static final class FailedMessage {

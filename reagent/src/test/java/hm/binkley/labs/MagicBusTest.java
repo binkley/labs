@@ -52,6 +52,46 @@ public final class MagicBusTest {
     }
 
     @Test
+    public void shouldSubscribeAndPostToDifferentMailboxes() {
+        final List<Foo> mailboxA = new CopyOnWriteArrayList<>();
+        bus.subscribe(Foo.class, mailboxA::add);
+        final List<Foo> mailboxB = new CopyOnWriteArrayList<>();
+        bus.subscribe(Foo.class, mailboxB::add);
+
+        final Bar message = new Bar();
+        bus.post(message);
+
+        assertOn(mailboxA).
+                delivered(message).
+                noneReturned().
+                noneFailed();
+        assertOn(mailboxB).
+                delivered(message).
+                noneReturned().
+                noneFailed();
+    }
+
+    @Test
+    public void shouldSubscribeAndPostToSameMailboxForDifferentTypes() {
+        final List<Foo> mailboxA = new CopyOnWriteArrayList<>();
+        bus.subscribe(Foo.class, mailboxA::add);
+        final List<Bar> mailboxB = new CopyOnWriteArrayList<>();
+        bus.subscribe(Bar.class, mailboxB::add);
+
+        final Bar message = new Bar();
+        bus.post(message);
+
+        assertOn(mailboxA).
+                delivered(message).
+                noneReturned().
+                noneFailed();
+        assertOn(mailboxB).
+                delivered(message).
+                noneReturned().
+                noneFailed();
+    }
+
+    @Test
     public void shouldUnsubscribe() {
         final AtomicReference<Foo> mailbox = new AtomicReference<>();
         final Mailbox<? super Foo> x = mailbox::set;
