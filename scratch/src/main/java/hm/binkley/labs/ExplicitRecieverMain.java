@@ -23,9 +23,34 @@ public final class ExplicitRecieverMain {
         Stream.of(Foo.class.getDeclaredMethods()).
                 map(M::new).
                 forEach(out::println);
+        out.println("--");
         Stream.of(Bar.class.getConstructors()).
                 map(M::new).
                 forEach(out::println);
+        out.println("--");
+        Stream.of((new Baz() {}).getClass().getMethods()).
+                filter(m -> Object.class != m.getDeclaringClass()).
+                map(M::new).
+                forEach(out::println);
+        out.println("--");
+        Stream.of(((Dil) new Foo()::copy).getClass().getDeclaredMethods()).
+                filter(m -> Object.class != m.getDeclaringClass()).
+                map(M::new).
+                forEach(out::println);
+        out.println("--");
+        Stream.of(((Dil) new Foo()::copy).getClass().getMethods()).
+                filter(m -> Object.class != m.getDeclaringClass()).
+                map(M::new).
+                forEach(out::println);
+    }
+
+    public interface Baz {
+        default void nothing(@Qux Baz this) {}
+    }
+
+    @FunctionalInterface
+    public interface Dil {
+        void nothing(@Qux Dil this);
     }
 
     @Retention(RUNTIME)
@@ -37,19 +62,16 @@ public final class ExplicitRecieverMain {
     public @interface Quux {}
 
     public static final class Foo {
-        public void copy(@Qux @Quux Foo this) {
-        }
+        public void copy(@Qux @Quux Foo this) {}
 
         public int plain() {
             return 3;
         }
 
         public class Bar {
-            public Bar(@Qux Foo Foo.this) {
-            }
+            public Bar(@Qux Foo Foo.this) {}
 
-            public Bar(final int plain) {
-            }
+            public Bar(final int plain) {}
         }
     }
 
@@ -64,6 +86,8 @@ public final class ExplicitRecieverMain {
         public String toString() {
             final AnnotatedType receiverType = executable
                     .getAnnotatedReceiverType();
+            if (null == receiverType)
+                return "[No receiver]\n    " + executable;
             final String receiverAnnotations = Stream
                     .of(receiverType.getAnnotations()).
                             map(Object::toString).
