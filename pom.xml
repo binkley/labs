@@ -11,6 +11,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>scratch</module>
         <module>axon</module>
         <module>boot-jpalooza</module>
         <module>quasar</module>
