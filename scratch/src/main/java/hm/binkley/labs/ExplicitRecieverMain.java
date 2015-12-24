@@ -20,7 +20,7 @@ import static java.util.stream.Collectors.joining;
  */
 public final class ExplicitRecieverMain {
     public static void main(final String... args) {
-        Stream.of(Foo.class.getMethods()).
+        Stream.of(Foo.class.getDeclaredMethods()).
                 map(M::new).
                 forEach(out::println);
     }
