@@ -1,17 +1,17 @@
 package hm.binkley.labs;
 
-import java.lang.annotation.Annotation;
+import hm.binkley.labs.ExplicitRecieverMain.Foo.Bar;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import java.lang.reflect.Method;
-import java.util.Collection;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Executable;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.lang.System.out;
 import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.joining;
 
 /**
  * @author <a href="mailto:binkley@alumni.rice.edu">B. K. Oxley (binkley)</a>
@@ -23,35 +23,59 @@ public final class ExplicitRecieverMain {
         Stream.of(Foo.class.getDeclaredMethods()).
                 map(M::new).
                 forEach(out::println);
+        Stream.of(Bar.class.getConstructors()).
+                map(M::new).
+                forEach(out::println);
     }
 
     @Retention(RUNTIME)
     @Target(TYPE_USE)
-    public @interface Bar {}
+    public @interface Qux {}
+
+    @Retention(RUNTIME)
+    @Target(TYPE_USE)
+    public @interface Quux {}
 
     public static final class Foo {
-        public Foo copy(@Bar Foo this) {
-            return this;
+        public void copy(@Qux @Quux Foo this) {
+        }
+
+        public int plain() {
+            return 3;
+        }
+
+        public class Bar {
+            public Bar(@Qux Foo Foo.this) {
+            }
+
+            public Bar(final int plain) {
+            }
         }
     }
 
     public static final class M {
-        private final Method method;
-        private final Collection<Annotation> annotations;
+        private final Executable executable;
 
-        private M(final Method method) {
-            this.method = method;
-            annotations = asList(
-                    method.getAnnotatedReceiverType().getAnnotations());
+        private M(final Executable executable) {
+            this.executable = executable;
         }
 
         @Override
         public String toString() {
-            final String annotations = this.annotations.stream().
-                    map(Object::toString).
-                    collect(joining("\n"));
-            return annotations.isEmpty() ? method.toString()
-                    : annotations + "\n" + method;
+            final AnnotatedType receiverType = executable
+                    .getAnnotatedReceiverType();
+            final String receiverAnnotations = Stream
+                    .of(receiverType.getAnnotations()).
+                            map(Object::toString).
+                            collect(Collectors.joining("\n "));
+            final StringBuilder buf = new StringBuilder("[");
+            if (!receiverAnnotations.isEmpty())
+                buf.append(receiverAnnotations).
+                        append("\n ");
+            buf.append(receiverType.getType().getTypeName()).
+                    append("]\n    ").
+                    append(executable);
+            return buf.toString();
         }
     }
 }
