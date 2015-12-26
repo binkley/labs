@@ -65,11 +65,12 @@
         <!-- @formatter:off -->
         <buildplan-maven-plugin.version>1.1</buildplan-maven-plugin.version>
         <dependency.failOnWarning>true</dependency.failOnWarning>
-        <evosuite.version>1.0.1</evosuite.version>
+        <evosuite.version>1.0.2</evosuite.version>
         <generateBackupPoms>false</generateBackupPoms>
         <java.charset>UTF-8</java.charset>
         <java.version>1.8</java.version>
         <jgitflow-maven-plugin.version>1.0-m5.1</jgitflow-maven-plugin.version>
+        <junit.version>4.12</junit.version>
         <maven-surefire.version>2.18.1</maven-surefire.version>
         <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
         <maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
@@ -94,6 +95,29 @@
             <url>http://www.evosuite.org/m2</url>
         </pluginRepository>
     </pluginRepositories>
+
+    <repositories>
+        <repository>
+            <id>EvoSuite</id>
+            <name>EvoSuite Repository</name>
+            <url>http://www.evosuite.org/m2</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.evosuite</groupId>
+            <artifactId>evosuite-standalone-runtime</artifactId>
+            <version>${evosuite.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
@@ -187,6 +211,19 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.evosuite.plugins</groupId>
+                <artifactId>evosuite-maven-plugin</artifactId>
+                <version>${evosuite.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare</goal>
+                        </goals>
+                        <phase>process-test-classes</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
@@ -197,19 +234,6 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.evosuite.plugins</groupId>
-                <artifactId>evosuite-maven-plugin</artifactId>
-                <version>${evosuite.version}</version>
-                <executions>
-                    <execution>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>prepare</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -223,6 +247,15 @@
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${maven-surefire.version}</version>
+                <configuration>
+                    <properties>
+                        <property>
+                            <name>listener</name>
+                            <value>org.evosuite.runtime.InitializingListener
+                            </value>
+                        </property>
+                    </properties>
+                </configuration>
                 <executions>
                     <execution>
                         <id>integration-test</id>

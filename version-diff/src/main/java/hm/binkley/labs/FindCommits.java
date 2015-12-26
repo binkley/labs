@@ -87,7 +87,7 @@ public final class FindCommits {
     /**
      * The {tree} will return the underlying tree-id instead of the commit-id
      * itself! For a description of what the carets do see e.g. <a
-     * href="http://www .paulboxley.com/blog/2011/06/git-caret-and-tilde">xxx</a>
+     * href="http://www.paulboxley.com/blog/2011/06/git-caret-and-tilde">xxx</a>
      * This means we are selecting the parent of the parent of the parent of
      * the parent of current HEAD and take the tree-ish of it
      */

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.lang.System.out;
+import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -20,6 +21,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  */
 public final class ExplicitRecieverMain {
     public static void main(final String... args) {
+        final @Qux String x = "abc";
+        final String y = "pqr" + x;
+
         Stream.of(Foo.class.getDeclaredMethods()).
                 map(M::new).
                 forEach(out::println);
@@ -54,11 +58,11 @@ public final class ExplicitRecieverMain {
     }
 
     @Retention(RUNTIME)
-    @Target(TYPE_USE)
+    @Target({TYPE_USE, PARAMETER})
     public @interface Qux {}
 
     @Retention(RUNTIME)
-    @Target(TYPE_USE)
+    @Target({TYPE_USE, PARAMETER})
     public @interface Quux {}
 
     public static final class Foo {
