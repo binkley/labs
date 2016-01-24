@@ -1,8 +1,12 @@
 package hm.binkley.labs;
 
+import hm.binkley.labs.OperateConfiguration.ErrorMessage;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -13,11 +17,15 @@ import static java.lang.System.arraycopy;
 
 @Component
 @ConfigurationProperties(locations = "operate.yml", prefix = "operate")
+@EnableConfigurationProperties(ErrorMessage.class)
 @Getter
 @Setter
 public class OperateConfiguration {
+    @ConfigurationProperties("operate.errors.boot-palooza")
+    @EqualsAndHashCode
     @Getter
     @Setter
+    @ToString
     public static final class ErrorMessage {
         private String id;
         private String message;

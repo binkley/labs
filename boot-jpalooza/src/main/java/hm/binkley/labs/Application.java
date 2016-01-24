@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 
 import static java.lang.System.out;
 
-@EnableConfigurationProperties
 @SpringBootApplication
 public class Application {
     public static void main(final String... args) {
