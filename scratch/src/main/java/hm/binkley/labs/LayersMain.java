@@ -8,7 +8,7 @@ import static java.lang.System.out;
 
 public final class LayersMain {
     public static void main(final String... args) {
-        final Layers<Tag> layers = new Layers<>(Tag.of("Bob", 3),
+        final Layers<Tag, String> layers = new Layers<>(Tag.of("Bob", 3),
                 new Rule<Tag, Object>(Tag.of("Default rule - take last", 0)) {
                     @Override
                     public Object apply(final Object a, final Object b) {

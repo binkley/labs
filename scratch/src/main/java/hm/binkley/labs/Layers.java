@@ -21,29 +21,30 @@ import static java.util.stream.Collectors.toList;
 import static lombok.AccessLevel.PRIVATE;
 
 @RequiredArgsConstructor
-public final class Layers<DescriptionType>
+public final class Layers<DescriptionType, KeyType>
         extends AbstractList<Layer> {
-    private final transient Map<String, Object> cache = new LinkedHashMap<>();
+    private final transient Map<KeyType, Object> cache
+            = new LinkedHashMap<>();
     private final DescriptionType description;
     private final Rule<DescriptionType, Object> defaultRule;
     private final List<Layer> layers = new ArrayList<>();
-    private final Map<String, Rule> rules = new LinkedHashMap<>();
+    private final Map<KeyType, Rule> rules = new LinkedHashMap<>();
 
     public DescriptionType description() {
         return description;
     }
 
-    public <T> Optional<T> get(final String key) {
+    public <T> Optional<T> get(final KeyType key) {
         return Optional.ofNullable((T) cache.get(key));
     }
 
-    public void addRule(final String key, final Rule rule) {
+    public void addRule(final KeyType key, final Rule rule) {
         rules.put(key, rule);
         refresh(key);
     }
 
-    public LayerBuilder layer(final DescriptionType description) {
-        return new LayerBuilder(values -> {
+    public LayerBuilder<KeyType> layer(final DescriptionType description) {
+        return new LayerBuilder<>(values -> {
             layers.add(new Layer<>(description, values));
             values.keySet().forEach(this::refresh);
         });
@@ -66,7 +67,7 @@ public final class Layers<DescriptionType>
                 + ", " + cache + ")";
     }
 
-    private void refresh(final String key) {
+    private void refresh(final KeyType key) {
         layers.stream().
                 filter(layer -> layer.containsKey(key)).
                 map(layer -> layer.get(key)).
@@ -75,11 +76,12 @@ public final class Layers<DescriptionType>
     }
 
     @RequiredArgsConstructor(access = PRIVATE)
-    public static final class LayerBuilder {
-        private final Consumer<Map<String, Object>> layers;
-        private Map<String, Object> values = new LinkedHashMap<>();
+    public static final class LayerBuilder<KeyType> {
+        private final Consumer<Map<KeyType, Object>> layers;
+        private Map<KeyType, Object> values = new LinkedHashMap<>();
 
-        public LayerBuilder add(final String key, final Object value) {
+        public LayerBuilder<KeyType> add(final KeyType key,
+                final Object value) {
             values.put(key, value);
             return this;
         }
@@ -91,17 +93,17 @@ public final class Layers<DescriptionType>
     }
 
     @RequiredArgsConstructor(access = PRIVATE)
-    public static final class Layer<DescriptionType>
-            extends AbstractMap<String, Object> {
+    public static final class Layer<DescriptionType, KeyType>
+            extends AbstractMap<KeyType, Object> {
         private final DescriptionType description;
-        private final Map<String, Object> values;
+        private final Map<KeyType, Object> values;
 
         public DescriptionType description() {
             return description;
         }
 
         @Override
-        public Set<Entry<String, Object>> entrySet() {
+        public Set<Entry<KeyType, Object>> entrySet() {
             return unmodifiableMap(values).entrySet();
         }
 
