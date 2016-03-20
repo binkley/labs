@@ -19,6 +19,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toList;
 import static lombok.AccessLevel.PRIVATE;
+import static lombok.AccessLevel.PROTECTED;
 
 @RequiredArgsConstructor
 public final class Layers<DescriptionType, KeyType>
@@ -124,7 +125,7 @@ public final class Layers<DescriptionType, KeyType>
         }
     }
 
-    @RequiredArgsConstructor
+    @RequiredArgsConstructor(access = PROTECTED)
     @ToString
     public abstract static class Rule<DescriptionType, T>
             implements BinaryOperator<T> {
