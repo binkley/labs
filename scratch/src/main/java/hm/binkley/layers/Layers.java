@@ -1,6 +1,6 @@
-package hm.binkley.labs;
+package hm.binkley.layers;
 
-import hm.binkley.labs.Layers.Layer;
+import hm.binkley.layers.Layers.Layer;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
