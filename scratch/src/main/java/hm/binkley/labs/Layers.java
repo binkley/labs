@@ -1,7 +1,6 @@
 package hm.binkley.labs;
 
 import hm.binkley.labs.Layers.Layer;
-import hm.binkley.labs.LayersMain.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -24,9 +23,9 @@ import static lombok.AccessLevel.PRIVATE;
 @RequiredArgsConstructor
 public final class Layers<DescriptionType>
         extends AbstractList<Layer> {
-    private final transient Map<String, Optional> cache
-            = new LinkedHashMap<>();
+    private final transient Map<String, Object> cache = new LinkedHashMap<>();
     private final DescriptionType description;
+    private final Rule<DescriptionType, Object> defaultRule;
     private final List<Layer> layers = new ArrayList<>();
     private final Map<String, Rule> rules = new LinkedHashMap<>();
 
@@ -35,7 +34,7 @@ public final class Layers<DescriptionType>
     }
 
     public <T> Optional<T> get(final String key) {
-        return cache.getOrDefault(key, Optional.empty());
+        return Optional.ofNullable((T) cache.get(key));
     }
 
     public void addRule(final String key, final Rule rule) {
@@ -68,16 +67,11 @@ public final class Layers<DescriptionType>
     }
 
     private void refresh(final String key) {
-        cache.put(key, layers.stream().
+        layers.stream().
                 filter(layer -> layer.containsKey(key)).
                 map(layer -> layer.get(key)).
-                reduce(rules.computeIfAbsent(key, k -> new Rule<Tag, Object>(
-                        Tag.of("Default rule - take last", 0)) {
-                    @Override
-                    public Object apply(final Object o, final Object o2) {
-                        return o2;
-                    }
-                })));
+                reduce(rules.computeIfAbsent(key, k -> defaultRule)).
+                ifPresent(value -> cache.put(key, value));
     }
 
     @RequiredArgsConstructor(access = PRIVATE)
