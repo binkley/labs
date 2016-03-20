@@ -30,6 +30,16 @@ public final class Layers<DescriptionType, KeyType>
     private final List<Layer> layers = new ArrayList<>();
     private final Map<KeyType, Rule> rules = new LinkedHashMap<>();
 
+    public static <DescriptionType> Rule<DescriptionType, Object> defaultRule(
+            final DescriptionType description) {
+        return new Rule<DescriptionType, Object>(description) {
+            @Override
+            public Object apply(final Object a, final Object b) {
+                return b;
+            }
+        };
+    }
+
     public DescriptionType description() {
         return description;
     }
