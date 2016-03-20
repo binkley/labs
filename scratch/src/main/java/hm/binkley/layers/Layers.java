@@ -23,7 +23,8 @@ import static lombok.AccessLevel.PROTECTED;
 
 @RequiredArgsConstructor
 public final class Layers<DescriptionType, KeyType>
-        extends AbstractList<Layer> {
+        extends AbstractList<Layer>
+        implements Described<DescriptionType> {
     private final transient Map<KeyType, Object> cache
             = new LinkedHashMap<>();
     private final DescriptionType description;
@@ -41,6 +42,7 @@ public final class Layers<DescriptionType, KeyType>
         };
     }
 
+    @Override
     public DescriptionType description() {
         return description;
     }
@@ -105,10 +107,12 @@ public final class Layers<DescriptionType, KeyType>
 
     @RequiredArgsConstructor(access = PRIVATE)
     public static final class Layer<DescriptionType, KeyType>
-            extends AbstractMap<KeyType, Object> {
+            extends AbstractMap<KeyType, Object>
+            implements Described<DescriptionType> {
         private final DescriptionType description;
         private final Map<KeyType, Object> values;
 
+        @Override
         public DescriptionType description() {
             return description;
         }
@@ -128,9 +132,10 @@ public final class Layers<DescriptionType, KeyType>
     @RequiredArgsConstructor(access = PROTECTED)
     @ToString
     public abstract static class Rule<DescriptionType, T>
-            implements BinaryOperator<T> {
+            implements BinaryOperator<T>, Described<DescriptionType> {
         private final DescriptionType description;
 
+        @Override
         public final DescriptionType description() {
             return description;
         }
