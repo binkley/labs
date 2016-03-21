@@ -32,6 +32,13 @@ public final class Layers<DescriptionType, KeyType>
     private final List<Layer> layers = new ArrayList<>();
     private final Map<KeyType, Rule> rules = new LinkedHashMap<>();
 
+    public static Layers<String, String> vanilla(
+            final String layersDescription,
+            final String defaultRuleDescription) {
+        return new Layers<>(layersDescription,
+                defaultRule(defaultRuleDescription));
+    }
+
     public static <DescriptionType> Rule<DescriptionType, Object> defaultRule(
             final DescriptionType description) {
         return new Rule<DescriptionType, Object>(description) {

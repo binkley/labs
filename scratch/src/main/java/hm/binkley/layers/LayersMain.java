@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
 import static hm.binkley.layers.Layers.defaultRule;
+import static hm.binkley.layers.Layers.vanilla;
 import static hm.binkley.layers.LayersMain.Key.BAR;
 import static hm.binkley.layers.LayersMain.Key.DUCKY;
 import static hm.binkley.layers.LayersMain.Key.FOO;
@@ -28,6 +29,10 @@ public final class LayersMain {
 
         out.println("FOO = " + layers.get(FOO));
         out.println("DUCKY! = " + layers.get(DUCKY));
+
+        final Layers<String, String> vanilla = vanilla("Very vanilla",
+                "Last first");
+        out.println("vanilla = " + vanilla);
     }
 
     @EqualsAndHashCode
