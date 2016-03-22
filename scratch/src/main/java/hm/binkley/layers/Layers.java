@@ -10,10 +10,12 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableMap;
@@ -37,16 +39,20 @@ public final class Layers<DescriptionType, KeyType, ValueType>
     private final DescriptionType description;
     private final List<Layer<DescriptionType, KeyType, ValueType>> layers
             = new ArrayList<>();
-    private final Rule<DescriptionType, ValueType> fallbackRule;
     private final Map<KeyType, Rule<DescriptionType, ValueType>> specificRules
             = new LinkedHashMap<>();
+    private final Map<Predicate<? super KeyType>, Rule<DescriptionType,
+            ValueType>>
+            genericRules = new LinkedHashMap<>();
 
     public static <DescriptionType, KeyType, ValueType>
     Layers<DescriptionType, KeyType, ValueType> withFallbackRule(
             final DescriptionType layersDescription,
             final DescriptionType defaultRuleDescription) {
-        return new Layers<>(layersDescription,
-                fallbackRule(defaultRuleDescription));
+        final Layers<DescriptionType, KeyType, ValueType> layers
+                = new Layers<>(layersDescription);
+        layers.addRule(key -> true, fallbackRule(defaultRuleDescription));
+        return layers;
     }
 
     /**
@@ -87,6 +93,14 @@ public final class Layers<DescriptionType, KeyType, ValueType>
         refresh(key);
     }
 
+    public void addRule(final Predicate<? super KeyType> keyMatcher,
+            final Rule<DescriptionType, ValueType> rule) {
+        genericRules.put(keyMatcher, rule);
+        cache.keySet().stream().
+                filter(keyMatcher).
+                forEach(this::refresh);
+    }
+
     public LayerBuilder<KeyType, ValueType> layer(
             final DescriptionType description) {
         return new LayerBuilder<>(values -> {
@@ -112,11 +126,22 @@ public final class Layers<DescriptionType, KeyType, ValueType>
                 + ", " + cache + ")";
     }
 
+    private Rule<DescriptionType, ValueType> findRule(final KeyType key) {
+        if (specificRules.containsKey(key))
+            return specificRules.get(key);
+        return genericRules.entrySet().stream().
+                filter(e -> e.getKey().test(key)).
+                findFirst().
+                map(Entry::getValue).
+                orElseThrow(IllegalStateException::new);
+    }
+
     private void refresh(final KeyType key) {
+        final Rule<DescriptionType, ValueType> rule = findRule(key);
         layers.stream().
                 filter(layer -> layer.containsKey(key)).
                 map(layer -> layer.get(key)).
-                reduce(specificRules.computeIfAbsent(key, k -> fallbackRule)).
+                reduce(rule).
                 ifPresent(value -> cache.put(key, value));
     }
 
