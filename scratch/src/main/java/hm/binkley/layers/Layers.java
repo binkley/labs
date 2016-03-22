@@ -21,29 +21,50 @@ import static java.util.stream.Collectors.toList;
 import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
+/**
+ * @param <DescriptionType> the description type
+ * @param <KeyType> the key type
+ *
+ * @todo {@link #defaultRule} should be last, ala a stack
+ */
 @RequiredArgsConstructor
-public final class Layers<DescriptionType, KeyType>
+@SuppressWarnings("WeakerAccess")
+public final class Layers<DescriptionType, KeyType, ValueType>
         extends AbstractList<Layer>
         implements Described<DescriptionType> {
-    private final transient Map<KeyType, Object> cache
+    private final transient Map<KeyType, ValueType> cache
             = new LinkedHashMap<>();
     private final DescriptionType description;
-    private final Rule<DescriptionType, Object> defaultRule;
-    private final List<Layer> layers = new ArrayList<>();
-    private final Map<KeyType, Rule> rules = new LinkedHashMap<>();
+    private final Rule<DescriptionType, ValueType> defaultRule;
+    private final List<Layer<DescriptionType, KeyType, ValueType>> layers
+            = new ArrayList<>();
+    private final Map<KeyType, Rule<DescriptionType, ValueType>> rules
+            = new LinkedHashMap<>();
 
-    public static Layers<String, String> vanilla(
+    public static Layers<String, String, Object> vanilla(
             final String layersDescription,
             final String defaultRuleDescription) {
         return new Layers<>(layersDescription,
                 defaultRule(defaultRuleDescription));
     }
 
-    public static <DescriptionType> Rule<DescriptionType, Object> defaultRule(
+    /**
+     * Constructs a default {@link Rule} for the given <var>description</var>.
+     * The default rule treats layers as a stack, returning the key value of
+     * the most recent (topmost) layer containing that key.
+     *
+     * @param description the default rule description, never missing
+     * @param <DescriptionType> the description type
+     * @param <ValueType> the value type
+     *
+     * @return the default rule for {@code DescriptionType}, never missing
+     */
+    public static <DescriptionType, ValueType> Rule<DescriptionType,
+            ValueType> defaultRule(
             final DescriptionType description) {
-        return new Rule<DescriptionType, Object>(description) {
+        return new Rule<DescriptionType, ValueType>(description) {
             @Override
-            public Object apply(final Object a, final Object b) {
+            public ValueType apply(final ValueType a, final ValueType b) {
                 return b;
             }
         };
@@ -54,16 +75,19 @@ public final class Layers<DescriptionType, KeyType>
         return description;
     }
 
-    public <T> Optional<T> get(final KeyType key) {
+    @SuppressWarnings("unchecked")
+    public <T extends ValueType> Optional<T> get(final KeyType key) {
         return Optional.ofNullable((T) cache.get(key));
     }
 
-    public void addRule(final KeyType key, final Rule rule) {
+    public void addRule(final KeyType key,
+            final Rule<DescriptionType, ValueType> rule) {
         rules.put(key, rule);
         refresh(key);
     }
 
-    public LayerBuilder<KeyType> layer(final DescriptionType description) {
+    public LayerBuilder<KeyType, ValueType> layer(
+            final DescriptionType description) {
         return new LayerBuilder<>(values -> {
             layers.add(new Layer<>(description, values));
             values.keySet().forEach(this::refresh);
@@ -96,12 +120,13 @@ public final class Layers<DescriptionType, KeyType>
     }
 
     @RequiredArgsConstructor(access = PRIVATE)
-    public static final class LayerBuilder<KeyType> {
-        private final Consumer<Map<KeyType, Object>> layers;
-        private Map<KeyType, Object> values = new LinkedHashMap<>();
+    @SuppressWarnings("WeakerAccess")
+    public static final class LayerBuilder<KeyType, ValueType> {
+        private final Consumer<Map<KeyType, ValueType>> layers;
+        private Map<KeyType, ValueType> values = new LinkedHashMap<>();
 
-        public LayerBuilder<KeyType> add(final KeyType key,
-                final Object value) {
+        public LayerBuilder<KeyType, ValueType> add(final KeyType key,
+                final ValueType value) {
             values.put(key, value);
             return this;
         }
@@ -113,11 +138,13 @@ public final class Layers<DescriptionType, KeyType>
     }
 
     @RequiredArgsConstructor(access = PRIVATE)
-    public static final class Layer<DescriptionType, KeyType>
-            extends AbstractMap<KeyType, Object>
+    @SuppressWarnings(
+            {"MismatchedQueryAndUpdateOfCollection", "WeakerAccess"})
+    public static final class Layer<DescriptionType, KeyType, ValueType>
+            extends AbstractMap<KeyType, ValueType>
             implements Described<DescriptionType> {
         private final DescriptionType description;
-        private final Map<KeyType, Object> values;
+        private final Map<KeyType, ValueType> values;
 
         @Override
         public DescriptionType description() {
@@ -125,7 +152,7 @@ public final class Layers<DescriptionType, KeyType>
         }
 
         @Override
-        public Set<Entry<KeyType, Object>> entrySet() {
+        public Set<Entry<KeyType, ValueType>> entrySet() {
             return unmodifiableMap(values).entrySet();
         }
 
@@ -138,8 +165,8 @@ public final class Layers<DescriptionType, KeyType>
 
     @RequiredArgsConstructor(access = PROTECTED)
     @ToString
-    public abstract static class Rule<DescriptionType, T>
-            implements BinaryOperator<T>, Described<DescriptionType> {
+    public abstract static class Rule<DescriptionType, ValueType>
+            implements BinaryOperator<ValueType>, Described<DescriptionType> {
         private final DescriptionType description;
 
         @Override

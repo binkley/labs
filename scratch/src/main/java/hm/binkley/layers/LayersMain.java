@@ -12,32 +12,49 @@ import static java.lang.System.out;
 
 public final class LayersMain {
     public static void main(final String... args) {
-        final Layers<Tag, Key> layers = new Layers<>(Tag.of("Bob", 3),
+        final Layers<Tag, Key, Value> layers = new Layers<>(Tag.of("Bob", 3),
                 defaultRule(Tag.of("Default rule - take last", 0)));
         out.println("layers = " + layers);
         layers.layer(Tag.of("#1", 13)).commit();
         out.println("layers = " + layers);
         layers.layer(Tag.of("arpha", -2)).
-                add(FOO, 13.8d).
-                add(BAR, "bAz").
+                add(FOO, new Value() {
+                    @Override
+                    public String toString() {
+                        return Double.toString(14.4d);
+                    }
+                }).
+                add(BAR, new Value() {
+                    @Override
+                    public String toString() {
+                        return "bAz";
+                    }
+                }).
                 commit();
         out.println("layers = " + layers);
         layers.layer(Tag.of("bayr", -7)).
-                add(BAR, "qUUx").
+                add(BAR, new Value() {
+                    @Override
+                    public String toString() {
+                        return "qUUx";
+                    }
+                }).
                 commit();
         out.println("layers = " + layers);
 
         out.println("FOO = " + layers.get(FOO));
         out.println("DUCKY! = " + layers.get(DUCKY));
 
-        final Layers<String, String> vanilla = vanilla("Very vanilla",
+        final Layers<String, String, Object> vanilla = vanilla("Very vanilla",
                 "Last first");
         out.println("vanilla = " + vanilla);
     }
 
+    private interface Value {}
+
     @EqualsAndHashCode
     @RequiredArgsConstructor(staticName = "of")
-    public static final class Tag {
+    private static final class Tag {
         public final String name;
         public final int number;
 
@@ -48,7 +65,7 @@ public final class LayersMain {
         }
     }
 
-    public enum Key {
+    enum Key {
         FOO("A fooish thing"),
         BAR("Bar none"),
         DUCKY("Pearl misses you, Ducky!");
