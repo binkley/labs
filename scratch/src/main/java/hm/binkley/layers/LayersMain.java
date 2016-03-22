@@ -1,5 +1,6 @@
 package hm.binkley.layers;
 
+import hm.binkley.layers.Layers.Rule;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
@@ -14,9 +15,9 @@ public final class LayersMain {
     public static void main(final String... args) {
         final Layers<Tag, Key, Value> layers = new Layers<>(Tag.of("Bob", 3),
                 defaultRule(Tag.of("Default rule - take last", 0)));
-        out.println("layers = " + layers);
+        out.println("EMPTY layers = " + layers);
         layers.layer(Tag.of("#1", 13)).commit();
-        out.println("layers = " + layers);
+        out.println("STILL EMPTY layers = " + layers);
         layers.layer(Tag.of("arpha", -2)).
                 add(FOO, new Value() {
                     @Override
@@ -31,7 +32,7 @@ public final class LayersMain {
                     }
                 }).
                 commit();
-        out.println("layers = " + layers);
+        out.println("TWO layers = " + layers);
         layers.layer(Tag.of("bayr", -7)).
                 add(BAR, new Value() {
                     @Override
@@ -40,7 +41,16 @@ public final class LayersMain {
                     }
                 }).
                 commit();
-        out.println("layers = " + layers);
+        out.println("STILL TWO layers = " + layers);
+
+        layers.addRule(BAR,
+                new Rule<Tag, Value>(Tag.of("Bad FOO, no biscuit!", 1)) {
+                    @Override
+                    public Value apply(final Value a, final Value b) {
+                        return a;
+                    }
+                });
+        out.println("REVERSE BAR layers = " + layers);
 
         out.println("FOO = " + layers.get(FOO));
         out.println("DUCKY! = " + layers.get(DUCKY));
