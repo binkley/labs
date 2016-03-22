@@ -25,7 +25,7 @@ import static lombok.AccessLevel.PROTECTED;
  * @param <DescriptionType> the description type
  * @param <KeyType> the key type
  *
- * @todo {@link #defaultRule} should be last, ala a stack
+ * @todo {@link #fallbackRule} should be last, ala a stack
  */
 @RequiredArgsConstructor
 @SuppressWarnings("WeakerAccess")
@@ -35,17 +35,18 @@ public final class Layers<DescriptionType, KeyType, ValueType>
     private final transient Map<KeyType, ValueType> cache
             = new LinkedHashMap<>();
     private final DescriptionType description;
-    private final Rule<DescriptionType, ValueType> defaultRule;
     private final List<Layer<DescriptionType, KeyType, ValueType>> layers
             = new ArrayList<>();
-    private final Map<KeyType, Rule<DescriptionType, ValueType>> rules
+    private final Rule<DescriptionType, ValueType> fallbackRule;
+    private final Map<KeyType, Rule<DescriptionType, ValueType>> specificRules
             = new LinkedHashMap<>();
 
-    public static Layers<String, String, Object> vanilla(
-            final String layersDescription,
-            final String defaultRuleDescription) {
+    public static <DescriptionType, KeyType, ValueType>
+    Layers<DescriptionType, KeyType, ValueType> withFallbackRule(
+            final DescriptionType layersDescription,
+            final DescriptionType defaultRuleDescription) {
         return new Layers<>(layersDescription,
-                defaultRule(defaultRuleDescription));
+                fallbackRule(defaultRuleDescription));
     }
 
     /**
@@ -60,7 +61,7 @@ public final class Layers<DescriptionType, KeyType, ValueType>
      * @return the default rule for {@code DescriptionType}, never missing
      */
     public static <DescriptionType, ValueType> Rule<DescriptionType,
-            ValueType> defaultRule(
+            ValueType> fallbackRule(
             final DescriptionType description) {
         return new Rule<DescriptionType, ValueType>(description) {
             @Override
@@ -82,7 +83,7 @@ public final class Layers<DescriptionType, KeyType, ValueType>
 
     public void addRule(final KeyType key,
             final Rule<DescriptionType, ValueType> rule) {
-        rules.put(key, rule);
+        specificRules.put(key, rule);
         refresh(key);
     }
 
@@ -115,7 +116,7 @@ public final class Layers<DescriptionType, KeyType, ValueType>
         layers.stream().
                 filter(layer -> layer.containsKey(key)).
                 map(layer -> layer.get(key)).
-                reduce(rules.computeIfAbsent(key, k -> defaultRule)).
+                reduce(specificRules.computeIfAbsent(key, k -> fallbackRule)).
                 ifPresent(value -> cache.put(key, value));
     }
 

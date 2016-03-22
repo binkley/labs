@@ -4,8 +4,7 @@ import hm.binkley.layers.Layers.Rule;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
-import static hm.binkley.layers.Layers.defaultRule;
-import static hm.binkley.layers.Layers.vanilla;
+import static hm.binkley.layers.Layers.withFallbackRule;
 import static hm.binkley.layers.LayersMain.Key.BAR;
 import static hm.binkley.layers.LayersMain.Key.DUCKY;
 import static hm.binkley.layers.LayersMain.Key.FOO;
@@ -13,8 +12,8 @@ import static java.lang.System.out;
 
 public final class LayersMain {
     public static void main(final String... args) {
-        final Layers<Tag, Key, Value> layers = new Layers<>(Tag.of("Bob", 3),
-                defaultRule(Tag.of("Default rule - take last", 0)));
+        final Layers<Tag, Key, Value> layers = withFallbackRule(Tag.of("Bob", 3),
+                Tag.of("Default rule - take last", 0));
         out.println("EMPTY layers = " + layers);
         layers.layer(Tag.of("#1", 13)).commit();
         out.println("STILL EMPTY layers = " + layers);
@@ -55,9 +54,9 @@ public final class LayersMain {
         out.println("FOO = " + layers.get(FOO));
         out.println("DUCKY! = " + layers.get(DUCKY));
 
-        final Layers<String, String, Object> vanilla = vanilla("Very vanilla",
+        final Layers<String, String, Object> vanilla = withFallbackRule("Very withFallbackRule",
                 "Last first");
-        out.println("vanilla = " + vanilla);
+        out.println("withFallbackRule = " + vanilla);
     }
 
     private interface Value {}
