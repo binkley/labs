@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.reverse;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toList;
 import static lombok.AccessLevel.PRIVATE;
@@ -44,6 +45,7 @@ public final class Layers<DescriptionType, KeyType, ValueType>
     private final Map<Predicate<? super KeyType>, Rule<DescriptionType,
             ValueType>>
             genericRules = new LinkedHashMap<>();
+    // to reverse?
 
     public static <DescriptionType, KeyType, ValueType>
     Layers<DescriptionType, KeyType, ValueType> withFallbackRule(
@@ -129,7 +131,12 @@ public final class Layers<DescriptionType, KeyType, ValueType>
     private Rule<DescriptionType, ValueType> findRule(final KeyType key) {
         if (specificRules.containsKey(key))
             return specificRules.get(key);
-        return genericRules.entrySet().stream().
+        // TODO: Horrors - reverse map entries in a list
+        final List<Entry<Predicate<? super KeyType>, Rule<DescriptionType,
+                ValueType>>>
+                rules = new ArrayList<>(genericRules.entrySet());
+        reverse(rules);
+        return rules.stream().
                 filter(e -> e.getKey().test(key)).
                 findFirst().
                 map(Entry::getValue).

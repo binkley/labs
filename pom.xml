@@ -63,6 +63,7 @@
 
     <properties>
         <!-- @formatter:off -->
+        <assertj.version>3.3.0</assertj.version>
         <buildplan-maven-plugin.version>1.2</buildplan-maven-plugin.version>
         <dependency.failOnWarning>true</dependency.failOnWarning>
         <generateBackupPoms>false</generateBackupPoms>
@@ -88,6 +89,12 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
