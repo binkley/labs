@@ -27,7 +27,9 @@ public class BatchConfiguration {
     @Bean
     public Step step1() {
         return stepBuilderFactory.get("step1").
-                tasklet((contribution, chunkContext) -> null).
+                tasklet((contribution, chunkContext) -> {
+                    throw new RuntimeException("Foo!");
+                }).
                 build();
     }
 
