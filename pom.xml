@@ -12,6 +12,7 @@
 
     <modules>
         <module>scratch</module>
+        <module>reveno</module>
         <module>axon</module>
         <module>boot-jpalooza</module>
         <module>quasar</module>
