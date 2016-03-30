@@ -10,19 +10,31 @@ import static org.slf4j.LoggerFactory.getLogger;
 public final class RevenoDSLMain {
     private static Reveno init(final String folder) {
         final Reveno reveno = new Engine(folder);
+
+        reveno.events().eventHandler(BalanceChangedEvent.class, (e, m) -> {
+            final AccountView account = reveno.query()
+                    .find(AccountView.class, e.accountId);
+            LOG.info("New balance of account {} for {} from event is: {}",
+                    e.accountId, account.name, account.balance);
+        });
+
         reveno.domain().transaction("createAccount",
                 (t, c) -> c.repo().store(t.id(), new Account(t.arg(), 0)))
                 .uniqueIdFor(Account.class).command();
-        reveno.domain().transaction("changeBalance", (t, c) -> c.repo()
-                .store(t.longArg(), c.repo().get(Account.class, t.arg())
-                        .add(t.intArg("inc")))).command();
+        reveno.domain().transaction("changeBalance", (t, c) -> {
+            c.repo().store(t.longArg(), c.repo().get(Account.class, t.arg())
+                    .add(t.intArg("inc")));
+            c.eventBus().publishEvent(new BalanceChangedEvent(t.arg()));
+        }).command();
+
         reveno.domain().viewMapper(Account.class, AccountView.class,
                 (id, e, r) -> new AccountView(id, e.name, e.balance));
+
         return reveno;
     }
 
-    private static void printStats(final Reveno reveno, final long
-            accountId) {
+    private static void printStats(final Reveno reveno,
+            final long accountId) {
         LOG.info("Account {} name: {}", accountId,
                 reveno.query().find(AccountView.class, accountId).name);
         LOG.info("Account {} balance: {}", accountId,
