@@ -64,7 +64,7 @@
 
     <properties>
         <!-- @formatter:off -->
-        <assertj.version>3.3.0</assertj.version>
+        <assertj.version>3.4.0</assertj.version>
         <buildplan-maven-plugin.version>1.2</buildplan-maven-plugin.version>
         <dependency.failOnWarning>true</dependency.failOnWarning>
         <generateBackupPoms>false</generateBackupPoms>
