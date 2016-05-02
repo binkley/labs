@@ -55,6 +55,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.reveno</groupId>
             <artifactId>reveno-core</artifactId>
             <version>${reveno.version}</version>
@@ -80,6 +85,7 @@
             <groupId>org.reveno</groupId>
             <artifactId>reveno-metrics</artifactId>
             <version>${reveno.version}</version>
+            <scope>runtime</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>

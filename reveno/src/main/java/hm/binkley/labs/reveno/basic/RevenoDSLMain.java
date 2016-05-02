@@ -1,17 +1,28 @@
 package hm.binkley.labs.reveno.basic;
 
 import org.reveno.atp.api.Reveno;
-import org.reveno.atp.core.Engine;
+import org.reveno.atp.clustering.api.ClusterConfiguration;
+import org.reveno.atp.clustering.api.InetAddress;
+import org.reveno.atp.clustering.core.ClusterEngine;
 import org.slf4j.Logger;
 
+import static java.util.Collections.singletonList;
 import static org.reveno.atp.utils.MapUtils.map;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public final class RevenoDSLMain {
-    private static Reveno init(final String folder) {
-        final Reveno reveno = new Engine(folder);
+    private static ClusterEngine init(final String folder) {
+        final ClusterEngine reveno = new ClusterEngine(folder);
+        final InetAddress address = new InetAddress("127.0.0.1:16343",
+                "yeth-marther");
+        final ClusterConfiguration clusterConfiguration = reveno
+                .clusterConfiguration();
+        clusterConfiguration.currentNodeAddress(address);
+        clusterConfiguration.nodesInetAddresses(singletonList(address));
+        clusterConfiguration.dataSync().port(16343);
 
         reveno.events().eventHandler(BalanceChangedEvent.class, (e, m) -> {
+            LOG.info("Replaying? {}", m.isRestore());
             final AccountView account = reveno.query()
                     .find(AccountView.class, e.accountId);
             LOG.info("New balance of account {} for {} from event is: {}",
@@ -42,7 +53,9 @@ public final class RevenoDSLMain {
     }
 
     public static void main(final String... args) {
-        Reveno reveno = init("/tmp/reveno");
+        System.setProperty("java.net.preferIPv4Stack", "true");
+
+        ClusterEngine reveno = init("/tmp/reveno");
         reveno.startup();
 
         final long accountId = reveno
