@@ -80,6 +80,7 @@
         <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
         <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
         <maven-jdeps-plugin.version>3.0.0</maven-jdeps-plugin.version>
+        <maven-profiler-report-directory>${project.build.directory}/profiler</maven-profiler-report-directory>
         <maven-source-plugin.version>2.4</maven-source-plugin.version>
         <project.build.outputEncoding>${java.charset}</project.build.outputEncoding>
         <project.build.sourceEncoding>${java.charset}</project.build.sourceEncoding>
@@ -116,6 +117,7 @@
                 <artifactId>jgitflow-maven-plugin</artifactId>
                 <version>${jgitflow-maven-plugin.version}</version>
             </plugin>
+            <!-- TODO: Restore after testing maven profiler
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
@@ -130,6 +132,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>${maven-dependency-plugin.version}</version>
