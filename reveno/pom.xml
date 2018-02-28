@@ -12,13 +12,12 @@
 
     <properties>
         <!-- @formatter:off -->
-        <jackson.version>2.9.0.pr3</jackson.version>
+        <jackson.version>2.9.4</jackson.version>
         <jsr305.version>3.0.2</jsr305.version>
         <junit.version>4.12</junit.version>
-        <lombok.version>1.16.16</lombok.version>
         <persistence-api.version>1.0.2</persistence-api.version>
         <reveno.version>1.23</reveno.version>
-        <slf4j.version>1.8.0-alpha2</slf4j.version>
+        <slf4j.version>1.8.0-beta1</slf4j.version>
         <!-- @formatter:on -->
     </properties>
 

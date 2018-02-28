@@ -15,7 +15,6 @@
         <hamcrest.version>2.0.0.0</hamcrest.version>
         <intellij-annotations.version>12.0</intellij-annotations.version>
         <junit.version>4.12</junit.version>
-        <lombok.version>1.16.16</lombok.version>
         <jackson.version>2.9.0.pr3</jackson.version>
         <jgit.version>4.7.0.201704051617-r</jgit.version>
         <jsr305.version>3.0.2</jsr305.version>
