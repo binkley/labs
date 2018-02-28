@@ -102,6 +102,7 @@
     </dependencies>
 
     <build>
+        <defaultGoal>clean verify</defaultGoal>
         <plugins>
             <plugin>
                 <groupId>fr.jcgay.maven.plugins</groupId>
