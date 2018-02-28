@@ -8,7 +8,7 @@
     <extension>
         <groupId>io.takari.polyglot</groupId>
         <artifactId>polyglot-yaml</artifactId>
-        <version>0.1.15</version>
+        <version>0.2.1</version>
     </extension>
     <extension>
         <groupId>fr.jcgay.maven</groupId>
