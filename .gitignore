@@ -1,4 +1,4 @@
 *.iml
 /.idea/
-/pom.yml
+pom.yml
 target/
