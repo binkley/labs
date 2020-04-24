@@ -16,7 +16,7 @@
         <intellij-annotations.version>12.0</intellij-annotations.version>
         <junit.version>4.12</junit.version>
         <lombok.version>1.16.8</lombok.version>
-        <jackson.version>2.9.10.3</jackson.version>
+        <jackson.version>2.9.10.4</jackson.version>
         <jgit.version>4.3.0.201604071810-r</jgit.version>
         <jsr305.version>3.0.1</jsr305.version>
         <snakeyaml.version>1.17</snakeyaml.version>
