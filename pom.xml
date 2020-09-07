@@ -11,10 +11,6 @@
 
     <modules>
         <module>scratch</module>
-        <module>reveno</module>
-        <module>axon</module>
-        <module>quasar</module>
-        <module>reagent</module>
     </modules>
 
     <licenses>
