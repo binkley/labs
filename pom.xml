@@ -71,7 +71,6 @@
         <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
         <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
         <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
-        <maven-jdeps-plugin.version>3.1.2</maven-jdeps-plugin.version>
         <maven-profiler-report-directory>${project.build.directory}/profiler</maven-profiler-report-directory>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-surefire.version>3.0.0-M5</maven-surefire.version>
@@ -297,18 +296,6 @@
                     <execution>
                         <goals>
                             <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-jdeps-plugin</artifactId>
-                <version>${maven-jdeps-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>jdkinternals</goal>
-                            <goal>test-jdkinternals</goal>
                         </goals>
                     </execution>
                 </executions>

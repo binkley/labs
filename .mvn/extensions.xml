@@ -17,6 +17,6 @@
     <extension>
         <groupId>fr.jcgay.maven</groupId>
         <artifactId>maven-profiler</artifactId>
-        <version>2.6</version>
+        <version>3.0</version>
     </extension>
 </extensions>
