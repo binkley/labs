@@ -9,3 +9,7 @@ There are no releases in the traditional sense.  This code is a playground.
 ## Modules
 
 * [Scratch](scratch/README.md) - Random bits
+
+## TODO
+
+* Restore use of JDeps plugin
