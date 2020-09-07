@@ -13,8 +13,7 @@
     <properties>
         <!-- @formatter:off -->
         <jackson.version>2.11.2</jackson.version>
-        <jsr305.version>3.0.1</jsr305.version>
-        <junit.version>4.12</junit.version>
+        <jsr305.version>3.0.2</jsr305.version>
         <lombok.version>1.18.12</lombok.version>
         <persistence-api.version>1.0.2</persistence-api.version>
         <reveno.version>1.23</reveno.version>

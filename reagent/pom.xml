@@ -12,10 +12,9 @@
 
     <properties>
         <dependency.failOnWarning>false</dependency.failOnWarning>
-        <jsr305.version>3.0.1</jsr305.version>
+        <jsr305.version>3.0.2</jsr305.version>
         <reactor.version>2.0.8.RELEASE</reactor.version>
         <hamcrest.version>2.0.0.0</hamcrest.version>
-        <junit.version>4.12</junit.version>
         <lombok.version>1.18.12</lombok.version>
     </properties>
 
