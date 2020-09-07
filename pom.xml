@@ -15,7 +15,6 @@
         <module>axon</module>
         <module>quasar</module>
         <module>reagent</module>
-        <module>version-diff</module>
     </modules>
 
     <licenses>
