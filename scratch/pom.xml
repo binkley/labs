@@ -9,10 +9,6 @@
 
     <artifactId>labs-scratch</artifactId>
 
-    <properties>
-        <lombok.version>1.18.12</lombok.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>

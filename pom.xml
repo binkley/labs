@@ -65,6 +65,7 @@
         <java.version>11</java.version>
         <jgitflow-maven-plugin.version>1.0-m5.1</jgitflow-maven-plugin.version>
         <junit.version>4.13</junit.version>
+        <lombok.version>1.18.12</lombok.version>
         <maven-surefire.version>2.18.1</maven-surefire.version>
         <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
         <maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
