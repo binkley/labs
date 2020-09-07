@@ -3,8 +3,8 @@ package hm.binkley.layers;
 import hm.binkley.layers.Layers.Rule;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class LayersTest {
     private Layers<Tag, Key, Value> layers;
 
-    @Before
+    @BeforeEach
     public void setUpLayers() {
         layers = Layers.withFallbackRule(Tag.of("Layers XXX"),
                 Tag.of("Key " + "YYY"));
@@ -30,14 +30,17 @@ public class LayersTest {
                 });
 
         layers.layer(Tag.of("Layer #1")).
-                add(Key.of("A"), new Value(3) {}).
+                add(Key.of("A"), new Value(3) {
+                }).
                 commit();
         layers.layer(Tag.of("Layer #1")).
-                add(Key.of("A"), new Value(4) {}).
+                add(Key.of("A"), new Value(4) {
+                }).
                 commit();
 
         assertThat(layers.get(Key.of("A"))).
-                isEqualTo(Optional.of(new Value(3) {}));
+                isEqualTo(Optional.of(new Value(3) {
+                }));
     }
 
     @Test
@@ -51,14 +54,17 @@ public class LayersTest {
                 });
 
         layers.layer(Tag.of("Layer #1")).
-                add(Key.of("A"), new Value(3) {}).
+                add(Key.of("A"), new Value(3) {
+                }).
                 commit();
         layers.layer(Tag.of("Layer #1")).
-                add(Key.of("A"), new Value(4) {}).
+                add(Key.of("A"), new Value(4) {
+                }).
                 commit();
 
         assertThat(layers.get(Key.of("A"))).
-                isEqualTo(Optional.of(new Value(3) {}));
+                isEqualTo(Optional.of(new Value(3) {
+                }));
     }
 
     @EqualsAndHashCode
