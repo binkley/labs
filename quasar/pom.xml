@@ -18,7 +18,7 @@
         <hamcrest.version>2.0.0.0</hamcrest.version>
         <javatuples.version>1.2</javatuples.version>
         <junit.version>4.12</junit.version>
-        <lombok.version>1.16.8</lombok.version>
+        <lombok.version>1.18.12</lombok.version>
         <jsr305.version>3.0.1</jsr305.version>
         <main.class>hm.binkley.labs.FibersMain</main.class>
         <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
