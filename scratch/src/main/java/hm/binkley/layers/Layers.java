@@ -4,36 +4,26 @@ import hm.binkley.layers.Layers.Layer;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-import java.util.AbstractList;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.reverse;
-import static java.util.Collections.unmodifiableMap;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
 /**
  * @param <DescriptionType> the description type
- * @param <KeyType> the key type
- *
+ * @param <KeyType>         the key type
  * @todo {@link #fallbackRule} should be last, ala a stack
  */
 @RequiredArgsConstructor
 @SuppressWarnings("WeakerAccess")
 public final class Layers<DescriptionType, KeyType, ValueType>
-        extends AbstractList<Layer>
+        extends AbstractList<Layer<DescriptionType, KeyType, ValueType>>
         implements Described<DescriptionType> {
     private final transient Map<KeyType, ValueType> cache
             = new LinkedHashMap<>();
@@ -42,13 +32,11 @@ public final class Layers<DescriptionType, KeyType, ValueType>
             = new ArrayList<>();
     private final Map<KeyType, Rule<DescriptionType, ValueType>> specificRules
             = new LinkedHashMap<>();
-    private final Map<Predicate<? super KeyType>, Rule<DescriptionType,
-            ValueType>>
+    private final Map<Predicate<? super KeyType>, Rule<DescriptionType, ValueType>>
             genericRules = new LinkedHashMap<>();
     // to reverse?
 
-    public static <DescriptionType, KeyType, ValueType>
-    Layers<DescriptionType, KeyType, ValueType> withFallbackRule(
+    public static <DescriptionType, KeyType, ValueType> Layers<DescriptionType, KeyType, ValueType> withFallbackRule(
             final DescriptionType layersDescription,
             final DescriptionType defaultRuleDescription) {
         final Layers<DescriptionType, KeyType, ValueType> layers
@@ -62,16 +50,14 @@ public final class Layers<DescriptionType, KeyType, ValueType>
      * The default rule treats layers as a stack, returning the key value of
      * the most recent (topmost) layer containing that key.
      *
-     * @param description the default rule description, never missing
+     * @param description       the default rule description, never missing
      * @param <DescriptionType> the description type
-     * @param <ValueType> the value type
-     *
+     * @param <ValueType>       the value type
      * @return the default rule for {@code DescriptionType}, never missing
      */
-    public static <DescriptionType, ValueType> Rule<DescriptionType,
-            ValueType> fallbackRule(
+    public static <DescriptionType, ValueType> Rule<DescriptionType, ValueType> fallbackRule(
             final DescriptionType description) {
-        return new Rule<DescriptionType, ValueType>(description) {
+        return new Rule<>(description) {
             @Override
             public ValueType apply(final ValueType a, final ValueType b) {
                 return b;
@@ -117,23 +103,21 @@ public final class Layers<DescriptionType, KeyType, ValueType>
     }
 
     @Override
-    public Layer get(final int index) {
+    public Layer<DescriptionType, KeyType, ValueType> get(final int index) {
         return layers.get(index);
     }
 
     @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + description + ", " +
-                layers.stream().map(Layer::description).collect(toList())
-                + ", " + cache + ")";
+                layers.stream().map(Layer::description).collect(toList()) +
+                ", " + cache + ")";
     }
 
     private Rule<DescriptionType, ValueType> findRule(final KeyType key) {
-        if (specificRules.containsKey(key))
-            return specificRules.get(key);
+        if (specificRules.containsKey(key)) return specificRules.get(key);
         // TODO: Horrors - reverse map entries in a list
-        final List<Entry<Predicate<? super KeyType>, Rule<DescriptionType,
-                ValueType>>>
+        final List<Entry<Predicate<? super KeyType>, Rule<DescriptionType, ValueType>>>
                 rules = new ArrayList<>(genericRules.entrySet());
         reverse(rules);
         return rules.stream().
@@ -191,8 +175,8 @@ public final class Layers<DescriptionType, KeyType, ValueType>
 
         @Override
         public String toString() {
-            return getClass().getSimpleName() + "(" + description + ", "
-                    + values + ")";
+            return getClass().getSimpleName() + "(" + description + ", " +
+                    values + ")";
         }
     }
 

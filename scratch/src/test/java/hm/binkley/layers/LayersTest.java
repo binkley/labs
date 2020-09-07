@@ -21,13 +21,12 @@ public class LayersTest {
 
     @Test
     public void shouldApplySpecificRule() {
-        layers.addRule(Key.of("A"),
-                new Rule<Tag, Value>(Tag.of("Oldest first")) {
-                    @Override
-                    public Value apply(final Value a, final Value b) {
-                        return a;
-                    }
-                });
+        layers.addRule(Key.of("A"), new Rule<>(Tag.of("Oldest first")) {
+            @Override
+            public Value apply(final Value a, final Value b) {
+                return a;
+            }
+        });
 
         layers.layer(Tag.of("Layer #1")).
                 add(Key.of("A"), new Value(3) {
@@ -45,13 +44,12 @@ public class LayersTest {
 
     @Test
     public void shouldApplyGenericRule() {
-        layers.addRule(key -> true,
-                new Rule<Tag, Value>(Tag.of("Oldest first")) {
-                    @Override
-                    public Value apply(final Value a, final Value b) {
-                        return a;
-                    }
-                });
+        layers.addRule(key -> true, new Rule<>(Tag.of("Oldest first")) {
+            @Override
+            public Value apply(final Value a, final Value b) {
+                return a;
+            }
+        });
 
         layers.layer(Tag.of("Layer #1")).
                 add(Key.of("A"), new Value(3) {

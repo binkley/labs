@@ -5,15 +5,13 @@ import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
 import static hm.binkley.layers.Layers.withFallbackRule;
-import static hm.binkley.layers.LayersMain.Key.BAR;
-import static hm.binkley.layers.LayersMain.Key.DUCKY;
-import static hm.binkley.layers.LayersMain.Key.FOO;
+import static hm.binkley.layers.LayersMain.Key.*;
 import static java.lang.System.out;
 
 public final class LayersMain {
     public static void main(final String... args) {
-        final Layers<Tag, Key, Value> layers = withFallbackRule(Tag.of("Bob", 3),
-                Tag.of("Default rule - take last", 0));
+        final Layers<Tag, Key, Value> layers = withFallbackRule(
+                Tag.of("Bob", 3), Tag.of("Default rule - take last", 0));
         out.println("EMPTY layers = " + layers);
         layers.layer(Tag.of("#1", 13)).commit();
         out.println("STILL EMPTY layers = " + layers);
@@ -42,24 +40,24 @@ public final class LayersMain {
                 commit();
         out.println("STILL TWO layers = " + layers);
 
-        layers.addRule(BAR,
-                new Rule<Tag, Value>(Tag.of("Bad FOO, no biscuit!", 1)) {
-                    @Override
-                    public Value apply(final Value a, final Value b) {
-                        return a;
-                    }
-                });
+        layers.addRule(BAR, new Rule<>(Tag.of("Bad FOO, no biscuit!", 1)) {
+            @Override
+            public Value apply(final Value a, final Value b) {
+                return a;
+            }
+        });
         out.println("REVERSE BAR layers = " + layers);
 
         out.println("FOO = " + layers.get(FOO));
         out.println("DUCKY! = " + layers.get(DUCKY));
 
-        final Layers<String, String, Object> vanilla = withFallbackRule("Very withFallbackRule",
-                "Last first");
+        final Layers<String, String, Object> vanilla = withFallbackRule(
+                "Very withFallbackRule", "Last first");
         out.println("withFallbackRule = " + vanilla);
     }
 
-    private interface Value {}
+    private interface Value {
+    }
 
     @EqualsAndHashCode
     @RequiredArgsConstructor(staticName = "of")
@@ -69,14 +67,13 @@ public final class LayersMain {
 
         @Override
         public String toString() {
-            return getClass().getSimpleName() + "(" + name + ", " + number
-                    + ")";
+            return getClass().getSimpleName() + "(" + name + ", " + number +
+                    ")";
         }
     }
 
     enum Key {
-        FOO("A fooish thing"),
-        BAR("Bar none"),
+        FOO("A fooish thing"), BAR("Bar none"),
         DUCKY("Pearl misses you, Ducky!");
 
         private final String description;
